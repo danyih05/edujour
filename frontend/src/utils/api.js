@@ -3,7 +3,7 @@ import axios from 'axios'
 const AUTH_SESSION_STORAGE_KEY = 'gradquest-auth-session'
 
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: import.meta.env.VITE_API_TARGET || '/api',
   timeout: 10000
 })
 
