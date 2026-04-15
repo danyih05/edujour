@@ -1,0 +1,4 @@
+.DS_Store
+frontend/dist/
+*.err.log
+*.out.log

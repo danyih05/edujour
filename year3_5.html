@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Y3-5 Tsundere Wildcat Mentor Simulator</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body {
+            background: #2b2b2b; display: flex; justify-content: center;
+            align-items: center; min-height: 100vh; margin: 0; padding: 20px;
+        }
+
+        /* Game Main Screen (Galgame / Visual Novel Style) */
+        .game-screen {
+            background: linear-gradient(to bottom, #4a6984, #2a3b4c);
+            width: 100%; max-width: 800px; height: 600px;
+            border-radius: 20px; border: 4px solid #f5b342;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            position: relative; overflow: hidden;
+            display: flex; flex-direction: column;
+        }
+
+        /* Top Status Bar (Favorability) */
+        .status-bar {
+            background: rgba(0,0,0,0.4); padding: 15px 20px;
+            display: flex; justify-content: space-between; align-items: center;
+            color: #fff; font-weight: bold; font-size: 1.1rem;
+            border-bottom: 2px dashed rgba(255,255,255,0.2); z-index: 10;
+        }
+        .hearts { color: #e74c3c; letter-spacing: 5px; transition: 0.3s; }
+
+        /* Character Stage */
+        .character-stage {
+            flex: 1; display: flex; justify-content: center; align-items: center;
+            position: relative;
+        }
+
+        /* Giant Cat Emoji */
+        .cat-avatar {
+            font-size: 10rem; filter: drop-shadow(0 15px 15px rgba(0,0,0,0.4));
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform-origin: bottom center;
+        }
+        /* Bristling/Angry Animation */
+        .angry-shake { animation: shake 0.5s infinite; filter: drop-shadow(0 0 20px red); }
+        @keyframes shake { 0% { transform: translateX(0) scale(1.1); } 25% { transform: translateX(-10px) rotate(-5deg) scale(1.1); } 50% { transform: translateX(10px) rotate(5deg) scale(1.1); } 100% { transform: translateX(0) scale(1.1); } }
+        /* Purring/Happy Animation */
+        .happy-bounce { animation: bounce 2s infinite ease-in-out; filter: drop-shadow(0 0 20px #f1c40f); }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+
+        /* Dialogue Box Area */
+        .dialogue-box {
+            background: rgba(20, 20, 20, 0.85); border-top: 3px solid #f5b342;
+            height: 250px; display: flex; flex-direction: column; z-index: 10;
+        }
+
+        .speaker-name {
+            background: #f5b342; color: #1e1e1e; font-weight: 900;
+            padding: 5px 20px; border-radius: 0 15px 15px 0;
+            display: inline-block; align-self: flex-start; margin-top: -15px;
+            box-shadow: 2px 2px 0 #d48b2c; font-size: 1.1rem; font-family: "Georgia", serif;
+        }
+
+        .text-content {
+            color: #fff; padding: 20px 30px; font-size: 1.15rem; line-height: 1.6;
+            flex: 1; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); font-family: "Georgia", serif;
+        }
+
+        /* Choices Area */
+        .choices-area {
+            display: flex; flex-direction: column; gap: 10px;
+            padding: 0 20px 20px 20px;
+            overflow-y: auto;
+        }
+
+        .choice-btn {
+            background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3);
+            color: #fff; padding: 12px; border-radius: 8px; text-align: left;
+            font-size: 0.95rem; cursor: pointer; transition: 0.2s;
+            display: flex; align-items: flex-start; font-weight: 600;
+        }
+        .choice-btn::before { content: '▶'; margin-right: 10px; color: #f5b342; opacity: 0; transition: 0.2s; }
+        .choice-btn:hover { background: rgba(245, 179, 66, 0.2); border-color: #f5b342; transform: translateX(5px); }
+        .choice-btn:hover::before { opacity: 1; }
+
+    </style>
+</head>
+<body>
+
+<div class="game-screen">
+    <div class="status-bar">
+        <div><i class="fas fa-paw" style="color:#f5b342;"></i> Mentor's Favorability</div>
+        <div class="hearts" id="favorability">❤️❤️🤍🤍🤍</div>
+    </div>
+
+    <div class="character-stage">
+        <div class="cat-avatar" id="catAvatar">😼</div>
+    </div>
+
+    <div class="dialogue-box">
+        <div class="speaker-name">Prof. Wildcat (Archmage)</div>
+        <div class="text-content" id="dialogueText">
+            ...
+        </div>
+        <div class="choices-area" id="choicesBox">
+        </div>
+    </div>
+</div>
+
+<script>
+    // ======= Core: JSON Dialogue Story Tree =======
+    const storyTree = {
+        // Starting Node
+        start: {
+            text: "(You peek into the office)<br>😼 Meow? Another application season, huh? What do you want? Speak quickly, I am extremely busy.",
+            emoji: "😼",
+            mood: "normal",
+            hearts: "❤️❤️🤍🤍🤍",
+            choices: [
+                { text: "Professor! I want you to write me a recommendation letter! (Straight to the point, slightly abrupt)", nextId: "bad_start" },
+                { text: "Greetings, Prof. Wildcat. I am XXX from your 'Advanced Yarn Ball Catching' class. I'm here to consult you regarding a recommendation letter.", nextId: "good_start" }
+            ]
+        },
+
+        // --- Path A: Too abrupt at the start ---
+        bad_start: {
+            text: "😾 MEOW! Barking orders right off the bat? Not even an introduction! I've taught countless students, how am I supposed to remember which mouse you are!",
+            emoji: "😾",
+            mood: "angry",
+            hearts: "❤️🤍🤍🤍🤍",
+            choices: [
+                { text: "Ah, my deepest apologies! I was the one sitting in the front row last semester...", nextId: "recover_start" },
+                { text: "Oh, please don't be mad, Professor. Just write a few casual sentences for me, it's fine.", nextId: "game_over_rude" }
+            ]
+        },
+        game_over_rude: {
+            text: "💢 A few casual sentences?! Is my academic reputation something to be thrown around casually? Get out! And close the door!<br><span style='color:#e74c3c'>[Game Over: The mentor is thoroughly enraged. You have lost this RL.]</span>",
+            emoji: "🙀",
+            mood: "angry",
+            hearts: "🖤🖤🖤🖤🖤",
+            choices: [
+                { text: "🔄 Reload Save: Go learn basic email and office etiquette.", nextId: "start" }
+            ]
+        },
+        recover_start: {
+            text: "😼 Hmph, I have a faint recollection. Speak, which program are you applying for? When is the deadline?",
+            emoji: "😼",
+            mood: "normal",
+            hearts: "❤️❤️🤍🤍🤍",
+            choices: [
+                { text: "Uhh... The specific academies aren't decided yet. Just write me one as a backup for now.", nextId: "game_over_vague" },
+                { text: "I wish to apply for the CS program at XX University; the deadline is at the end of next month. There's plenty of time.", nextId: "good_timing" }
+            ]
+        },
+
+        // --- Path B: Polite and appropriate start ---
+        good_start: {
+            text: "😸 Oh, it's the little one who got an A on the final. *Purr...* Alright, what program are you applying for? When do you need it?",
+            emoji: "😸",
+            mood: "happy",
+            hearts: "❤️❤️❤️🤍🤍",
+            choices: [
+                { text: "The application closes tomorrow night! Please save me, Professor!", nextId: "game_over_rush" },
+                { text: "It's a program at XX University due at the end of next month. I came a month in advance to ask for your willingness.", nextId: "good_timing" }
+            ]
+        },
+        game_over_rush: {
+            text: "😾 MEOW!! Due tomorrow and you come to me today?! Do you think I'm an automatic typewriter?! I'm busy, no rush orders!<br><span style='color:#e74c3c'>[Game Over: High-risk maneuver! Never push a professor's DDL to the extreme.]</span>",
+            emoji: "😾",
+            mood: "angry",
+            hearts: "🖤🖤🖤🖤🖤",
+            choices: [ { text: "🔄 Reload Save: Remember to contact professors at least a month in advance.", nextId: "start" } ]
+        },
+        game_over_vague: {
+            text: "😾 You haven't even set a target, who am I writing this for? Different academies value entirely different traits. Come back when you've figured it out!<br><span style='color:#e74c3c'>[Game Over: Lack of planning. RLs must be tailored to specific programs.]</span>",
+            emoji: "😾",
+            mood: "angry",
+            hearts: "❤️🤍🤍🤍🤍",
+            choices: [ { text: "🔄 Reload Save: Do your homework first.", nextId: "start" } ]
+        },
+
+        // --- Core Pivot: Material Preparation ---
+        good_timing: {
+            text: "😼 A month in advance, at least you know the rules. But I'm very busy this term. Do you have any materials to help me quickly recall your shining moments?",
+            emoji: "😼",
+            mood: "normal",
+            hearts: "❤️❤️❤️🤍🤍",
+            choices: [
+                { text: "Uhh... Does my final transcript count? For the rest, just freestyle based on your impression.", nextId: "game_over_lazy" },
+                { text: "Yes! I've prepared an [Application Care Package]: including my latest CV, transcript, target program list, and a highlight summary of my final project in your class.", nextId: "perfect_ending" }
+            ]
+        },
+        game_over_lazy: {
+            text: "😾 Freestyle based on my impression? Then I'll write 'This student had zero presence other than not snoring in class.' Not even organizing your own materials is a waste of my time!<br><span style='color:#e74c3c'>[Game Over: Professors have no obligation to remember your brilliance. Prepare a material package.]</span>",
+            emoji: "😾",
+            mood: "angry",
+            hearts: "🤍🤍🤍🤍🤍",
+            choices: [ { text: "🔄 Reload Save: Organize your info package before knocking.", nextId: "start" } ]
+        },
+
+        // --- Perfect Ending ---
+        perfect_ending: {
+            text: "😻 *Purr, purr...* The materials are this well-organized? Even the highlight summary is listed. Writing this letter will take me ten minutes tops.<br>Alright, leave it to me. May your applications go smoothly!<br><span style='color:#2ecc71'>[Cleared! You successfully smoothed the fur of the Tsundere Wildcat and mastered the perfect template for requesting an RL!]</span>",
+            emoji: "😻",
+            mood: "happy",
+            hearts: "❤️❤️❤️❤️❤️",
+            choices: [
+                { text: "🎁 Claim Clear Reward (+50 Coins) and Return to Map", nextId: "exit" }
+            ]
+        }
+    };
+
+    // ======= Rendering Engine =======
+    function renderNode(nodeId) {
+        if (nodeId === 'exit') {
+            if (window.parent && window.parent !== window) {
+                window.parent.postMessage({
+                    type: "gradquest:node-complete",
+                    payload: { year: "y3", nodeId: 5, rewardCoins: 50 }
+                }, "*");
+            }
+            alert("Map Guide: Returned to the map interface! (This triggers the unlock code for the next stage in the main system)");
+            return;
+        }
+
+        const nodeData = storyTree[nodeId];
+
+        // 1. Update text and favorability
+        document.getElementById('dialogueText').innerHTML = nodeData.text;
+        document.getElementById('favorability').innerHTML = nodeData.hearts;
+
+        // 2. Update cat emoji and animations
+        const cat = document.getElementById('catAvatar');
+        cat.innerText = nodeData.emoji;
+
+        // Remove all old animation classes
+        cat.classList.remove('angry-shake', 'happy-bounce');
+        if (nodeData.mood === 'angry') {
+            cat.classList.add('angry-shake');
+        } else if (nodeData.mood === 'happy') {
+            cat.classList.add('happy-bounce');
+        }
+
+        // 3. Render choice buttons
+        const choicesBox = document.getElementById('choicesBox');
+        choicesBox.innerHTML = ''; // Clear old buttons
+
+        nodeData.choices.forEach(choice => {
+            const btn = document.createElement('button');
+            btn.className = 'choice-btn';
+            btn.innerHTML = choice.text;
+            btn.onclick = () => renderNode(choice.nextId); // Bind click event
+            choicesBox.appendChild(btn);
+        });
+    }
+
+    // Initialize Game
+    renderNode('start');
+
+</script>
+</body>
+</html>
