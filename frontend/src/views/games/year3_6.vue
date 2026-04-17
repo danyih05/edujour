@@ -222,7 +222,12 @@
               </div>
             </div>
             <div class="center-actions" style="margin-top:30px;">
-              <button class="btn next" type="button" @click="completeNode">{{ t('pages.y3_6.settlement.returnInGlory') }}</button>
+              <button class="btn next" type="button" @click="completeNode">
+                {{ t('pages.y3_6.settlement.returnToMap') }}
+              </button>
+              <button class="btn next" style="background: linear-gradient(135deg, #6c757d, #343a40);" type="button" @click="resetGameAndRestart">
+                {{ t('pages.y3_6.settlement.restartGame') }}
+              </button>
             </div>
           </div>
         </template>
@@ -237,6 +242,12 @@
       >
         ↓
       </button>
+      <div v-if="showNotifyModal" class="modal" style="display: flex;" @click.self="showNotifyModal = false">
+        <div class="modal-card" style="width: 360px; text-align: center;">
+          <p style="margin-bottom: 20px;">{{ notifyMessage }}</p>
+          <button class="btn next" @click="showNotifyModal = false">确定</button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -247,7 +258,8 @@ import { useAppI18n } from '@/composables/useAppI18n'
 
 const emit = defineEmits(['complete'])
 const { t, tm } = useAppI18n()
-
+const showNotifyModal = ref(false)
+const notifyMessage = ref('')
 const BASE_STAGES = [
   { id: 0, gemReward: 1, enemy: { icon: '🐲', hp: 150, atk: 20 } },
   { id: 1, gemReward: 1, enemy: { icon: '🧟', hp: 200, atk: 30 } },
@@ -699,15 +711,41 @@ function completeNode() {
       payload: { year: 'y3', nodeId: 6 },
     }, '*')
   }
-  window.alert(t('pages.y3_6.alerts.returnToMap'))
   emit('complete', { year: 'y3', nodeId: 6 })
+}
+function resetGameAndRestart() {
+  // 重置 gameState 到初始值
+  gameState.gems = 0
+  gameState.cleared = [false, false, false]
+  gameState.level = 1
+  gameState.potions = 4
+  gameState.hero.hp = 120
+  gameState.hero.maxHp = 120
+  gameState.hero.shield = false
+  syncPotionSkill()
+  
+  // 重置技能 PP（除了药水技能会通过 syncPotionSkill 同步，其他手动重置）
+  heroSkillState.forEach((skill, idx) => {
+    if (idx !== 3) skill.pp = skill.maxPp
+  })
+  
+  // 关闭模态框
+  modalVisible.value = false
+  modalMode.value = 'intro'
+  
+  // 可选：重置当前选中的关卡（让地图回到初始状态，不清除 currentNodeId 也可，但最好重置）
+  currentStageId.value = null
+  
+  // 刷新界面（强制重新渲染）由于是响应式数据，地图上的门状态会自动更新
+  // 并且顶部状态栏会重新计算
 }
 
 function handleFinalDoor() {
   if (allClear.value) {
     openFinal()
   } else {
-    window.alert(t('pages.y3_6.alerts.sanctuarySealed'))
+    notifyMessage.value = t('pages.y3_6.alerts.sanctuarySealed')
+    showNotifyModal.value = true
   }
 }
 

@@ -1126,6 +1126,12 @@ export default {
       alerts: {
         returnToMap: 'Map Guide: Returned to the map interface! (This triggers the unlock code for the next stage in the main system)',
       },
+      modal: {
+        title: "Mission Complete!",
+        message: "You earned {coins} coins.",
+        confirm: "Return to Map"
+      },
+      restart: "Restart Story",
       tree: {
         start: {
           text: "(You peek into the office)<br>😼 Meow? Another application season, huh? What do you want? Speak quickly, I am extremely busy.",
@@ -1287,6 +1293,8 @@ export default {
         finalPowerLevel: '✨ Final Power Level: Lv.{level}',
         honoraryTitle: '✨ Honorary Title: <b>Master of Time · The Dragon Slayer</b>',
         returnInGlory: 'Return in Glory',
+        returnToMap: "Return to Map",
+        restartGame: "Restart Game",
       },
       alerts: {
         sanctuarySealed: 'There are still Bosses uncleared! The Sanctuary remains sealed.',

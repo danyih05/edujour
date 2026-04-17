@@ -25,6 +25,26 @@
         </div>
       </div>
     </div>
+    <!-- 自定义完成模态框 -->
+    <Transition name="modal-fade">
+      <div v-if="showCompleteModal" class="modal-overlay" @click.self="closeModal">
+        <div class="modal-card">
+          <div class="modal-icon">
+            <i class="fas fa-crown"></i>
+          </div>
+          <h3 class="modal-title">{{ t('pages.y3_5.modal.title') }}</h3>
+          <p class="modal-message">{{ t('pages.y3_5.modal.message', { coins: rewardAmount }) }}</p>
+          <div class="modal-actions">
+            <button class="modal-btn restart" @click="restartGame">
+              {{ t('pages.y3_5.modal.restart') }}
+            </button>
+            <button class="modal-btn confirm" @click="confirmComplete">
+              {{ t('pages.y3_5.modal.confirm') }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </Transition>
   </div>
 </template>
 
@@ -37,6 +57,8 @@ const { t, tm } = useAppI18n()
 
 const currentNodeId = ref('start')
 const previousTitle = ref(typeof document !== 'undefined' ? document.title : '')
+const showCompleteModal = ref(false)
+const rewardAmount = ref(50)   // 与原有奖励值一致
 const pageCopy = computed(() => tm('pages.y3_5') || {})
 const storyTree = computed(() => pageCopy.value.tree || {})
 
@@ -51,21 +73,33 @@ const catMoodClass = computed(() => ({
   'angry-shake': currentNode.value.mood === 'angry',
   'happy-bounce': currentNode.value.mood === 'happy',
 }))
-
+function restartGame() {
+  showCompleteModal.value = false
+  // 重置故事到开始节点
+  currentNodeId.value = 'start'
+  // 如果有其他需要重置的状态（如 hearts 等），可以在这里重置
+  // 由于故事树没有额外状态，只重置节点 ID 即可
+}
 function renderNode(nodeId) {
   if (nodeId === 'exit') {
-    if (window.parent && window.parent !== window) {
-      window.parent.postMessage({
-        type: 'gradquest:node-complete',
-        payload: { year: 'y3', nodeId: 5, rewardCoins: 50 },
-      }, '*')
-    }
-    window.alert(t('pages.y3_5.alerts.returnToMap'))
-    emit('complete', { year: 'y3', nodeId: 5, rewardCoins: 50 })
+    showCompleteModal.value = true   // 弹出模态框，不再 alert
     return
   }
-
   currentNodeId.value = nodeId
+}
+function confirmComplete() {
+  showCompleteModal.value = false
+  if (window.parent && window.parent !== window) {
+    window.parent.postMessage({
+      type: 'gradquest:node-complete',
+      payload: { year: 'y3', nodeId: 5, rewardCoins: rewardAmount.value },
+    }, '*')
+  }
+  emit('complete', { year: 'y3', nodeId: 5, rewardCoins: rewardAmount.value })
+}
+
+function closeModal() {
+  showCompleteModal.value = false
 }
 
 onMounted(() => {
@@ -243,6 +277,101 @@ onBeforeUnmount(() => {
   50% { transform: translateY(-15px); }
 }
 
+/* 模态框覆盖层 */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-card {
+  background: linear-gradient(145deg, #1e2a3a, #0f172a);
+  border: 2px solid #f5b342;
+  border-radius: 28px;
+  width: min(420px, 90%);
+  padding: 28px 24px 32px;
+  text-align: center;
+  box-shadow: 0 30px 40px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(245, 179, 66, 0.2);
+  animation: modalPop 0.3s cubic-bezier(0.21, 1.11, 0.38, 1.02);
+}
+
+.modal-icon {
+  font-size: 3.2rem;
+  color: #f5b342;
+  margin-bottom: 16px;
+  filter: drop-shadow(0 0 8px rgba(245, 179, 66, 0.6));
+}
+
+.modal-title {
+  font-family: Georgia, serif;
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: #fde68a;
+  margin: 0 0 12px;
+}
+
+.modal-message {
+  color: #e2e8f0;
+  font-size: 1.05rem;
+  line-height: 1.5;
+  margin-bottom: 28px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: center;
+}
+
+.modal-btn {
+  border: none;
+  border-radius: 999px;
+  padding: 12px 28px;
+  font-weight: 800;
+  font-size: 1rem;
+  background: linear-gradient(135deg, #f5b342, #e67e22);
+  color: #1e1e2f;
+  cursor: pointer;
+  transition: 0.2s;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.modal-btn:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.05);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.4);
+}
+
+/* 过渡动画 */
+.modal-fade-enter-active,
+.modal-fade-leave-active {
+  transition: opacity 0.25s ease;
+}
+.modal-fade-enter-from,
+.modal-fade-leave-to {
+  opacity: 0;
+}
+
+@keyframes modalPop {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.modal-btn.restart {
+  background: linear-gradient(135deg, #6c757d, #495057);
+}
 @media (max-width: 860px) {
   .wildcat-root {
     padding: 12px;

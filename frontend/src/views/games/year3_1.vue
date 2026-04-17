@@ -64,6 +64,32 @@
           <span class="section-meta">{{ t('pages.y3_1.inventoryProgress', { current: unlockedCount, total: totalItemCount }) }}</span>
         </div>
 
+        
+
+        <div class="inventory-grid">
+          <button
+            v-for="item in inventoryItems"
+            :key="item.id"
+            type="button"
+            class="element-item"
+            :class="[item.tier, `stage-${item.stage}`, { selected: getSelectedCount(item.id) > 0, crafted: item.isCrafted, offer: item.stage === 3 }]"
+            :disabled="isMixing"
+            @click="addToSlot(item.id)"
+          >
+            <div
+              v-if="getSelectedCount(item.id) > 0"
+              class="picked-badge"
+            >
+              x{{ getSelectedCount(item.id) }}
+            </div>
+            <div class="item-visual">
+              <i :class="item.iconClass" aria-hidden="true"></i>
+            </div>
+            <div class="item-name">{{ item.name }}</div>
+            <div class="item-desc">{{ item.description }}</div>
+          </button>
+        </div>
+
         <div class="hint-tools">
           <div class="hint-header">
             <strong>{{ t('pages.y3_1.hintTitle') }}</strong>
@@ -89,30 +115,6 @@
               <p>{{ activeHint.body }}</p>
             </article>
           </Transition>
-        </div>
-
-        <div class="inventory-grid">
-          <button
-            v-for="item in inventoryItems"
-            :key="item.id"
-            type="button"
-            class="element-item"
-            :class="[item.tier, `stage-${item.stage}`, { selected: getSelectedCount(item.id) > 0, crafted: item.isCrafted, offer: item.stage === 3 }]"
-            :disabled="isMixing"
-            @click="addToSlot(item.id)"
-          >
-            <div
-              v-if="getSelectedCount(item.id) > 0"
-              class="picked-badge"
-            >
-              x{{ getSelectedCount(item.id) }}
-            </div>
-            <div class="item-visual">
-              <i :class="item.iconClass" aria-hidden="true"></i>
-            </div>
-            <div class="item-name">{{ item.name }}</div>
-            <div class="item-desc">{{ item.description }}</div>
-          </button>
         </div>
       </section>
     </div>
@@ -488,6 +490,7 @@ button {
 
 .hint-tools {
   margin-bottom: 18px;
+  margin-top: 32px;
   padding: 18px 18px 14px;
   border-radius: 20px;
   border: 1px solid rgba(248, 213, 74, 0.48);
