@@ -79,6 +79,7 @@
 import { computed, nextTick, reactive, ref } from 'vue'
 import { useAppI18n } from '@/composables/useAppI18n'
 import KnowledgeGuidePanel from '@/components/KnowledgeGuidePanel.vue'
+import { getYear2CountrySchoolConfig, persistMatchedCountryKey } from '@/config/year2CountrySchools'
 
 const emit = defineEmits(['complete', 'close'])
 const { t, tm } = useAppI18n()
@@ -165,6 +166,8 @@ const result = computed(() => {
   }
 })
 
+const winnerCountryConfig = computed(() => getYear2CountrySchoolConfig(winner.value))
+
 function portalClass(type) {
   const value = scores[type] || 0
   const strength = value ? Math.min(Math.floor(value / 2) + 1, 3) : 0
@@ -215,7 +218,16 @@ function resetGame() {
 }
 
 function completeWithReward() {
-  emit('complete', { rewardCoins: 30 })
+  const matchedCountryKey = winnerCountryConfig.value.key
+  persistMatchedCountryKey(matchedCountryKey)
+
+  emit('complete', {
+    rewardCoins: 30,
+    profile: {
+      matchedCountryKey,
+      matchedCountry: winnerCountryConfig.value.canonicalName,
+    },
+  })
 }
 </script>
 

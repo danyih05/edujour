@@ -410,82 +410,69 @@ export default {
     },
     y2_3: {
       title: 'Scales of Destiny',
-      subtitle: 'For a GPA 82 STEM / CS applicant with one ordinary internship, place every school into a more realistic tier.',
+      subtitle: 'For a GPA 82 STEM / CS applicant with one ordinary internship, place the {country} schools from the previous level into more realistic tiers.',
       currentAvatar: 'Current profile: GPA 82/100 | STEM/CS track | 1 ordinary internship',
+      matchedRoute: 'Matched destination: {country}',
+      fallbackCopy: 'No saved country match was found yet, so the game is showing a cross-region fallback set for now. Once you finish the previous level, this list will switch automatically.',
       predict: 'Divinate the Scales',
       feedbackTitle: 'Tiering Prophecy',
       seal: 'Seal This Tier Plan and Return',
       alertCompleteDeck: 'The Seer warns: place every school card before divination.',
       guide: {
         button: 'Knowledge Guide',
-        body: 'A balanced school list includes Reach, Match, and Safety tiers. Drag each school into the right tier, then click "Divinate the Scales" to get feedback.',
-        items: [
-          {
+        body: 'A balanced school list needs Reach, Match, and Safety tiers. The game now swaps the school deck based on the destination matched in the previous level, so you only need to sort the current set.',
+        items: {
+          reach: {
             title: '🎯 Reach (Dream) Schools',
-            content: 'Schools where your profile is below the average admitted student. Acceptance rate <20%. Apply to 2-3 as high-risk bets.'
+            text: 'These are schools where your profile sits below the average admit. Keep 2-3 of them as upside bets instead of filling the whole list with risk.'
           },
-          {
+          match: {
             title: '⚔️ Match (Core) Schools',
-            content: 'Schools where your GPA, test scores, and background align with the average admitted student. Apply to 3-5 as your main targets.'
+            text: 'These are the schools where your GPA and evidence are closer to the typical admit range. They should form the stable middle of your list.'
           },
-          {
+          safety: {
             title: '🛡️ Safety (Backup) Schools',
-            content: 'Schools where your profile is well above the average. Acceptance should be very likely ( >70% ). Apply to 2-3 to ensure admission.'
+            text: 'These are schools where your profile is stronger than the average admit. A real safety layer keeps the rest of the list flexible.'
           },
-          {
-            title: '📊 Realistic GPA Context',
-            content: 'For STEM/CS applicants with GPA 82/100 and one ordinary internship: IC and UCL are extreme reaches; KCL/Southampton are match tier; Cardiff is safety.'
+          reference: {
+            title: '📊 {country} tier reference',
+            text: 'For the current GPA 82 STEM / CS profile with one ordinary internship: {reachSchools} are closer to Reach; {matchSchools} fit Match better; {safetySchools} are better treated as Safety.'
           },
-          {
+          warning: {
             title: '⚠️ Common Mistakes',
-            content: 'Placing IC or UCL in Match/Safety is over-optimistic. Placing Cardiff in Reach is over-conservative. A missing safety layer destroys your list.'
+            text: 'Do not push a high-risk option like {topSchool} too low, and do not inflate a calmer option like {safeSchool} too high, or the whole list loses balance.'
           }
-        ]
+        }
       },
       tiers: {
         reach: 'Reach / Miracle',
         match: 'Match / Battleground',
         safety: 'Safety / Sanctuary',
       },
-      cards: {
-        ic: { name: 'Imperial College', tag: 'QS Top 10' },
-        ucl: { name: 'UCL', tag: 'QS Top 10' },
-        kcl: { name: "King's College", tag: 'QS Top 40' },
-        soton: { name: 'Southampton', tag: 'QS Top 80' },
-        cardiff: { name: 'Cardiff University', tag: 'QS 150+' },
-      },
       feedback: {
-        icLow: {
-          title: 'Fatal Optimism: IC as Match or Safety',
-          text: 'With a GPA 82 STEM/CS profile, Imperial is still an extreme reach. It should not be treated as a stable option.',
+        tooSafe: {
+          title: '{school} was placed too safely',
+          text: 'For the matched {country} route, {school} is closer to {targetTier}. Putting it in {currentTier} makes the list overly optimistic.'
         },
-        uclLow: {
-          title: 'UCL Placed Too Low',
-          text: 'UCL engineering / CS remains intensely competitive. For this profile, a reach placement is more realistic.',
+        tooHigh: {
+          title: '{school} was pushed too high',
+          text: 'For the matched {country} route, {school} fits {targetTier} better. Putting it in {currentTier} makes the whole list too aggressive.'
         },
-        uclReach: {
-          title: 'High Reach Placement Makes Sense',
-          text: 'Putting UCL in the reach tier is a rational high-upside choice, but it cannot replace match and safety schools.',
+        correctReach: {
+          title: '{school} is a rational high reach',
+          text: 'Placing {school} in {tier} fits the upper-bound risk for the current {country} route, but it still needs Match and Safety support.'
         },
-        kclSotonTooHigh: {
-          title: 'Overly Conservative School List',
-          text: 'KCL / Southampton work better as match-tier battlegrounds here. If every workable option becomes a reach, the list loses balance.',
+        correctMatch: {
+          title: '{school} anchors the match tier well',
+          text: 'Placing {school} in {tier} keeps the middle of the {country} list stable instead of dumping all pressure into the riskiest tier.'
         },
-        kclSafety: {
-          title: 'Match School Used as Safety',
-          text: 'KCL is attractive, but it is not a guaranteed backup for this profile. A real safety layer still matters.',
-        },
-        cardiffTooHigh: {
-          title: 'Severe Self-Doubt',
-          text: 'For this profile, Cardiff is closer to a safety role. If you rank it too high, your real safety layer disappears.',
-        },
-        cardiffSafety: {
-          title: 'A Real Safety Layer Is Now Built',
-          text: 'A true safety lets you take controlled risks elsewhere. That is exactly what the bottom layer is for.',
+        correctSafety: {
+          title: '{school} is doing real safety work',
+          text: 'Placing {school} in {tier} gives the current {country} list a calmer anchor and more controlled risk overall.'
         },
         fallback: {
           title: 'The Structure Still Needs Work',
-          text: 'The list is complete, but the reach / match / safety logic still is not clear enough. Reassess by acceptance probability.',
+          text: 'The list is complete, but the reach / match / safety logic for this {country} set is still not clear enough. Reassess by acceptance probability.',
         },
       },
     },
