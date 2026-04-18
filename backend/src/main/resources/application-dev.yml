@@ -1,0 +1,7 @@
+spring:
+  datasource:
+    url: jdbc:h2:file:./data/gradquest
+    driver-class-name: org.h2.Driver
+
+app:
+  client-origins: http://localhost:5173
