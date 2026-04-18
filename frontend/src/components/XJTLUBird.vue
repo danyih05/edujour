@@ -6,7 +6,7 @@
         class="bird-avatar"
         :class="{ clickable: isConfigured }"
         :aria-expanded="showChat"
-        aria-label="Open AI assistant"
+        :aria-label="uiText.openAssistantAriaLabel"
         @click="toggleChat"
       >
         <div class="bird-body" :class="`mood-${currentMood}`">
@@ -41,19 +41,19 @@
     </div>
 
     <transition name="bird-panel">
-      <section v-if="showChat" class="chat-box" aria-label="XJTLU AI assistant">
+      <section v-if="showChat" class="chat-box" :aria-label="uiText.chatBoxAriaLabel">
         <header class="chat-header">
           <div>
-            <p class="chat-kicker">AI Guide</p>
-            <h3>XJTLU AI Assistant</h3>
+            <p class="chat-kicker">{{ uiText.kicker }}</p>
+            <h3>{{ uiText.title }}</h3>
           </div>
-          <button type="button" class="close-btn" aria-label="Close assistant" @click="toggleChat">
+          <button type="button" class="close-btn" :aria-label="uiText.closeAssistantAriaLabel" @click="toggleChat">
             x
           </button>
         </header>
 
         <div v-if="!isConfigured" class="api-key-setup">
-          <p>Add a DeepSeek API key to start chatting.</p>
+          <p>{{ uiText.apiKeyPrompt }}</p>
           <input
             v-model="inputApiKey"
             type="password"
@@ -62,14 +62,14 @@
             @keyup.enter="saveInputApiKey"
           >
           <button type="button" class="setup-btn" @click="saveInputApiKey">
-            Confirm
+            {{ t('common.actions.confirm') }}
           </button>
           <p class="hint">
-            You can also place the key in <code>frontend/.env</code> as
-            <code>VITE_DEEPSEEK_API_KEY</code>.
+            {{ uiText.apiKeyHintPrefix }} <code>frontend/.env</code> {{ uiText.apiKeyHintMiddle }}
+            <code>VITE_DEEPSEEK_API_KEY</code>{{ uiText.apiKeyHintSuffix }}
           </p>
           <p class="hint">
-            Create a key from
+            {{ uiText.apiKeyCreatePrefix }}
             <a href="https://platform.deepseek.com/api/keys" target="_blank" rel="noreferrer">
               platform.deepseek.com
             </a>
@@ -103,11 +103,11 @@
               v-model="inputMessage"
               type="text"
               class="chat-input"
-              placeholder="Ask about your study journey..."
+              :placeholder="uiText.chatPlaceholder"
               :disabled="isLoading"
             >
             <button type="submit" class="send-btn" :disabled="isLoading">
-              {{ isLoading ? '...' : 'Send' }}
+              {{ isLoading ? '...' : uiText.sendLabel }}
             </button>
           </form>
 
@@ -119,8 +119,10 @@
 </template>
 
 <script setup>
-import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useDeepSeekChat } from '@/composables/useDeepSeekChat'
+import { useAppI18n } from '@/composables/useAppI18n'
+import { useAuthStore } from '@/stores/auth'
 
 const {
   isConfigured,
@@ -132,8 +134,48 @@ const {
   sendMessage,
 } = useDeepSeekChat()
 
-const WELCOME_MESSAGE = "Hello! I'm your XJTLU AI assistant. How can I help today?"
-const NOTIFICATIONS = ['Need help?', 'Open the AI guide', 'Ask me anything']
+const { currentLanguage, t } = useAppI18n()
+const authStore = useAuthStore()
+
+const CHAT_HISTORY_STORAGE_PREFIX = 'xjtlu_ai_history'
+
+const uiText = computed(() => (
+  currentLanguage.value === 'en'
+    ? {
+        openAssistantAriaLabel: 'Open AI assistant',
+        chatBoxAriaLabel: 'XJTLU AI assistant',
+        kicker: 'AI Guide',
+        title: 'XJTLU AI Assistant',
+        closeAssistantAriaLabel: 'Close assistant',
+        apiKeyPrompt: 'Add a DeepSeek API key to start chatting.',
+        apiKeyHintPrefix: 'You can also place the key in',
+        apiKeyHintMiddle: 'as',
+        apiKeyHintSuffix: '.',
+        apiKeyCreatePrefix: 'Create a key from',
+        chatPlaceholder: 'Ask about your study journey...',
+        sendLabel: 'Send',
+        welcomeMessage: "Hello! I'm your XJTLU AI assistant. How can I help today?",
+        notifications: ['Need help?', 'Open the AI guide', 'Ask me anything'],
+        genericError: 'Something went wrong. Please try again in a moment.',
+      }
+    : {
+        openAssistantAriaLabel: '打开 AI 助手',
+        chatBoxAriaLabel: 'XJTLU AI 助手',
+        kicker: 'AI 指南',
+        title: 'XJTLU AI 助手',
+        closeAssistantAriaLabel: '关闭助手',
+        apiKeyPrompt: '添加 DeepSeek API Key 以开始对话。',
+        apiKeyHintPrefix: '你也可以把 Key 放到',
+        apiKeyHintMiddle: '中，变量名为',
+        apiKeyHintSuffix: '。',
+        apiKeyCreatePrefix: '在这里创建 Key：',
+        chatPlaceholder: '问我关于你的学习旅程...',
+        sendLabel: '发送',
+        welcomeMessage: '你好！我是你的 XJTLU AI 助手。今天我能帮你什么？',
+        notifications: ['需要帮忙吗？', '打开 AI 指南', '问我任何问题'],
+        genericError: '出了点问题，请稍后再试。',
+      }
+))
 
 const showChat = ref(false)
 const inputMessage = ref('')
@@ -143,11 +185,112 @@ const currentMood = ref('happy')
 const eyeState = ref('normal')
 const mouthState = ref('smile')
 const showNotification = ref(false)
-const notificationText = ref(NOTIFICATIONS[0])
+const notificationText = ref(uiText.value.notifications[0])
 const messagesContainer = ref(null)
+const chatOwnerKey = ref('guest')
 
 let notificationIntervalId = null
 let notificationTimeoutId = null
+let isHydratingHistory = false
+
+function resolveChatOwnerKey() {
+  const userId = authStore.user?.id
+  if (userId !== undefined && userId !== null && String(userId).trim() !== '') {
+    return `user:${userId}`
+  }
+
+  const email = typeof authStore.user?.email === 'string' ? authStore.user.email.trim().toLowerCase() : ''
+  if (email) {
+    return `email:${email}`
+  }
+
+  return 'guest'
+}
+
+function buildHistoryStorageKey(ownerKey) {
+  return `${CHAT_HISTORY_STORAGE_PREFIX}:${ownerKey}`
+}
+
+function normalizeStoredMessages(rawMessages) {
+  if (!Array.isArray(rawMessages)) {
+    return []
+  }
+
+  return rawMessages
+    .filter((entry) => (
+      entry &&
+      (entry.role === 'assistant' || entry.role === 'user') &&
+      typeof entry.content === 'string'
+    ))
+    .map((entry) => ({
+      role: entry.role,
+      content: entry.content,
+    }))
+}
+
+function loadMessagesForOwner(ownerKey) {
+  if (!ownerKey) {
+    return
+  }
+
+  isHydratingHistory = true
+
+  try {
+    if (ownerKey === 'guest') {
+      if (isConfigured.value) {
+        seedWelcomeMessage()
+      } else {
+        messages.value = []
+      }
+      return
+    }
+
+    const raw = localStorage.getItem(buildHistoryStorageKey(ownerKey))
+    const normalizedMessages = normalizeStoredMessages(raw ? JSON.parse(raw) : [])
+
+    if (normalizedMessages.length > 0) {
+      messages.value = normalizedMessages
+      return
+    }
+
+    if (isConfigured.value) {
+      seedWelcomeMessage()
+    } else {
+      messages.value = []
+    }
+  } catch (storageError) {
+    if (isConfigured.value) {
+      seedWelcomeMessage()
+    } else {
+      messages.value = []
+    }
+  } finally {
+    isHydratingHistory = false
+    nextTick(scrollMessagesToBottom)
+  }
+}
+
+function persistMessagesForOwner(ownerKey) {
+  if (!ownerKey || ownerKey === 'guest' || isHydratingHistory) {
+    return
+  }
+
+  try {
+    localStorage.setItem(buildHistoryStorageKey(ownerKey), JSON.stringify(messages.value))
+  } catch (storageError) {
+    console.warn('Failed to persist AI chat history.', storageError)
+  }
+}
+
+function switchChatOwner(nextOwnerKey) {
+  if (!nextOwnerKey || nextOwnerKey === chatOwnerKey.value) {
+    return
+  }
+
+  persistMessagesForOwner(chatOwnerKey.value)
+  chatOwnerKey.value = nextOwnerKey
+  loadMessagesForOwner(nextOwnerKey)
+}
 
 function setMood(mood) {
   currentMood.value = mood
@@ -166,7 +309,7 @@ function seedWelcomeMessage() {
   messages.value = [
     {
       role: 'assistant',
-      content: WELCOME_MESSAGE,
+      content: uiText.value.welcomeMessage,
     },
   ]
 }
@@ -185,7 +328,8 @@ function triggerNotification() {
     return
   }
 
-  notificationText.value = NOTIFICATIONS[Math.floor(Math.random() * NOTIFICATIONS.length)]
+  const notifications = uiText.value.notifications
+  notificationText.value = notifications[Math.floor(Math.random() * notifications.length)]
   showNotification.value = true
 
   if (notificationTimeoutId !== null) {
@@ -236,7 +380,7 @@ async function sendCurrentMessage() {
     return
   }
 
-  const safetyIssue = getSafetyIssue(userMessage)
+  const safetyIssue = getSafetyIssue(userMessage, currentLanguage.value)
   if (safetyIssue) {
     inputMessage.value = ''
     messages.value.push({
@@ -259,11 +403,11 @@ async function sendCurrentMessage() {
   scrollMessagesToBottom()
 
   const history = messages.value.slice(0, -1)
-  const reply = await sendMessage(userMessage, history)
+  const reply = await sendMessage(userMessage, history, currentLanguage.value)
 
   messages.value.push({
     role: 'assistant',
-    content: reply || error.value || 'Something went wrong. Please try again in a moment.',
+    content: reply || error.value || uiText.value.genericError,
   })
 
   setMood(reply ? 'happy' : 'sad')
@@ -279,10 +423,9 @@ watch(isLoading, (loading) => {
 
   if (error.value) {
     setMood('sad')
-    return
+  } else {
+    setMood('happy')
   }
-
-  setMood('happy')
 })
 
 watch(
@@ -292,17 +435,48 @@ watch(
   },
 )
 
+watch(
+  messages,
+  () => {
+    persistMessagesForOwner(chatOwnerKey.value)
+  },
+  { deep: true },
+)
+
+watch(
+  () => resolveChatOwnerKey(),
+  (nextOwnerKey, previousOwnerKey) => {
+    if (!previousOwnerKey || nextOwnerKey === previousOwnerKey) {
+      return
+    }
+    switchChatOwner(nextOwnerKey)
+  },
+)
+
+watch(
+  () => currentLanguage.value,
+  () => {
+    if (messages.value.length === 1 && messages.value[0]?.role === 'assistant') {
+      messages.value[0].content = uiText.value.welcomeMessage
+    }
+
+    if (!showNotification.value) {
+      notificationText.value = uiText.value.notifications[0]
+    }
+  },
+)
+
 onMounted(() => {
   loadApiKey()
-
-  if (isConfigured.value) {
-    seedWelcomeMessage()
-  }
+  chatOwnerKey.value = resolveChatOwnerKey()
+  loadMessagesForOwner(chatOwnerKey.value)
 
   notificationIntervalId = window.setInterval(triggerNotification, 15000)
 })
 
 onBeforeUnmount(() => {
+  persistMessagesForOwner(chatOwnerKey.value)
+
   if (notificationIntervalId !== null) {
     window.clearInterval(notificationIntervalId)
   }
