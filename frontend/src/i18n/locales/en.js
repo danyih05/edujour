@@ -1280,7 +1280,7 @@ export default {
         finalPowerLevel: '✨ Final Power Level: Lv.{level}',
         honoraryTitle: '✨ Honorary Title: <b>Master of Time · The Dragon Slayer</b>',
         returnInGlory: 'Return in Glory',
-        returnToMap: "Return to Map",
+        returnToMap: "Earn Coins & Return to Map",
         restartGame: "Restart Game",
       },
       alerts: {

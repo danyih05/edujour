@@ -1245,7 +1245,7 @@ export default {
         finalPowerLevel: '✨ 最终力量等级：等级 {level}',
         honoraryTitle: '✨ 荣誉称号：<b>时间掌控者 · 巨龙屠戮者</b>',
         returnInGlory: '荣耀归返',
-        returnToMap: "返回地图",
+        returnToMap: "获取金币并返回地图",
         restartGame: "重新开始游戏",
       },
       alerts: {
