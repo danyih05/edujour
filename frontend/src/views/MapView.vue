@@ -383,7 +383,12 @@ function handleYear3Unlock() {
   switchYear('y3')
 }
 function handleEscape(event) { if (event.key !== 'Escape') return; if (showResetConfirm.value) { showResetConfirm.value = false; return } if (activeLevel.value) { closeGame(); return } if (showYear3Unlock.value) { showYear3Unlock.value = false; return } if (showPrizeShop.value) { showPrizeShop.value = false; return } if (showHealingSandbox.value) showHealingSandbox.value = false }
-const handleResize = () => syncTraveler(store.year)
+const handleResize = () => {
+  syncTraveler(store.year);
+  if (showGuide.value) {
+    updateGuidePosition();
+  }
+};
 
 function showCoinTooltip(event) {
   tooltip.text = t('map.coinTooltip')
@@ -420,18 +425,49 @@ function hideTooltip() {
   }, 100)
 }
 function updateGuidePosition() {
-  const year = store.year
-  const firstNodeId = 1
-  const nodeElement = nodeRefs[year]?.[firstNodeId]
-  if (!nodeElement) return
-  const rect = nodeElement.getBoundingClientRect()
-  handStyle.left = `${rect.left + rect.width / 2 - 20}px`
-  handStyle.top = `${rect.top +60}px`
-  guideBubbleStyle.left = `${rect.left +15}px`
-  guideBubbleStyle.top = `${rect.top - 320}px`
-  if (rect.left < 250) {
-    guideBubbleStyle.left = `${rect.left + rect.width + 20}px`
+  const year = store.year;
+  const firstNodeId = 1;
+  const nodeElement = nodeRefs[year]?.[firstNodeId];
+  // 获取当前活跃年份的旅行者元素
+  const travelerElement = document.querySelector(`.board.${year} .traveler`);
+
+  if (!nodeElement) return;
+
+  // 1. 手指指向第一个节点（保持不变）
+  const nodeRect = nodeElement.getBoundingClientRect();
+  handStyle.left = `${nodeRect.left + nodeRect.width / 2 - 20}px`;
+  handStyle.top = `${nodeRect.top - 40}px`;
+
+  // 2. 气泡定位到旅行者上方（优先使用旅行者位置）
+  let bubbleLeft, bubbleTop;
+  if (travelerElement) {
+    const travelerRect = travelerElement.getBoundingClientRect();
+    // 气泡默认宽度约 280px，高度自适应
+    const bubbleWidth = 280;
+    const bubbleHeight = 160; // 估算高度，实际会由内容撑开，但用于边界计算
+    // 水平居中于旅行者
+    let left = travelerRect.left + travelerRect.width / 2 - bubbleWidth / 2;
+    // 垂直位置：旅行者顶部向上偏移 100px
+    let top = travelerRect.top - bubbleHeight - 15;
+    // 边界修正，避免超出视口
+    left = Math.max(10, Math.min(left, window.innerWidth - bubbleWidth - 10));
+    top = Math.max(10, top);
+    bubbleLeft = `${left}px`;
+    bubbleTop = `${top}px`;
+  } else {
+    // 回退：使用节点位置（原有逻辑）
+    const nodeRect = nodeElement.getBoundingClientRect();
+    let left = nodeRect.left - 220;
+    let top = nodeRect.top - 100;
+    if (nodeRect.left < 250) {
+      left = nodeRect.left + nodeRect.width + 20;
+    }
+    bubbleLeft = `${left}px`;
+    bubbleTop = `${top}px`;
   }
+
+  guideBubbleStyle.left = bubbleLeft;
+  guideBubbleStyle.top = bubbleTop;
 }
 
 function getMapGuideSeenStorageKey() {
@@ -709,13 +745,15 @@ onBeforeUnmount(() => { window.removeEventListener('keydown', handleEscape); win
 }
 .guide-arrow {
   position: absolute;
-  left: 20px;
+  left: 50%;
   bottom: -20px;
+  transform: translateX(-50%);
   width: 0;
   height: 0;
   border-left: 12px solid transparent;
   border-right: 12px solid transparent;
   border-top: 20px solid #f3cf9a;
+  border-bottom: none;
 }
 .guide-content h3 {
   margin: 0 0 8px;
