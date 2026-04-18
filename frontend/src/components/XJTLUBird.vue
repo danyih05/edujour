@@ -1,13 +1,18 @@
 <template>
-  <div class="xjtlu-bird-container">
+  <div class="xjtlu-bird-container" :style="containerStyle">
     <div class="bird-wrapper">
       <button
         type="button"
         class="bird-avatar"
-        :class="{ clickable: isConfigured }"
+        :class="{ clickable: isConfigured, dragging: isDragging }"
         :aria-expanded="showChat"
         :aria-label="uiText.openAssistantAriaLabel"
-        @click="toggleChat"
+        @click="handleAvatarClick"
+        @pointerdown="handleAvatarPointerDown"
+        @pointermove="handleAvatarPointerMove"
+        @pointerup="handleAvatarPointerEnd"
+        @pointercancel="handleAvatarPointerEnd"
+        @dragstart.prevent
       >
         <div class="bird-body" :class="`mood-${currentMood}`">
           <div class="antenna"></div>
@@ -41,7 +46,7 @@
     </div>
 
     <transition name="bird-panel">
-      <section v-if="showChat" class="chat-box" :aria-label="uiText.chatBoxAriaLabel">
+      <section v-if="showChat" class="chat-box" :style="chatBoxStyle" :aria-label="uiText.chatBoxAriaLabel">
         <header class="chat-header">
           <div>
             <p class="chat-kicker">{{ uiText.kicker }}</p>
@@ -138,6 +143,8 @@ const { currentLanguage, t } = useAppI18n()
 const authStore = useAuthStore()
 
 const CHAT_HISTORY_STORAGE_PREFIX = 'xjtlu_ai_history'
+const BIRD_POSITION_STORAGE_KEY = 'xjtlu_ai_bird_position'
+const DRAG_THRESHOLD = 6
 
 const uiText = computed(() => (
   currentLanguage.value === 'en'
@@ -188,10 +195,126 @@ const showNotification = ref(false)
 const notificationText = ref(uiText.value.notifications[0])
 const messagesContainer = ref(null)
 const chatOwnerKey = ref('guest')
+const viewportSize = ref({
+  width: typeof window === 'undefined' ? 1280 : window.innerWidth,
+  height: typeof window === 'undefined' ? 720 : window.innerHeight,
+})
+const birdPosition = ref({ x: 0, y: 0 })
+const isDragging = ref(false)
+const suppressAvatarClick = ref(false)
+const hasCustomBirdPosition = ref(false)
 
 let notificationIntervalId = null
 let notificationTimeoutId = null
 let isHydratingHistory = false
+const activeDrag = {
+  pointerId: null,
+  startX: 0,
+  startY: 0,
+  originX: 0,
+  originY: 0,
+  moved: false,
+}
+
+function clampNumber(value, min, max) {
+  const safeMax = max < min ? min : max
+  return Math.min(Math.max(value, min), safeMax)
+}
+
+function getLayoutMetrics() {
+  const isMobile = viewportSize.value.width <= 640
+
+  return {
+    margin: isMobile ? 16 : 24,
+    avatarSize: isMobile ? 96 : 108,
+    chatGap: isMobile ? 6 : 4,
+    chatWidth: Math.min(360, Math.max(0, viewportSize.value.width - 32)),
+    chatHeight: Math.min(isMobile ? 500 : 520, Math.max(0, viewportSize.value.height - (isMobile ? 124 : 140))),
+    viewportPadding: 16,
+  }
+}
+
+function buildDefaultBirdPosition() {
+  const { margin, avatarSize } = getLayoutMetrics()
+
+  return {
+    x: Math.max(margin, viewportSize.value.width - margin - avatarSize),
+    y: Math.max(margin, viewportSize.value.height - margin - avatarSize),
+  }
+}
+
+function clampBirdPosition(position) {
+  const { margin, avatarSize } = getLayoutMetrics()
+
+  return {
+    x: clampNumber(position.x, margin, viewportSize.value.width - margin - avatarSize),
+    y: clampNumber(position.y, margin, viewportSize.value.height - margin - avatarSize),
+  }
+}
+
+function loadBirdPosition() {
+  try {
+    const raw = localStorage.getItem(BIRD_POSITION_STORAGE_KEY)
+    if (!raw) {
+      return buildDefaultBirdPosition()
+    }
+
+    const parsed = JSON.parse(raw)
+    if (typeof parsed?.x !== 'number' || typeof parsed?.y !== 'number') {
+      return buildDefaultBirdPosition()
+    }
+
+    hasCustomBirdPosition.value = true
+    return clampBirdPosition(parsed)
+  } catch (storageError) {
+    return buildDefaultBirdPosition()
+  }
+}
+
+function persistBirdPosition() {
+  try {
+    localStorage.setItem(BIRD_POSITION_STORAGE_KEY, JSON.stringify(birdPosition.value))
+  } catch (storageError) {
+    console.warn('Failed to persist AI bird position.', storageError)
+  }
+}
+
+function refreshViewportSize() {
+  viewportSize.value = {
+    width: window.innerWidth,
+    height: window.innerHeight,
+  }
+
+  birdPosition.value = hasCustomBirdPosition.value
+    ? clampBirdPosition(birdPosition.value)
+    : buildDefaultBirdPosition()
+}
+
+const containerStyle = computed(() => ({
+  left: `${birdPosition.value.x}px`,
+  top: `${birdPosition.value.y}px`,
+}))
+
+const chatBoxStyle = computed(() => {
+  const { avatarSize, chatGap, chatWidth, chatHeight, viewportPadding } = getLayoutMetrics()
+  const maxLeft = viewportSize.value.width - viewportPadding - chatWidth
+  const maxTop = viewportSize.value.height - viewportPadding - chatHeight
+  const preferredLeft = birdPosition.value.x + avatarSize - chatWidth
+  const preferredTop = birdPosition.value.y - chatGap - chatHeight
+  const fallbackBelowTop = birdPosition.value.y + avatarSize + chatGap
+  const shouldOpenBelow = preferredTop < viewportPadding && fallbackBelowTop <= maxTop
+  const safeLeft = clampNumber(preferredLeft, viewportPadding, maxLeft)
+  const safeTop = shouldOpenBelow
+    ? clampNumber(fallbackBelowTop, viewportPadding, maxTop)
+    : clampNumber(preferredTop, viewportPadding, maxTop)
+
+  return {
+    left: `${safeLeft - birdPosition.value.x}px`,
+    top: `${safeTop - birdPosition.value.y}px`,
+    right: 'auto',
+    bottom: 'auto',
+  }
+})
 
 function resolveChatOwnerKey() {
   const userId = authStore.user?.id
@@ -342,6 +465,64 @@ function triggerNotification() {
   }, 3200)
 }
 
+function handleAvatarPointerDown(event) {
+  if (event.button !== undefined && event.button !== 0) {
+    return
+  }
+
+  activeDrag.pointerId = event.pointerId
+  activeDrag.startX = event.clientX
+  activeDrag.startY = event.clientY
+  activeDrag.originX = birdPosition.value.x
+  activeDrag.originY = birdPosition.value.y
+  activeDrag.moved = false
+  suppressAvatarClick.value = false
+
+  event.currentTarget?.setPointerCapture?.(event.pointerId)
+}
+
+function handleAvatarPointerMove(event) {
+  if (activeDrag.pointerId !== event.pointerId) {
+    return
+  }
+
+  const deltaX = event.clientX - activeDrag.startX
+  const deltaY = event.clientY - activeDrag.startY
+
+  if (!activeDrag.moved && Math.hypot(deltaX, deltaY) < DRAG_THRESHOLD) {
+    return
+  }
+
+  event.preventDefault()
+  activeDrag.moved = true
+  isDragging.value = true
+  birdPosition.value = clampBirdPosition({
+    x: activeDrag.originX + deltaX,
+    y: activeDrag.originY + deltaY,
+  })
+}
+
+function handleAvatarPointerEnd(event) {
+  if (activeDrag.pointerId !== event.pointerId) {
+    return
+  }
+
+  if (event.currentTarget?.hasPointerCapture?.(event.pointerId)) {
+    event.currentTarget.releasePointerCapture(event.pointerId)
+  }
+
+  suppressAvatarClick.value = activeDrag.moved
+  isDragging.value = false
+
+  if (activeDrag.moved) {
+    hasCustomBirdPosition.value = true
+    persistBirdPosition()
+  }
+
+  activeDrag.pointerId = null
+  activeDrag.moved = false
+}
+
 function scrollMessagesToBottom() {
   if (!messagesContainer.value) {
     return
@@ -357,6 +538,15 @@ function toggleChat() {
     hideNotification()
     nextTick(scrollMessagesToBottom)
   }
+}
+
+function handleAvatarClick() {
+  if (suppressAvatarClick.value) {
+    suppressAvatarClick.value = false
+    return
+  }
+
+  toggleChat()
 }
 
 function saveInputApiKey() {
@@ -468,8 +658,10 @@ watch(
 
 onMounted(() => {
   loadApiKey()
+  birdPosition.value = loadBirdPosition()
   chatOwnerKey.value = resolveChatOwnerKey()
   loadMessagesForOwner(chatOwnerKey.value)
+  window.addEventListener('resize', refreshViewportSize)
 
   notificationIntervalId = window.setInterval(triggerNotification, 15000)
 })
@@ -484,16 +676,19 @@ onBeforeUnmount(() => {
   if (notificationTimeoutId !== null) {
     window.clearTimeout(notificationTimeoutId)
   }
+
+  window.removeEventListener('resize', refreshViewportSize)
 })
 </script>
 
 <style scoped>
 .xjtlu-bird-container {
   position: fixed;
-  right: 24px;
-  bottom: 24px;
+  left: 0;
+  top: 0;
   z-index: 1300;
   pointer-events: none;
+  will-change: left, top;
 }
 
 .bird-wrapper,
@@ -508,13 +703,23 @@ onBeforeUnmount(() => {
   padding: 0;
   border: none;
   background: transparent;
-  cursor: pointer;
+  cursor: grab;
   filter: drop-shadow(0 16px 22px rgba(7, 12, 22, 0.28));
   transition: transform 0.24s ease;
+  user-select: none;
+  touch-action: none;
 }
 
 .bird-avatar:hover {
   transform: translateY(-4px) scale(1.03);
+}
+
+.bird-avatar.dragging,
+.bird-avatar.dragging:hover,
+.bird-avatar.dragging.clickable:hover {
+  cursor: grabbing;
+  transform: none;
+  animation: none;
 }
 
 .bird-avatar.clickable:hover {
@@ -1122,11 +1327,6 @@ onBeforeUnmount(() => {
 }
 
 @media (max-width: 640px) {
-  .xjtlu-bird-container {
-    right: 16px;
-    bottom: 16px;
-  }
-
   .bird-avatar {
     width: 96px;
     height: 96px;
