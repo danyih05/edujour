@@ -426,21 +426,41 @@ function updateGuidePosition() {
   if (!nodeElement) return
   const rect = nodeElement.getBoundingClientRect()
   handStyle.left = `${rect.left + rect.width / 2 - 20}px`
-  handStyle.top = `${rect.top - 40}px`
-  guideBubbleStyle.left = `${rect.left - 220}px`
-  guideBubbleStyle.top = `${rect.top - 100}px`
+  handStyle.top = `${rect.top +60}px`
+  guideBubbleStyle.left = `${rect.left +15}px`
+  guideBubbleStyle.top = `${rect.top - 320}px`
   if (rect.left < 250) {
     guideBubbleStyle.left = `${rect.left + rect.width + 20}px`
   }
 }
 
+function getMapGuideSeenStorageKey() {
+  const userId = authStore.user?.id
+  const createdAt = typeof authStore.user?.createdAt === 'string'
+    ? authStore.user.createdAt.trim().replace(/[:.]/g, '-')
+    : ''
+  if (userId !== undefined && userId !== null && String(userId).trim() !== '') {
+    return createdAt
+      ? `hasSeenMapGuide:user:${userId}:${createdAt}`
+      : `hasSeenMapGuide:user:${userId}`
+  }
+
+  const email = typeof authStore.user?.email === 'string' ? authStore.user.email.trim().toLowerCase() : ''
+  if (email) {
+    return `hasSeenMapGuide:email:${email}`
+  }
+
+  return 'hasSeenMapGuide:guest'
+}
+
 function closeGuide() {
   showGuide.value = false
-  localStorage.setItem('hasSeenMapGuide', 'true')
+  localStorage.setItem(getMapGuideSeenStorageKey(), 'true')
 }
 
 function initGuide() {
-  const hasSeen = localStorage.getItem('hasSeenMapGuide')
+  const storageKey = getMapGuideSeenStorageKey()
+  const hasSeen = localStorage.getItem(storageKey)
   if (!hasSeen) {
     showGuide.value = true
     setTimeout(() => {
@@ -486,6 +506,7 @@ onMounted(async () => {
   })
 
   try {
+    await authStore.hydrate()
     await store.ensureLoaded()
     syncTraveler(store.year, store[store.year].currentNode)
   } catch (error) {
