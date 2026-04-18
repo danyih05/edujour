@@ -126,6 +126,7 @@ const {
   isConfigured,
   isLoading,
   error,
+  getSafetyIssue,
   setApiKey,
   loadApiKey,
   sendMessage,
@@ -235,6 +236,19 @@ async function sendCurrentMessage() {
     return
   }
 
+  const safetyIssue = getSafetyIssue(userMessage)
+  if (safetyIssue) {
+    inputMessage.value = ''
+    messages.value.push({
+      role: 'assistant',
+      content: safetyIssue,
+    })
+    setMood('sad')
+    await nextTick()
+    scrollMessagesToBottom()
+    return
+  }
+
   messages.value.push({
     role: 'user',
     content: userMessage,
@@ -249,7 +263,7 @@ async function sendCurrentMessage() {
 
   messages.value.push({
     role: 'assistant',
-    content: reply || 'Something went wrong. Please try again in a moment.',
+    content: reply || error.value || 'Something went wrong. Please try again in a moment.',
   })
 
   setMood(reply ? 'happy' : 'sad')
