@@ -57,9 +57,9 @@ export default {
     sanctuary: '疗愈小站',
   },
   guide: {
-    title: '欢迎来到 Journey RPG',
+    title: '欢迎来到 EduMap Journey ',
     description: '完成地图上的任务节点，获得经验和奖励，一步步走向你的留学梦想！',
-    action: '👉 点击闪光的节点开始冒险 👈',
+    action: ' 点击闪光的节点开始冒险 ',
     gotIt: '知道了',
   },
   help: {
@@ -1078,6 +1078,12 @@ export default {
       alerts: {
         returnToMap: '地图指引：已返回地图界面！（这会触发主系统里下一阶段的解锁代码）',
       },
+      modal: {
+        title: "任务完成！",
+        message: "获得 {coins} 枚金币。",
+        confirm: "返回地图"
+      },
+      restart: "重新开始",
       tree: {
         start: {
           text: '(你探头看向办公室)<br>😼 喵？又到申请季了，是吗？你找我做什么？快说，我现在非常忙。',
@@ -1239,6 +1245,8 @@ export default {
         finalPowerLevel: '✨ 最终力量等级：等级 {level}',
         honoraryTitle: '✨ 荣誉称号：<b>时间掌控者 · 巨龙屠戮者</b>',
         returnInGlory: '荣耀归返',
+        returnToMap: "返回地图",
+        restartGame: "重新开始游戏",
       },
       alerts: {
         sanctuarySealed: '仍有首领尚未被击败！圣殿依旧封印着。',

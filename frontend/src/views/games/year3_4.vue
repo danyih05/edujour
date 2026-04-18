@@ -101,9 +101,9 @@ const { t, tm } = useAppI18n()
 
 const starLayout = [
   { id: 'motive', x: 20, y: 20, icon: 'fas fa-seedling' },
-  { id: 'incident', x: 10, y: 55, icon: 'fas fa-bolt' },
+  { id: 'incident', x: 90, y: 55, icon: 'fas fa-bolt' },
   { id: 'action', x: 50, y: 80, icon: 'fas fa-hammer' },
-  { id: 'match', x: 90, y: 55, icon: 'fas fa-university' },
+  { id: 'match', x: 10, y: 55, icon: 'fas fa-university' },
   { id: 'goal', x: 80, y: 20, icon: 'fas fa-flag-checkered' },
 ]
 

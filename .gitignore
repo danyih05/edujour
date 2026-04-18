@@ -2,3 +2,4 @@
 frontend/dist/
 *.err.log
 *.out.log
+backend/data/gradquest.mv.db
