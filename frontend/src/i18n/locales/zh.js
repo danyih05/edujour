@@ -410,8 +410,10 @@ export default {
     },
     y2_3: {
       title: '命运天平',
-      subtitle: '对于 GPA 82、STEM / CS、只有一段普通实习的申请者，请把每所学校放进更合理的层级。',
+      subtitle: '对于 GPA 82、STEM / CS、只有一段普通实习的申请者，请把上一关匹配到的 {country} 学校放进更合理的层级。',
       currentAvatar: '当前画像：GPA 82/100 ｜ STEM/CS 方向 ｜ 1 段普通实习',
+      matchedRoute: '当前匹配国家：{country}',
+      fallbackCopy: '还没有读到上一关的匹配结果，当前先展示一组跨地区兜底学校。完成上一关后，这里会自动切换成对应国家。',
       predict: '开始分层推演',
       feedbackTitle: '分层预言',
       seal: '确认这份分层方案并返回',
@@ -423,69 +425,54 @@ export default {
       },
       guide: {
         button: '知识图鉴',
-        body: '合理的选校名单应包含冲刺、主申、保底三个层级。把学校拖到对应层级，点击“开始分层推演”获取反馈。',
-        items: [
-          {
+        body: '合理的选校名单应包含冲刺、主申、保底三个层级。系统会根据上一关的匹配国家切换院校卡片，你只需要把它们拖到对应层级。',
+        items: {
+          reach: {
             title: '🎯 冲刺位 (Reach)',
-            content: '你的背景低于录取平均水平的学校，录取率通常低于20%。选2-3所作为高风险尝试。'
+            text: '你的背景低于录取平均水平的学校，录取率通常低于 20%。保留 2-3 所高上限尝试即可。'
           },
-          {
+          match: {
             title: '⚔️ 主申位 (Match)',
-            content: '你的GPA、标化与背景和录取平均相当，录取概率较合理。选3-5所作为核心目标。'
+            text: '你的 GPA、背景与录取平均更接近的学校，构成主申核心层。它们应该是名单里最稳定的一段。'
           },
-          {
+          safety: {
             title: '🛡️ 保底位 (Safety)',
-            content: '你的背景明显高于录取平均水平，录取把握很大（>70%）。选2-3所确保有学上。'
+            text: '你的背景明显高于录取平均水平，录取把握更大的学校。保底层的作用，是让整份名单不会失控。'
           },
-          {
-            title: '📊 真实背景参考',
-            content: '对于GPA 82、STEM/CS、一段普通实习的画像：IC和UCL属于极端冲刺；KCL/南安普顿属于主申；卡迪夫属于保底。'
+          reference: {
+            title: '📊 {country} 选校参考',
+            text: '以当前 GPA 82、STEM / CS、1 段普通实习的画像来看：{reachSchools} 更接近冲刺层；{matchSchools} 更接近主申层；{safetySchools} 更接近保底层。'
           },
-          {
+          warning: {
             title: '⚠️ 常见误区',
-            content: '把IC/UCL放在主申或保底是过度乐观；把卡迪夫放在冲刺是过度保守。缺少真正的保底层会让选校名单失衡。'
+            text: '不要把像 {topSchool} 这样的高风险学校压得太稳，也不要把像 {safeSchool} 这样的保底学校抬得过高，否则整份名单会失衡。'
           }
-        ]
-      },
-      cards: {
-        ic: { name: '帝国理工', tag: 'QS 前 10' },
-        ucl: { name: 'UCL', tag: 'QS 前 10' },
-        kcl: { name: '伦敦国王学院', tag: 'QS 前 40' },
-        soton: { name: '南安普顿大学', tag: 'QS 前 80' },
-        cardiff: { name: '卡迪夫大学', tag: 'QS 150+' },
+        }
       },
       feedback: {
-        icLow: {
-          title: '致命乐观：把 IC 当作主申或保底',
-          text: '以 GPA 82 的 STEM/CS 画像来看，帝国理工仍然属于极高风险冲刺位，不应被当作稳妥层。',
+        tooSafe: {
+          title: '{school} 被放得太稳',
+          text: '对于当前匹配到的 {country} 方案，{school} 更接近 {targetTier}。如果把它放进 {currentTier}，你的名单会显得过度乐观。'
         },
-        uclLow: {
-          title: '定位偏低：UCL 被放得太稳',
-          text: 'UCL 工程 / CS 竞争很激烈，对这个画像更合理的定位仍应偏向冲刺。',
+        tooHigh: {
+          title: '{school} 被推得太高',
+          text: '对于当前匹配到的 {country} 方案，{school} 更适合放在 {targetTier}。如果把它放进 {currentTier}，整份名单会变得过于冒险。'
         },
-        uclReach: {
-          title: '高位冲刺是合理的',
-          text: '把 UCL 放在冲刺位是理性的高上限选择，但它不能替代主申与保底层。',
+        correctReach: {
+          title: '{school} 的高位冲刺合理',
+          text: '把 {school} 放在 {tier}，符合当前 {country} 方案下的上限判断，但它仍需要主申和保底层配合。'
         },
-        kclSotonTooHigh: {
-          title: '过度保守：把可主申项目推得太高',
-          text: 'KCL / Southampton 更适合作为主申层的对抗位。如果全部推到冲刺层，名单会失去平衡。',
+        correctMatch: {
+          title: '{school} 的主申定位清晰',
+          text: '把 {school} 放在 {tier}，能让名单中段保持稳定，不会把所有压力都堆到最高风险层。'
         },
-        kclSafety: {
-          title: '把主申当保底：安全层不够稳',
-          text: 'KCL 很有吸引力，但对这个画像并不是绝对稳妥的保底，安全层仍需要更稳的学校。',
-        },
-        cardiffTooHigh: {
-          title: '过度自我怀疑：把 Cardiff 放得太高',
-          text: '对这个背景来说，Cardiff 更接近保底位。如果把它放到更高层，你真正的安全层会变空。',
-        },
-        cardiffSafety: {
-          title: '真正的安全层已建立',
-          text: '真实的保底学校能让你在其他层级承担更可控的风险，这正是保底层的价值。',
+        correctSafety: {
+          title: '{school} 承担了真正的保底作用',
+          text: '把 {school} 放在 {tier}，能为当前 {country} 名单留出更可控的风险空间。'
         },
         fallback: {
           title: '结构仍需清晰',
-          text: '名单虽然放完了，但 reach / match / safety 的逻辑还不够清楚，需要再回到录取概率上思考。',
+          text: '名单虽然放完了，但 {country} 这组学校的 reach / match / safety 逻辑还不够清楚，需要再回到录取概率上思考。',
         },
       },
     },
@@ -1258,7 +1245,7 @@ export default {
         finalPowerLevel: '✨ 最终力量等级：等级 {level}',
         honoraryTitle: '✨ 荣誉称号：<b>时间掌控者 · 巨龙屠戮者</b>',
         returnInGlory: '荣耀归返',
-        returnToMap: "返回地图",
+        returnToMap: "获取金币并返回地图",
         restartGame: "重新开始游戏",
       },
       alerts: {
