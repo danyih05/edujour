@@ -759,22 +759,6 @@ export default {
       rewardBox: '1-on-1 Prophecy Consultation with an Elite Archmage',
       ticketCopy: 'Pack your inventory and bear this honor and wisdom.<br>Prepare to enter the Crucible of the Year 3 Application Season!',
       claim: 'Claim the Golden Ticket & Advance',
-    },
-    y2_7: {
-      title: 'Ultimate Trial of Wisdom',
-      question: 'What is the most important principle for successful applications?',
-      answers: {
-        a: 'Perfect grades and test scores',
-        b: 'Authentic evidence and clear strategy',
-        c: 'Expensive consultants and templates',
-      },
-      successTitle: 'Wisdom Unlocked',
-      successPrompt: 'You have passed the ultimate trial. Spin the wheel of destiny for your reward.',
-      ticketTitle: 'Golden Ticket to Year 3',
-      ticketSubtitle: 'Year 2 Perfect Clear Voucher',
-      rewardBox: '1-on-1 Prophecy Consultation with an Elite Archmage',
-      ticketCopy: 'Pack your inventory and bear this honor and wisdom.<br>Prepare to enter the Crucible of the Year 3 Application Season!',
-      claim: 'Claim the Golden Ticket & Advance',
       guide: {
         title: 'Trial Guide',
         body: 'Answer the question to prove your wisdom and unlock the path to Year 3.',
@@ -928,15 +912,6 @@ export default {
           note: 'Soft traits need third-party observation and concrete context.',
         },
       ],
-    },
-
-    y3_2: {
-      title: 'Magic Ministry Archives',
-      guide: {
-        title: 'Archives Guide',
-        body: 'Explore the archives to understand application materials.',
-        items: ['Item 1', 'Item 2'],
-      },
     },
 
     y3_3: {
@@ -1097,15 +1072,6 @@ export default {
         close: 'Close Guide',
       },
     },
-    y3_4: {
-      title: 'Memory Star Map',
-      guide: {
-        title: 'Star Map Guide',
-        body: 'Navigate the stars to craft your personal statement.',
-        items: ['Item 1', 'Item 2'],
-      },
-    },
-
     y3_5: {
       documentTitle: 'Y3-5 Tsundere Wildcat Mentor Simulator',
       statusLabel: "Mentor's Favorability",
@@ -1116,7 +1082,8 @@ export default {
       modal: {
         title: "Mission Complete!",
         message: "You earned {coins} coins.",
-        confirm: "Return to Map"
+        restart: "Restart Story",
+        confirm: "Return to Map",
       },
       restart: "Restart Story",
       tree: {
