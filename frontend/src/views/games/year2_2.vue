@@ -127,18 +127,15 @@ const questionWeights = [
   },
 ]
 
-const localizedQuestions = computed(() => tm('pages.y2_2.questions') || [])
+const localizedQuestions = tm('pages.y2_2.questions') || []
 const questions = computed(() => {
-  return localizedQuestions.value.map((item, index) => {
-    const choiceList = Array.isArray(item?.choices) ? item.choices : []
-    return {
-      q: item?.q || '',
-      choices: [
-        { id: 'a', text: choiceList[0] || '', weights: questionWeights[index]?.a || {} },
-        { id: 'b', text: choiceList[1] || '', weights: questionWeights[index]?.b || {} },
-      ],
-    }
-  })
+  return localizedQuestions.map((item, index) => ({
+    q: item.q,
+    choices: [
+      { id: 'a', text: item.choices[0], weights: questionWeights[index]?.a || {} },
+      { id: 'b', text: item.choices[1], weights: questionWeights[index]?.b || {} },
+    ],
+  }))
 })
 
 const currentQ = ref(0)

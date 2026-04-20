@@ -644,7 +644,7 @@ export default {
         mismatch: '{name} does not repair this clause. Match the shield to the specific risk.',
         attached: '{name} installed. {explanation}',
         remaining: '{count} clause(s) still need protection.',
-        mismatchDetail: "❌ 「{shield}」 not matches 「{currentClause}」. Please try the correct match.",
+        mismatchDetail: "❌ \"{shield}\" does not match \"{currentClause}\". Please try the correct match.",
       },
       shields: {
         guarantee: {
@@ -1299,7 +1299,11 @@ export default {
       guide: {
         title: 'Citadel Guide',
         body: 'Battle through the application season months.',
-        items: ['Item 1', 'Item 2'],
+        items: [
+          'Conquer doors in order: language -> essays -> application submission.',
+          'Use high-damage skills carefully because PP is limited.',
+          'Save healing and shield skills for low-HP moments to avoid sudden defeat.',
+        ],
       },
     },
     y3_7: {
@@ -1416,7 +1420,11 @@ export default {
       guide: {
         title: 'Bog Guide',
         body: 'Sweep away application traps.',
-        items: ['Item 1', 'Item 2'],
+        items: [
+          'Read each mine carefully and choose the spell by severity level.',
+          'Fatal mistakes are one-hit risks; prioritize deadline and hard-threshold checks.',
+          'Continue only after understanding why each trap is dangerous in real applications.',
+        ],
       },
     },
     y3_8: {
@@ -1440,7 +1448,10 @@ export default {
       guide: {
         title: 'Coronation Guide',
         body: 'Complete your application journey.',
-        items: ['Item 1', 'Item 2'],
+        items: [
+          'Review your earned rewards and key lessons before moving on.',
+          'Use this page as your final checklist summary of the whole Year 2/Year 3 arc.',
+        ],
       },
     },
   },

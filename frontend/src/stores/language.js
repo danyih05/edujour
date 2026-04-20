@@ -25,9 +25,16 @@ export const useLanguageStore = defineStore('language', {
 
     setLanguage(language) {
       if (!SUPPORTED_LANGUAGES.includes(language)) return
+      if (this.currentLanguage === language) return
       this.currentLanguage = language
       this.applyDocumentLanguage()
       this.persist()
+
+      if (typeof window !== 'undefined' && typeof window.location?.reload === 'function') {
+        // Some game pages cache localized arrays/objects during setup.
+        // Force a refresh to guarantee fully consistent locale after switching.
+        window.location.reload()
+      }
     },
 
     toggleLanguage() {
