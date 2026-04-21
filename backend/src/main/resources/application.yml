@@ -40,7 +40,7 @@ spring:
       connection-test-query: SELECT 1
 
 app:
-  client-origins: ${CLIENT_ORIGIN:http://localhost:5173}
+  client-origins: ${CLIENT_ORIGINS:*}
   jwt:
     secret: ${JWT_SECRET:gradquest-dev-secret-change-me}
     expiration-days: ${JWT_EXPIRES_IN_DAYS:7}
