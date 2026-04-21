@@ -116,141 +116,14 @@ export function getPortalText(language) {
   return language === 'en' ? PORTAL_TEXT.en : PORTAL_TEXT.zh
 }
 
-function createLiveStringProxy(readValue) {
-  return new Proxy(Object.create(null), {
-    get(_target, prop) {
-      const value = readValue()
-      const safe = typeof value === 'string' ? value : String(value ?? '')
-
-      // Make this object ref-like so reactive containers unwrap it to a primitive string.
-      if (prop === '__v_isRef') return true
-      if (prop === 'value') return safe
-      if (prop === '__raw') return safe
-      if (prop === Symbol.toPrimitive) return () => safe
-      if (prop === 'valueOf') return () => safe
-      if (prop === 'toString') return () => safe
-
-      const next = safe[prop]
-      if (typeof next === 'function') return next.bind(safe)
-      return next
-    },
-  })
-}
-
-function createLiveMessageProxy(readValue) {
-  const objectCache = new Map()
-  const stringCache = new Map()
-  const primitiveStringKeys = new Set(['id', 'nextId', 'mood', 'type'])
-
-  const pathKeyOf = (path) => path.map((segment) => String(segment)).join('\u0001')
-
-  const resolveAtPath = (path = []) => {
-    let value = readValue()
-    for (const segment of path) {
-      if (value == null) return undefined
-      value = value[segment]
-    }
-    return value
-  }
-
-  const shouldKeepPrimitiveString = (path, prop, containerValue) => {
-    if (Array.isArray(containerValue)) return true
-    if (typeof prop !== 'string') return false
-    if (primitiveStringKeys.has(prop)) return true
-    if (prop.endsWith('Id')) return true
-    return false
-  }
-
-  const createStringAtPath = (path) => {
-    const cacheKey = pathKeyOf(path)
-    if (stringCache.has(cacheKey)) return stringCache.get(cacheKey)
-
-    const proxy = new Proxy(Object.create(null), {
-      get(_target, prop) {
-        const value = resolveAtPath(path)
-        const safe = typeof value === 'string' ? value : String(value ?? '')
-
-        if (prop === '__raw') return safe
-        if (prop === Symbol.toPrimitive) return () => safe
-        if (prop === 'valueOf') return () => safe
-        if (prop === 'toString') return () => safe
-
-        const next = safe[prop]
-        if (typeof next === 'function') return next.bind(safe)
-        return next
-      },
-    })
-
-    stringCache.set(cacheKey, proxy)
-    return proxy
-  }
-
-  const createAtPath = (path = []) => {
-    const cacheKey = pathKeyOf(path)
-    if (objectCache.has(cacheKey)) return objectCache.get(cacheKey)
-
-    const initial = resolveAtPath(path)
-    const target = Array.isArray(initial) ? [] : {}
-
-    const proxy = new Proxy(target, {
-      get(_target, prop) {
-        if (prop === '__raw') return resolveAtPath(path)
-        if (prop === Symbol.toPrimitive) return () => resolveAtPath(path)
-        if (prop === 'valueOf') return () => resolveAtPath(path)
-        if (prop === 'toString') return () => String(resolveAtPath(path) ?? '')
-
-        const value = resolveAtPath(path)
-        if (value == null) return undefined
-
-        const next = value[prop]
-        if (typeof next === 'function') return next.bind(value)
-        if (next && typeof next === 'object') return createAtPath(path.concat(prop))
-        if (typeof next === 'string') {
-          if (shouldKeepPrimitiveString(path, prop, value)) return next
-          return createStringAtPath(path.concat(prop))
-        }
-        return next
-      },
-      has(_target, prop) {
-        const value = resolveAtPath(path)
-        return Boolean(value && prop in value)
-      },
-      ownKeys() {
-        const value = resolveAtPath(path)
-        if (!value || typeof value !== 'object') return []
-        return Reflect.ownKeys(value)
-      },
-      getOwnPropertyDescriptor(_target, prop) {
-        const value = resolveAtPath(path)
-        if (!value || typeof value !== 'object') return undefined
-        const descriptor = Object.getOwnPropertyDescriptor(value, prop)
-        if (!descriptor) return undefined
-        return { ...descriptor, configurable: true }
-      },
-    })
-
-    objectCache.set(cacheKey, proxy)
-    return proxy
-  }
-
-  const initial = readValue()
-  if (initial && typeof initial === 'object') return createAtPath()
-  return initial
-}
-
 export function useAppI18n() {
   const languageStore = useLanguageStore()
   languageStore.hydrate()
 
   const { currentLanguage } = storeToRefs(languageStore)
 
-  const t = (key, params = {}) => {
-    const readValue = () => translate(currentLanguage.value, key, params)
-    const initial = readValue()
-    if (typeof initial === 'string') return createLiveStringProxy(readValue)
-    return initial
-  }
-  const tm = (key) => createLiveMessageProxy(() => getLocaleMessage(currentLanguage.value, key))
+  const t = (key, params = {}) => translate(currentLanguage.value, key, params)
+  const tm = (key) => getLocaleMessage(currentLanguage.value, key)
   const localize = (value) => resolveLocalizedValue(currentLanguage.value, value)
 
   return {
@@ -263,3 +136,4 @@ export function useAppI18n() {
     localize,
   }
 }
+
