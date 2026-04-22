@@ -816,6 +816,59 @@ export default {
       toastNoResonanceTitle: 'No resonance',
       toastNoResonanceMessage: 'These ingredients do not form a useful application artifact.',
       toastRepeatRecipe: 'You already unlocked this recipe. Move up the chain and forge the next artifact.',
+      unlockModal: {
+        eyebrow: 'Stage Unlocked',
+        howTitle: 'How to build this',
+        nextTitle: 'What to do next',
+        continue: 'Keep Fusing',
+      },
+      unlockGuides: {
+        cv: {
+          summary: 'A CV is not a pile of experiences. It is a clean profile built from the strongest evidence a reviewer can scan fast.',
+          steps: [
+            'Pull out the courses, projects, internships, and activities most relevant to your target program.',
+            'Rewrite each experience as a compact line of action, method, and result.',
+            'Keep quantified outcomes, clear responsibilities, and skills that directly match the program requirements.',
+          ],
+          next: 'Once the CV exists, the path splits: CV + Focused Effort advances the PS, while CV + Mentor Support advances the recommendation letter.',
+        },
+        ielts: {
+          summary: 'The language score is a hard-threshold document. Securing it early prevents the rest of the application from getting squeezed.',
+          steps: [
+            'Confirm whether the target program wants IELTS, TOEFL, or another accepted test and check the score threshold.',
+            'Separate practice, mock exams, and weak-skill drills instead of relying on a last-minute cram.',
+            'Leave time for one official attempt plus a backup attempt so you are not trapped by the deadline.',
+          ],
+          next: 'Keep this result ready for the last step. The middle of the chain should focus on the PS and recommendation letter.',
+        },
+        ps: {
+          summary: 'The PS is not a second CV. It turns your motivation, turning points, and program fit into one persuasive narrative.',
+          steps: [
+            'Pick the experiences from your CV that best explain why you want this program now.',
+            'Shape the structure as past work, current motivation, and why this specific program fits.',
+            'Revise for clarity and logic until the draft keeps concrete detail and loses the empty filler.',
+          ],
+          next: 'After the PS, you still need a strong recommendation letter. Use the other branch, CV + Mentor Support, to unlock it.',
+        },
+        rl: {
+          summary: 'A good recommendation letter is not just about whether a professor agrees to write. It depends on how well you prepare evidence for them.',
+          steps: [
+            'Contact the right professor or supervisor early instead of asking a few days before the deadline.',
+            'Send your CV, grades, project highlights, and application direction so the recommender has a clear basis.',
+            'State the deadline, submission method, and the strengths you hope they can support with evidence.',
+          ],
+          next: 'Once the letter is ready, it can combine with the PS into the application package. Finish the other writing branch next.',
+        },
+        package: {
+          summary: 'The package means the core materials are finally complete. From here, the priority shifts from creating more to checking consistency and submitting well.',
+          steps: [
+            'Check that your CV, PS, and recommendation letter match on project names, timeline, and academic direction.',
+            'Verify file names, formatting, word limits, and upload rules for each school.',
+            'Reserve one final proofreading round to catch small mistakes and missing attachments.',
+          ],
+          next: 'The last move is simple: combine the application package with the language score and push for the offer.',
+        },
+      },
       hints: {
         one: {
           label: 'Step One',

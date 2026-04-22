@@ -11,10 +11,7 @@
         <h1><i class="fas fa-id-card"></i> {{ t('pages.y2_1.title') }}</h1>
         <p>{{ t('pages.y2_1.subtitle') }}</p>
       </div>
-      
     </div>
-
-    
 
     <div class="main">
       <section class="preview">
@@ -38,10 +35,14 @@
             <div class="badge"><i class="fas" :class="selectedRoleIcon"></i></div>
           </div>
           <div class="row"><span class="key">{{ t('pages.y2_1.fields.codename') }}</span><span class="value">{{ displayName }}</span></div>
-          <div class="row"><span class="key">{{ t('pages.y2_1.fields.archetype') }}</span><span class="value">{{ selectedRole?.name || t('pages.y2_1.awaitingChoice') }}</span></div>
+          <div class="row"><span class="key">{{ ui.roleCard }}</span><span class="value">{{ roleCard.label }}</span></div>
+          <div class="row"><span class="key">{{ ui.gpaLabel }}</span><span class="value">{{ selectedGpa?.range || ui.awaitingChoice }}</span></div>
           <div class="row"><span class="key">{{ t('pages.y2_1.fields.hair') }}</span><span class="value">{{ selectedHair?.name || t('pages.y2_1.awaitingChoice') }}</span></div>
           <div class="row"><span class="key">{{ t('pages.y2_1.fields.outfit') }}</span><span class="value">{{ selectedOutfit?.name || t('pages.y2_1.awaitingChoice') }}</span></div>
           <div class="row"><span class="key">{{ t('pages.y2_1.fields.tool') }}</span><span class="value">{{ selectedTool?.name || t('pages.y2_1.awaitingChoice') }}</span></div>
+          <div class="row"><span class="key">{{ ui.experienceTitle }}</span><span class="value">{{ experienceSummary }}</span></div>
+          <div class="row"><span class="key">{{ ui.languageTitle }}</span><span class="value">{{ languageSummary }}</span></div>
+          <div class="row"><span class="key">{{ ui.greTitle }}</span><span class="value">{{ greSummary }}</span></div>
         </div>
       </section>
 
@@ -55,20 +56,20 @@
 
         <div class="groups">
           <div class="group">
-            <h3>{{ t('pages.y2_1.roleTitle') }}</h3>
-            <p>{{ t('pages.y2_1.roleDesc') }}</p>
+            <h3>{{ ui.gpaTitle }}</h3>
+            <p>{{ ui.gpaDesc }}</p>
             <div class="grid3">
               <button
-                v-for="role in roles"
-                :key="role.id"
+                v-for="gpa in gpaOptions"
+                :key="gpa.id"
                 type="button"
                 class="opt"
-                :class="{ sel: state.roleId === role.id }"
-                @click="state.roleId = role.id"
+                :class="{ sel: state.gpaId === gpa.id }"
+                @click="state.gpaId = gpa.id"
               >
-                <i class="fas" :class="role.icon"></i>
-                <strong>{{ role.name }}</strong>
-                <span>{{ role.copy }}</span>
+                <i class="fas" :class="gpa.icon"></i>
+                <strong>{{ gpa.label }}</strong>
+                <span>{{ gpa.range }}</span>
               </button>
             </div>
           </div>
@@ -127,6 +128,88 @@
               </button>
             </div>
           </div>
+
+          <div class="group">
+            <h3>{{ ui.experienceTitle }}</h3>
+            <p>{{ ui.experienceDesc }}</p>
+            <div class="extra-grid">
+              <div v-for="field in experienceFields" :key="field.id" class="mini-card">
+                <strong>{{ field.label }}</strong>
+                <div class="toggle-row">
+                  <button
+                    type="button"
+                    class="toggle-btn"
+                    :class="{ sel: state.experiences[field.id] === 'yes' }"
+                    @click="state.experiences[field.id] = 'yes'"
+                  >
+                    {{ ui.yes }}
+                  </button>
+                  <button
+                    type="button"
+                    class="toggle-btn"
+                    :class="{ sel: state.experiences[field.id] === 'no' }"
+                    @click="state.experiences[field.id] = 'no'"
+                  >
+                    {{ ui.no }}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="group">
+            <h3>{{ ui.languageTitle }}</h3>
+            <p>{{ ui.languageDesc }}</p>
+            <div class="grid3 compact-grid">
+              <button
+                v-for="option in languageOptions"
+                :key="option.id"
+                type="button"
+                class="opt compact"
+                :class="{ sel: state.languageExam === option.id }"
+                @click="selectLanguage(option.id)"
+              >
+                <i class="fas" :class="option.icon"></i>
+                <strong>{{ option.label }}</strong>
+                <span>{{ option.copy }}</span>
+              </button>
+            </div>
+            <div v-if="state.languageExam === 'ielts' || state.languageExam === 'toefl'" class="inline-input">
+              <label for="language-score">{{ ui.languageScoreLabel }}</label>
+              <input
+                id="language-score"
+                v-model.trim="state.languageScore"
+                :placeholder="ui.languageScorePlaceholder"
+              >
+            </div>
+          </div>
+
+          <div class="group">
+            <h3>{{ ui.greTitle }}</h3>
+            <p>{{ ui.greDesc }}</p>
+            <div class="grid3 compact-grid">
+              <button
+                v-for="option in greOptions"
+                :key="option.id"
+                type="button"
+                class="opt compact"
+                :class="{ sel: state.greMode === option.id }"
+                @click="selectGre(option.id)"
+              >
+                <i class="fas" :class="option.icon"></i>
+                <strong>{{ option.label }}</strong>
+                <span>{{ option.copy }}</span>
+              </button>
+            </div>
+            <div v-if="state.greMode === 'has'" class="inline-input">
+              <label for="gre-score">{{ ui.greScoreLabel }}</label>
+              <input
+                id="gre-score"
+                v-model.trim="state.greScore"
+                :placeholder="ui.greScorePlaceholder"
+              >
+            </div>
+          </div>
         </div>
 
         <div class="progress">
@@ -146,13 +229,16 @@
     <div v-if="showSummary" class="modal" @click.self="showSummary = false">
       <div class="modalcard">
         <h2><i class="fas fa-wand-sparkles"></i> {{ t('pages.y2_1.modalTitle') }}</h2>
-        <p>{{ t('pages.y2_1.modalDesc') }}</p>
+        <p>{{ ui.modalDesc }}</p>
         <div class="reward-badge">
-          🎉 +30 {{ t('common.labels.coins') }}
+          +30 {{ t('common.labels.coins') }}
         </div>
         <div class="pill"><i class="fas fa-user"></i> {{ forgedProfile.name }}</div>
-        <div class="pill"><i class="fas" :class="selectedRoleIcon"></i> {{ forgedProfile.archetype }}</div>
-        <div class="pill"><i class="fas fa-wand-sparkles"></i> {{ forgedProfile.familiar }}</div>
+        <div class="pill"><i class="fas" :class="selectedRoleIcon"></i> {{ roleCard.label }}</div>
+        <div class="pill"><i class="fas fa-chart-simple"></i> {{ selectedGpa?.range }}</div>
+        <div class="pill"><i class="fas fa-briefcase"></i> {{ experienceSummary }}</div>
+        <div class="pill"><i class="fas fa-language"></i> {{ languageSummary }}</div>
+        <div class="pill"><i class="fas fa-square-root-variable"></i> {{ greSummary }}</div>
         <div class="actions">
           <button class="secondary" @click="showSummary = false">{{ t('common.actions.refineAgain') }}</button>
           <button class="primary2" @click="returnToMap">{{ t('common.actions.returnToMap') }}</button>
@@ -168,12 +254,61 @@ import { useAppI18n } from '@/composables/useAppI18n'
 import KnowledgeGuidePanel from '@/components/KnowledgeGuidePanel.vue'
 
 const emit = defineEmits(['complete', 'close'])
-const { t } = useAppI18n()
+const { currentLanguage, t } = useAppI18n()
 
-const roleDefs = [
-  { id: 'analyst', icon: 'fa-chart-line' },
-  { id: 'storyweaver', icon: 'fa-feather-pointed' },
-  { id: 'trailblazer', icon: 'fa-compass' },
+const ZH_COPY = {
+  gpaTitle: '2. 选择当前均分 / GPA',
+  gpaDesc: '系统会根据 GPA 档位自动生成当前角色卡类型。',
+  gpaLabel: '当前均分 / GPA',
+  roleCard: '当前角色卡',
+  experienceTitle: '经历标签',
+  experienceDesc: '补充当前是否已经有实习、科研、比赛和项目。',
+  languageTitle: '雅思 / 托福',
+  languageDesc: '选择当前的语言考试情况，如果已有成绩请填写分数。',
+  languageScoreLabel: '语言成绩',
+  languageScorePlaceholder: '例如：IELTS 7.0 / TOEFL 100',
+  greTitle: 'GRE 成绩',
+  greDesc: '如果已有 GRE 成绩请填写，如果目前没有也请明确选择。',
+  greScoreLabel: 'GRE 分数',
+  greScorePlaceholder: '例如：325 / 330',
+  yes: '有',
+  no: '无',
+  noneYet: '暂时没有',
+  awaitingChoice: '待选择',
+  noExperience: '目前暂无相关经历',
+  modalDesc: '身份封印后，系统会把 GPA 档位、经历标签、语言成绩和 GRE 信息一起写入角色卡。',
+  progressNeedExtra: '四枚徽记已充能，但还需要补全经历、语言考试和 GRE 信息。',
+}
+
+const EN_COPY = {
+  gpaTitle: '2. Choose Current GPA',
+  gpaDesc: 'The system will auto-generate the current role-card type from your GPA band.',
+  gpaLabel: 'Current GPA',
+  roleCard: 'Current Role Card',
+  experienceTitle: 'Experience Tags',
+  experienceDesc: 'Add whether you already have internships, research, competitions, and projects.',
+  languageTitle: 'IELTS / TOEFL',
+  languageDesc: 'Choose your current language-test status. If you already have a score, fill it in.',
+  languageScoreLabel: 'Language Score',
+  languageScorePlaceholder: 'e.g. IELTS 7.0 / TOEFL 100',
+  greTitle: 'GRE Score',
+  greDesc: 'Fill in your GRE score if you have one, or explicitly mark that you do not have one yet.',
+  greScoreLabel: 'GRE Score',
+  greScorePlaceholder: 'e.g. 325 / 330',
+  yes: 'Yes',
+  no: 'No',
+  noneYet: 'Not yet',
+  awaitingChoice: 'Pending',
+  noExperience: 'No related experience yet',
+  modalDesc: 'Once sealed, the role card will store your GPA band, experience tags, language-test score, and GRE info.',
+  progressNeedExtra: 'All four sigils are charged, but experience, language, and GRE information still need to be completed.',
+}
+
+const gpaDefs = [
+  { id: 'scholar', icon: 'fa-crown', range: { zh: 'GPA ≥ 80', en: 'GPA ≥ 80' } },
+  { id: 'steady', icon: 'fa-shield-halved', range: { zh: '70 ≤ GPA < 80', en: '70 ≤ GPA < 80' } },
+  { id: 'sprint', icon: 'fa-bolt', range: { zh: '60 ≤ GPA < 70', en: '60 ≤ GPA < 70' } },
+  { id: 'comeback', icon: 'fa-fire', range: { zh: 'GPA < 60', en: 'GPA < 60' } },
 ]
 
 const hairDefs = [
@@ -194,20 +329,77 @@ const toolDefs = [
   { id: 'satchel', icon: 'fa-bag-shopping' },
 ]
 
+const experienceFieldDefs = [
+  { id: 'internship', label: { zh: '实习', en: 'Internship' } },
+  { id: 'research', label: { zh: '科研', en: 'Research' } },
+  { id: 'competition', label: { zh: '比赛', en: 'Competition' } },
+  { id: 'project', label: { zh: '项目', en: 'Project' } },
+]
+
+const languageDefs = [
+  {
+    id: 'ielts',
+    icon: 'fa-language',
+    label: { zh: '雅思', en: 'IELTS' },
+    copy: { zh: '已有雅思成绩或正在准备雅思。', en: 'IELTS is your current track.' },
+  },
+  {
+    id: 'toefl',
+    icon: 'fa-book-open',
+    label: { zh: '托福', en: 'TOEFL' },
+    copy: { zh: '已有托福成绩或正在准备托福。', en: 'TOEFL is your current track.' },
+  },
+  {
+    id: 'none',
+    icon: 'fa-hourglass-half',
+    label: { zh: '暂无', en: 'None yet' },
+    copy: { zh: '目前还没有语言成绩。', en: 'No language score yet.' },
+  },
+]
+
+const greDefs = [
+  {
+    id: 'has',
+    icon: 'fa-square-root-variable',
+    label: { zh: '已有 GRE', en: 'Have GRE' },
+    copy: { zh: '已经有 GRE 成绩，可以直接填写。', en: 'You already have a GRE score.' },
+  },
+  {
+    id: 'none',
+    icon: 'fa-ban',
+    label: { zh: '暂无 GRE', en: 'No GRE yet' },
+    copy: { zh: '当前还没有 GRE 成绩。', en: 'You do not have a GRE score yet.' },
+  },
+]
+
 const state = reactive({
   name: '',
-  roleId: '',
+  gpaId: '',
   hairId: '',
   outfitId: '',
   toolId: '',
+  experiences: {
+    internship: '',
+    research: '',
+    competition: '',
+    project: '',
+  },
+  languageExam: '',
+  languageScore: '',
+  greMode: '',
+  greScore: '',
 })
 
 const showSummary = ref(false)
 
-const roles = computed(() => roleDefs.map((role) => ({
-  ...role,
-  name: t(`pages.y2_1.roles.${role.id}.name`),
-  copy: t(`pages.y2_1.roles.${role.id}.copy`),
+const ui = computed(() => (currentLanguage.value === 'en' ? EN_COPY : ZH_COPY))
+
+const gpaOptions = computed(() => gpaDefs.map((gpa) => ({
+  ...gpa,
+  label: currentLanguage.value === 'en'
+    ? ({ scholar: 'Scholar Type', steady: 'Steady Type', sprint: 'Sprint Type', comeback: 'Comeback Type' }[gpa.id])
+    : ({ scholar: '学霸型', steady: '稳扎型', sprint: '冲刺型', comeback: '逆袭型' }[gpa.id]),
+  range: gpa.range[currentLanguage.value === 'en' ? 'en' : 'zh'],
 })))
 
 const hairs = computed(() => hairDefs.map((hair) => ({
@@ -226,7 +418,24 @@ const tools = computed(() => toolDefs.map((tool) => ({
   copy: t(`pages.y2_1.tools.${tool.id}.copy`),
 })))
 
-const selectedRole = computed(() => roles.value.find((item) => item.id === state.roleId) ?? null)
+const experienceFields = computed(() => experienceFieldDefs.map((field) => ({
+  ...field,
+  label: field.label[currentLanguage.value === 'en' ? 'en' : 'zh'],
+})))
+
+const languageOptions = computed(() => languageDefs.map((option) => ({
+  ...option,
+  label: option.label[currentLanguage.value === 'en' ? 'en' : 'zh'],
+  copy: option.copy[currentLanguage.value === 'en' ? 'en' : 'zh'],
+})))
+
+const greOptions = computed(() => greDefs.map((option) => ({
+  ...option,
+  label: option.label[currentLanguage.value === 'en' ? 'en' : 'zh'],
+  copy: option.copy[currentLanguage.value === 'en' ? 'en' : 'zh'],
+})))
+
+const selectedGpa = computed(() => gpaOptions.value.find((item) => item.id === state.gpaId) ?? null)
 const selectedHair = computed(() => hairs.value.find((item) => item.id === state.hairId) ?? null)
 const selectedOutfit = computed(() => outfits.value.find((item) => item.id === state.outfitId) ?? null)
 const selectedTool = computed(() => tools.value.find((item) => item.id === state.toolId) ?? null)
@@ -237,28 +446,87 @@ const guideItems = computed(() => [
 ])
 
 const displayName = computed(() => state.name || t('common.unnamedTraveler'))
-const selectedRoleIcon = computed(() => selectedRole.value?.icon || 'fa-star')
+
+const roleCard = computed(() => {
+  if (!selectedGpa.value) {
+    return {
+      id: 'pending',
+      icon: 'fa-star',
+      label: ui.value.awaitingChoice,
+    }
+  }
+
+  return {
+    id: selectedGpa.value.id,
+    icon: selectedGpa.value.icon,
+    label: selectedGpa.value.label,
+  }
+})
+
+const selectedRoleIcon = computed(() => roleCard.value.icon)
 
 const chargedChoices = computed(() => {
   let charged = 0
-  if (selectedRole.value) charged += 1
+  if (selectedGpa.value) charged += 1
   if (selectedHair.value) charged += 1
   if (selectedOutfit.value) charged += 1
   if (selectedTool.value) charged += 1
   return charged
 })
 
+const experienceAnswered = computed(() => Object.values(state.experiences).every(Boolean))
+
+const languageAnswered = computed(() => {
+  if (!state.languageExam) return false
+  if (state.languageExam === 'none') return true
+  return Boolean(state.languageScore.trim())
+})
+
+const greAnswered = computed(() => {
+  if (!state.greMode) return false
+  if (state.greMode === 'none') return true
+  return Boolean(state.greScore.trim())
+})
+
 const sealReady = computed(() => Boolean(
   state.name &&
-  selectedRole.value &&
+  selectedGpa.value &&
   selectedHair.value &&
   selectedOutfit.value &&
-  selectedTool.value,
+  selectedTool.value &&
+  experienceAnswered.value &&
+  languageAnswered.value &&
+  greAnswered.value,
 ))
+
+const experienceSummary = computed(() => {
+  if (!experienceAnswered.value) return ui.value.awaitingChoice
+
+  const active = experienceFields.value
+    .filter((field) => state.experiences[field.id] === 'yes')
+    .map((field) => field.label)
+
+  return active.length ? active.join(' / ') : ui.value.noExperience
+})
+
+const languageSummary = computed(() => {
+  if (!state.languageExam) return ui.value.awaitingChoice
+  if (state.languageExam === 'none') return ui.value.noneYet
+
+  const option = languageOptions.value.find((item) => item.id === state.languageExam)
+  return `${option?.label || ''} ${state.languageScore.trim()}`.trim()
+})
+
+const greSummary = computed(() => {
+  if (!state.greMode) return ui.value.awaitingChoice
+  if (state.greMode === 'none') return ui.value.noneYet
+  return `GRE ${state.greScore.trim()}`
+})
 
 const progressCopy = computed(() => {
   if (!state.name) return t('pages.y2_1.progressNeedName')
   if (chargedChoices.value < 4) return t('pages.y2_1.progressCharging')
+  if (!experienceAnswered.value || !languageAnswered.value || !greAnswered.value) return ui.value.progressNeedExtra
   return t('pages.y2_1.progressReady')
 })
 
@@ -269,14 +537,52 @@ const avatarStyle = computed(() => ({
 
 const forgedProfile = computed(() => ({
   name: displayName.value,
-  archetype: selectedRole.value?.name || t('pages.y2_1.awaitingChoice'),
+  archetype: roleCard.value.label,
   familiar: selectedTool.value?.name || t('pages.y2_1.awaitingChoice'),
+  academicProfile: {
+    gpaBand: selectedGpa.value?.id || '',
+    gpa: selectedGpa.value?.range || '',
+    experiences: {
+      internship: state.experiences.internship === 'yes',
+      research: state.experiences.research === 'yes',
+      competition: state.experiences.competition === 'yes',
+      project: state.experiences.project === 'yes',
+    },
+    experienceSummary: experienceSummary.value,
+    languageExam: state.languageExam,
+    languageScore: state.languageExam === 'none' ? null : state.languageScore.trim(),
+    languageSummary: languageSummary.value,
+    greScore: state.greMode === 'has' ? state.greScore.trim() : null,
+    greSummary: greSummary.value,
+  },
+  roleCard: {
+    id: roleCard.value.id,
+    label: roleCard.value.label,
+  },
+  mapAvatar: {
+    hairColor: selectedHair.value?.color || '#3a2a25',
+    outfitColor: selectedOutfit.value?.color || '#ffd46d',
+  },
   avatar: {
     hairColor: selectedHair.value?.color || '#3a2a25',
     outfitColor: selectedOutfit.value?.color || '#ffd46d',
   },
-  sigilIcon: selectedRole.value?.icon || 'fa-star',
+  sigilIcon: roleCard.value.icon,
 }))
+
+function selectLanguage(id) {
+  state.languageExam = id
+  if (id === 'none') {
+    state.languageScore = ''
+  }
+}
+
+function selectGre(id) {
+  state.greMode = id
+  if (id === 'none') {
+    state.greScore = ''
+  }
+}
 
 function returnToMap() {
   emit('complete', {
@@ -293,7 +599,7 @@ function returnToMap() {
 .forge {
   position: relative;
   width: 100%;
-  height: 100%;           /* 关键修改 */
+  height: 100%;
   background: rgba(14, 20, 35, 0.84);
   color: #eef2ff;
   border-radius: 22px;
@@ -311,7 +617,7 @@ function returnToMap() {
   align-items: center;
   border-bottom: 1px solid rgba(148, 163, 184, 0.12);
   background: linear-gradient(to bottom, rgba(148, 163, 184, 0.08), transparent);
-  flex-shrink: 0;  /* 防止被压缩 */
+  flex-shrink: 0;
 }
 
 .topbar h1 {
@@ -327,6 +633,7 @@ function returnToMap() {
   color: #a8b4d1;
   line-height: 1.45;
 }
+
 .charge-left {
   position: absolute;
   top: 20px;
@@ -350,29 +657,29 @@ function returnToMap() {
   font-size: 0.9rem;
   font-weight: 800;
   margin: 10px 0 15px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .main {
-  margin-top: 18px; 
+  margin-top: 18px;
   display: grid;
   grid-template-columns: 1fr 1.15fr;
-  flex: 1;          /* 占据剩余高度 */
-  min-height: 0;    /* 允许子元素滚动 */
-  overflow: hidden; /* 防止整体滚动 */
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .preview,
 .panel {
   padding: 24px 28px 28px;
-  overflow-y: auto;  /* 独立滚动 */
-  height: 100%;      /* 配合父容器 */
+  overflow-y: auto;
+  height: 100%;
 }
 
 .preview {
   border-right: 1px solid rgba(148, 163, 184, 0.12);
   background: linear-gradient(180deg, rgba(15, 23, 42, 0.92), rgba(10, 14, 27, 0.98));
-  position: relative; /* 为绝对定位的 charge-left 提供参考 */
+  position: relative;
 }
 
 .label {
@@ -385,7 +692,7 @@ function returnToMap() {
 }
 
 .stage {
-  margin-top: 35px;        
+  margin-top: 35px;
   min-height: 280px;
   border-radius: 24px;
   display: flex;
@@ -523,7 +830,7 @@ function returnToMap() {
 }
 
 .card {
-  margin-top: 30px;      /* 原来是 18px，增加下移距离 */
+  margin-top: 30px;
   padding: 18px;
   border-radius: 20px;
   background: linear-gradient(145deg, rgba(30, 41, 59, 0.96), rgba(15, 23, 42, 0.98));
@@ -595,7 +902,8 @@ function returnToMap() {
   margin-bottom: 18px;
 }
 
-.box label {
+.box label,
+.inline-input label {
   display: block;
   margin-bottom: 10px;
   color: #dbe4ff;
@@ -643,23 +951,32 @@ input:focus {
 }
 
 .opt,
-.swatch {
+.swatch,
+.toggle-btn,
+.mini-card {
   border: 1px solid rgba(148, 163, 184, 0.15);
   border-radius: 16px;
-  cursor: pointer;
   color: #e2e8f0;
   background: linear-gradient(145deg, rgba(30, 41, 59, 0.96), rgba(15, 23, 42, 0.96));
   transition: 0.18s;
 }
 
+.opt,
+.swatch,
+.toggle-btn {
+  cursor: pointer;
+}
+
 .opt:hover,
-.swatch:hover {
+.swatch:hover,
+.toggle-btn:hover {
   transform: translateY(-2px);
   border-color: rgba(248, 214, 162, 0.42);
 }
 
 .opt.sel,
-.swatch.sel {
+.swatch.sel,
+.toggle-btn.sel {
   border-color: #f8d6a2;
   box-shadow: 0 0 0 1px rgba(248, 214, 162, 0.25);
 }
@@ -668,6 +985,10 @@ input:focus {
   min-height: 94px;
   padding: 14px 12px;
   text-align: left;
+}
+
+.opt.compact {
+  min-height: 82px;
 }
 
 .opt i {
@@ -712,6 +1033,40 @@ input:focus {
   font-size: 0.92rem;
 }
 
+.extra-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.mini-card {
+  padding: 14px;
+}
+
+.mini-card strong {
+  display: block;
+  margin-bottom: 10px;
+}
+
+.toggle-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.toggle-btn {
+  padding: 10px 12px;
+  font-weight: 700;
+}
+
+.compact-grid {
+  margin-bottom: 14px;
+}
+
+.inline-input {
+  margin-top: 6px;
+}
+
 .progress {
   margin-top: 18px;
 }
@@ -745,11 +1100,6 @@ input:focus {
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
-}
-
-.foot span {
-  color: #94a3b8;
-  font-size: 0.9rem;
 }
 
 .primary,
@@ -788,7 +1138,7 @@ input:focus {
 }
 
 .modalcard {
-  width: min(520px, 100%);
+  width: min(560px, 100%);
   padding: 28px;
   border-radius: 28px;
   background: linear-gradient(145deg, #1a2235, #0f172a);
@@ -866,9 +1216,11 @@ input:focus {
     align-items: flex-start;
   }
 
-  .grid3 {
+  .grid3,
+  .extra-grid {
     grid-template-columns: 1fr;
   }
+
   .guide-floating {
     position: absolute;
     top: 20px;
