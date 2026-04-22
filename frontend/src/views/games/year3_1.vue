@@ -139,6 +139,44 @@
     </Transition>
 
     <Transition name="modal-fade">
+      <div
+        v-if="showUnlockModal && unlockModalItem && unlockGuide"
+        class="unlock-modal"
+        @click.self="closeUnlockModal"
+      >
+        <div class="unlock-card">
+          <div class="unlock-glyph">
+            <i :class="unlockModalItem.iconClass" aria-hidden="true"></i>
+          </div>
+          <p class="unlock-eyebrow">{{ t('pages.y3_1.unlockModal.eyebrow') }}</p>
+          <h3>{{ unlockModalItem.name }}</h3>
+          <p class="unlock-message">{{ unlockModal.message }}</p>
+
+          <div class="unlock-panels">
+            <section class="unlock-panel">
+              <h4>{{ t('pages.y3_1.unlockModal.howTitle') }}</h4>
+              <p class="unlock-summary">{{ unlockGuide.summary }}</p>
+              <ul class="unlock-steps">
+                <li v-for="step in unlockGuide.steps" :key="step">
+                  {{ step }}
+                </li>
+              </ul>
+            </section>
+
+            <section class="unlock-panel">
+              <h4>{{ t('pages.y3_1.unlockModal.nextTitle') }}</h4>
+              <p>{{ unlockGuide.next }}</p>
+            </section>
+          </div>
+
+          <button type="button" class="claim-btn" @click="closeUnlockModal">
+            {{ t('pages.y3_1.unlockModal.continue') }}
+          </button>
+        </div>
+      </div>
+    </Transition>
+
+    <Transition name="modal-fade">
       <div v-if="showVictoryModal" class="victory-modal">
         <div class="victory-card">
           <div class="victory-glyph">
@@ -175,7 +213,7 @@ import { useAppI18n } from '@/composables/useAppI18n'
 import KnowledgeGuidePanel from '@/components/KnowledgeGuidePanel.vue'
 
 const emit = defineEmits(['complete', 'close'])
-const { t } = useAppI18n()
+const { t, tm } = useAppI18n()
 const hintIds = ['one', 'two', 'three', 'four']
 
 const ITEM_META = {
@@ -214,11 +252,16 @@ const inventory = ref([...INITIAL_INVENTORY])
 const selectedSlots = ref([null, null])
 const isMixing = ref(false)
 const isShaking = ref(false)
+const showUnlockModal = ref(false)
 const showVictoryModal = ref(false)
 const activeHintId = ref(null)
 const toast = reactive({
   visible: false,
   type: 'success',
+  message: '',
+})
+const unlockModal = reactive({
+  itemId: '',
   message: '',
 })
 
@@ -257,6 +300,16 @@ const hintNotes = computed(() => hintIds.map((id) => ({
 const inventoryItems = computed(() => inventory.value.map((itemId) => itemDB.value[itemId]))
 const slotItems = computed(() => selectedSlots.value.map((itemId) => (itemId ? itemDB.value[itemId] : null)))
 const activeHint = computed(() => hintNotes.value.find((hint) => hint.id === activeHintId.value) || null)
+const unlockGuide = computed(() => (
+  unlockModal.itemId
+    ? tm(`pages.y3_1.unlockGuides.${unlockModal.itemId}`)
+    : null
+))
+const unlockModalItem = computed(() => (
+  unlockModal.itemId
+    ? itemDB.value[unlockModal.itemId]
+    : null
+))
 const unlockedCount = computed(() => inventory.value.length)
 const totalItemCount = Object.keys(ITEM_META).length
 const canMix = computed(() => selectedSlots.value.every(Boolean) && !isMixing.value)
@@ -298,6 +351,18 @@ function showToast(type, message) {
     toast.visible = false
     toastTimer = null
   }, 3500)
+}
+
+function openUnlockModal(itemId, message) {
+  unlockModal.itemId = itemId
+  unlockModal.message = message
+  showUnlockModal.value = true
+}
+
+function closeUnlockModal() {
+  showUnlockModal.value = false
+  unlockModal.itemId = ''
+  unlockModal.message = ''
 }
 
 function addToSlot(itemId) {
@@ -354,11 +419,16 @@ function handleSuccessfulMix(recipe) {
     return
   }
 
+  if (!alreadyUnlocked) {
+    schedule(() => {
+      openUnlockModal(recipe.result, recipe.message)
+    }, 180)
+    return
+  }
+
   showToast(
     'success',
-    alreadyUnlocked
-      ? t('pages.y3_1.toastRepeatRecipe')
-      : recipe.message,
+    t('pages.y3_1.toastRepeatRecipe'),
   )
 }
 
@@ -941,6 +1011,7 @@ button {
   font-weight: 900;
 }
 
+.unlock-modal,
 .victory-modal {
   position: fixed;
   inset: 0;
@@ -949,19 +1020,39 @@ button {
   display: grid;
   place-items: center;
   padding: 24px;
+}
+
+.unlock-modal {
+  z-index: 35;
+}
+
+.victory-modal {
   z-index: 40;
 }
 
+.unlock-card,
 .victory-card {
   width: min(620px, 100%);
   padding: 34px;
   border-radius: 24px;
-  border: 2px solid #fde047;
-  background: linear-gradient(180deg, #1e3a8a, #0f172a);
-  box-shadow: 0 0 60px rgba(253, 224, 71, 0.24);
   text-align: center;
 }
 
+.unlock-card {
+  border: 2px solid rgba(165, 180, 252, 0.7);
+  background:
+    radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.28), transparent 36%),
+    linear-gradient(180deg, #1e1b4b, #0f172a 78%);
+  box-shadow: 0 0 60px rgba(99, 102, 241, 0.26);
+}
+
+.victory-card {
+  border: 2px solid #fde047;
+  background: linear-gradient(180deg, #1e3a8a, #0f172a);
+  box-shadow: 0 0 60px rgba(253, 224, 71, 0.24);
+}
+
+.unlock-glyph,
 .victory-glyph {
   width: 92px;
   height: 92px;
@@ -978,11 +1069,88 @@ button {
   text-shadow: 0 0 16px rgba(253, 224, 71, 0.5);
 }
 
+.unlock-glyph {
+  border-color: rgba(165, 180, 252, 0.86);
+  background: radial-gradient(circle at 30% 30%, rgba(165, 180, 252, 0.34), rgba(49, 46, 129, 0.42));
+  color: #c7d2fe;
+  text-shadow: 0 0 16px rgba(165, 180, 252, 0.5);
+}
+
+.unlock-eyebrow {
+  display: inline-block;
+  margin: 0 0 14px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(165, 180, 252, 0.4);
+  background: rgba(49, 46, 129, 0.3);
+  color: #c7d2fe;
+  font-size: 0.82rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.unlock-card h3,
 .victory-card h3 {
   margin: 0 0 14px;
-  color: #fde047;
   font-size: 2rem;
   font-family: Georgia, serif;
+}
+
+.unlock-card h3 {
+  color: #e0e7ff;
+}
+
+.victory-card h3 {
+  color: #fde047;
+}
+
+.unlock-message {
+  margin: 16px 0 0;
+  color: #cbd5e1;
+  line-height: 1.7;
+  font-family: Georgia, serif;
+}
+
+.unlock-panels {
+  margin: 24px 0;
+  display: grid;
+  gap: 14px;
+  text-align: left;
+}
+
+.unlock-panel {
+  padding: 18px;
+  border-radius: 18px;
+  background: rgba(15, 23, 42, 0.55);
+  border: 1px solid rgba(165, 180, 252, 0.18);
+}
+
+.unlock-panel h4 {
+  margin: 0 0 10px;
+  color: #c7d2fe;
+  font-size: 1rem;
+}
+
+.unlock-panel p {
+  margin: 0;
+  color: #dbeafe;
+  line-height: 1.7;
+}
+
+.unlock-summary {
+  margin-bottom: 12px !important;
+}
+
+.unlock-steps {
+  margin: 0;
+  padding-left: 20px;
+  color: #e2e8f0;
+  display: grid;
+  gap: 10px;
+}
+
+.unlock-steps li {
+  line-height: 1.65;
 }
 
 .victory-card p {
@@ -1194,6 +1362,10 @@ button {
   }
 
   .victory-card {
+    padding: 24px 20px;
+  }
+
+  .unlock-card {
     padding: 24px 20px;
   }
 }
