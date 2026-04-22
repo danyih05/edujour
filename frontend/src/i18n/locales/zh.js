@@ -1134,6 +1134,7 @@ export default {
       modal: {
         title: "任务完成！",
         message: "获得 {coins} 枚金币。",
+        restart: "重新开始",
         confirm: "返回地图"
       },
       restart: "重新开始",
