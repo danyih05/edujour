@@ -1116,6 +1116,7 @@ export default {
       modal: {
         title: "Mission Complete!",
         message: "You earned {coins} coins.",
+        restart: "Restart Story",
         confirm: "Return to Map"
       },
       restart: "Restart Story",
