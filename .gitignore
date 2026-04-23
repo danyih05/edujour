@@ -4,3 +4,4 @@ frontend/dist/
 *.out.log
 backend/data/gradquest.mv.db
 backend/data/*.mv.db
+backend/application-prod.yml
