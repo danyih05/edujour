@@ -1,0 +1,4 @@
+app:
+  client-origins: "*"
+  jwt:
+    secret: "/PRy6kwavSNo9NfK6bJ7uhTeg6cyJ6r8Zg1jg/qzPkY="
