@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="crossroads-game">
     <div class="header">
       <h2><i class="fas fa-compass"></i> {{ t('pages.y2_2.title') }}</h2>
