@@ -203,8 +203,12 @@ function answerQuestion(choiceId) {
     winner.value = sorted[0]?.[0] || 'uk'
     showResult.value = true
     nextTick(() => {
-      document.querySelector('.result-overlay')?.scrollIntoView({ behavior: 'smooth' })
-    })
+    // 稍微延迟，等待弹窗 DOM 完全挂载后滚动
+    setTimeout(() => {
+      const el = document.querySelector('.result-overlay')
+      if (el) el.scrollIntoView({ behavior: 'smooth' })
+    }, 100)
+  })
   }
 }
 
@@ -300,6 +304,9 @@ function completeWithReward() {
   flex-direction: column;
   align-items: center;
   overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 .header {
@@ -414,6 +421,9 @@ function completeWithReward() {
   overflow-y: auto;
   padding-right: 4px;
   flex: 1;
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 .region-list::-webkit-scrollbar {
@@ -475,6 +485,11 @@ function completeWithReward() {
   padding: 28px;
   border-radius: 18px;
   box-shadow: 0 18px 45px rgba(3, 13, 27, 0.45);
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  /* 移除 backdrop-filter，用更轻量的背景色替代 */
+  backdrop-filter: none;
 }
 
 .question-top {
@@ -641,11 +656,12 @@ function completeWithReward() {
   position: fixed;
   inset: 0;
   z-index: 20;
-  background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(8px);
   display: grid;
   place-items: center;
   padding: 18px;
+  backdrop-filter: none;
+  background: rgba(0, 0, 0, 0.85);
+  will-change: opacity;
 }
 
 .tarot-card {
@@ -702,7 +718,16 @@ function completeWithReward() {
   font-weight: 900;
   cursor: pointer;
 }
-
+@media (max-width: 860px) {
+  .crossroads-layout {
+    grid-template-columns: 1fr;
+  }
+  
+  .region-list,
+  .question-panel {
+    -webkit-overflow-scrolling: touch;
+  }
+}
 @keyframes card-reveal {
   from { opacity: 0; transform: scale(0.86) rotateY(30deg); }
   to { opacity: 1; transform: scale(1) rotateY(0); }
