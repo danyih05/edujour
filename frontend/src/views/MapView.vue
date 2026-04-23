@@ -470,13 +470,33 @@ function updateGuidePosition() {
   guideBubbleStyle.top = bubbleTop;
 }
 
+function getMapGuideSeenStorageKey() {
+  const userId = authStore.user?.id
+  const createdAt = typeof authStore.user?.createdAt === 'string'
+    ? authStore.user.createdAt.trim().replace(/[:.]/g, '-')
+    : ''
+  if (userId !== undefined && userId !== null && String(userId).trim() !== '') {
+    return createdAt
+      ? `hasSeenMapGuide:user:${userId}:${createdAt}`
+      : `hasSeenMapGuide:user:${userId}`
+  }
+
+  const email = typeof authStore.user?.email === 'string' ? authStore.user.email.trim().toLowerCase() : ''
+  if (email) {
+    return `hasSeenMapGuide:email:${email}`
+  }
+
+  return 'hasSeenMapGuide:guest'
+}
+
 function closeGuide() {
   showGuide.value = false
-  localStorage.setItem('hasSeenMapGuide', 'true')
+  localStorage.setItem(getMapGuideSeenStorageKey(), 'true')
 }
 
 function initGuide() {
-  const hasSeen = localStorage.getItem('hasSeenMapGuide')
+  const storageKey = getMapGuideSeenStorageKey()
+  const hasSeen = localStorage.getItem(storageKey)
   if (!hasSeen) {
     showGuide.value = true
     setTimeout(() => {
@@ -522,6 +542,7 @@ onMounted(async () => {
   })
 
   try {
+    await authStore.hydrate()
     await store.ensureLoaded()
     syncTraveler(store.year, store[store.year].currentNode)
   } catch (error) {

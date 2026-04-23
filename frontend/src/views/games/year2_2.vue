@@ -127,9 +127,12 @@ const questionWeights = [
   },
 ]
 
-const localizedQuestions = tm('pages.y2_2.questions') || []
+const localizedQuestions = computed(() => tm('pages.y2_2.questions') || [])
+
 const questions = computed(() => {
-  return localizedQuestions.map((item, index) => ({
+  const list = localizedQuestions.value
+  if (!list.length) return []
+  return list.map((item, index) => ({
     q: item.q,
     choices: [
       { id: 'a', text: item.choices[0], weights: questionWeights[index]?.a || {} },

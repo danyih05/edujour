@@ -1,13 +1,18 @@
 <template>
-  <div class="xjtlu-bird-container">
+  <div class="xjtlu-bird-container" :style="containerStyle">
     <div class="bird-wrapper">
       <button
         type="button"
         class="bird-avatar"
-        :class="{ clickable: isConfigured }"
+        :class="{ clickable: isConfigured, dragging: isDragging }"
         :aria-expanded="showChat"
-        aria-label="Open AI assistant"
-        @click="toggleChat"
+        :aria-label="uiText.openAssistantAriaLabel"
+        @click="handleAvatarClick"
+        @pointerdown="handleAvatarPointerDown"
+        @pointermove="handleAvatarPointerMove"
+        @pointerup="handleAvatarPointerEnd"
+        @pointercancel="handleAvatarPointerEnd"
+        @dragstart.prevent
       >
         <div class="bird-body" :class="`mood-${currentMood}`">
           <div class="antenna"></div>
@@ -41,19 +46,19 @@
     </div>
 
     <transition name="bird-panel">
-      <section v-if="showChat" class="chat-box" aria-label="XJTLU AI assistant">
+      <section v-if="showChat" class="chat-box" :style="chatBoxStyle" :aria-label="uiText.chatBoxAriaLabel">
         <header class="chat-header">
           <div>
-            <p class="chat-kicker">AI Guide</p>
-            <h3>XJTLU AI Assistant</h3>
+            <p class="chat-kicker">{{ uiText.kicker }}</p>
+            <h3>{{ uiText.title }}</h3>
           </div>
-          <button type="button" class="close-btn" aria-label="Close assistant" @click="toggleChat">
+          <button type="button" class="close-btn" :aria-label="uiText.closeAssistantAriaLabel" @click="toggleChat">
             x
           </button>
         </header>
 
         <div v-if="!isConfigured" class="api-key-setup">
-          <p>Add a DeepSeek API key to start chatting.</p>
+          <p>{{ uiText.apiKeyPrompt }}</p>
           <input
             v-model="inputApiKey"
             type="password"
@@ -62,14 +67,14 @@
             @keyup.enter="saveInputApiKey"
           >
           <button type="button" class="setup-btn" @click="saveInputApiKey">
-            Confirm
+            {{ t('common.actions.confirm') }}
           </button>
           <p class="hint">
-            You can also place the key in <code>frontend/.env</code> as
-            <code>VITE_DEEPSEEK_API_KEY</code>.
+            {{ uiText.apiKeyHintPrefix }} <code>frontend/.env</code> {{ uiText.apiKeyHintMiddle }}
+            <code>VITE_DEEPSEEK_API_KEY</code>{{ uiText.apiKeyHintSuffix }}
           </p>
           <p class="hint">
-            Create a key from
+            {{ uiText.apiKeyCreatePrefix }}
             <a href="https://platform.deepseek.com/api/keys" target="_blank" rel="noreferrer">
               platform.deepseek.com
             </a>
@@ -103,11 +108,11 @@
               v-model="inputMessage"
               type="text"
               class="chat-input"
-              placeholder="Ask about your study journey..."
+              :placeholder="uiText.chatPlaceholder"
               :disabled="isLoading"
             >
             <button type="submit" class="send-btn" :disabled="isLoading">
-              {{ isLoading ? '...' : 'Send' }}
+              {{ isLoading ? '...' : uiText.sendLabel }}
             </button>
           </form>
 
@@ -119,8 +124,10 @@
 </template>
 
 <script setup>
-import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useDeepSeekChat } from '@/composables/useDeepSeekChat'
+import { useAppI18n } from '@/composables/useAppI18n'
+import { useAuthStore } from '@/stores/auth'
 
 const {
   isConfigured,
@@ -132,8 +139,50 @@ const {
   sendMessage,
 } = useDeepSeekChat()
 
-const WELCOME_MESSAGE = "Hello! I'm your XJTLU AI assistant. How can I help today?"
-const NOTIFICATIONS = ['Need help?', 'Open the AI guide', 'Ask me anything']
+const { currentLanguage, t } = useAppI18n()
+const authStore = useAuthStore()
+
+const CHAT_HISTORY_STORAGE_PREFIX = 'xjtlu_ai_history'
+const BIRD_POSITION_STORAGE_KEY = 'xjtlu_ai_bird_position'
+const DRAG_THRESHOLD = 6
+
+const uiText = computed(() => (
+  currentLanguage.value === 'en'
+    ? {
+        openAssistantAriaLabel: 'Open AI assistant',
+        chatBoxAriaLabel: 'XJTLU AI assistant',
+        kicker: 'AI Guide',
+        title: 'XJTLU AI Assistant',
+        closeAssistantAriaLabel: 'Close assistant',
+        apiKeyPrompt: 'Add a DeepSeek API key to start chatting.',
+        apiKeyHintPrefix: 'You can also place the key in',
+        apiKeyHintMiddle: 'as',
+        apiKeyHintSuffix: '.',
+        apiKeyCreatePrefix: 'Create a key from',
+        chatPlaceholder: 'Ask about your study journey...',
+        sendLabel: 'Send',
+        welcomeMessage: "Hello! I'm your XJTLU AI assistant. How can I help today?",
+        notifications: ['Need help?', 'Open the AI guide', 'Ask me anything'],
+        genericError: 'Something went wrong. Please try again in a moment.',
+      }
+    : {
+        openAssistantAriaLabel: '打开 AI 助手',
+        chatBoxAriaLabel: 'XJTLU AI 助手',
+        kicker: 'AI 指南',
+        title: 'XJTLU AI 助手',
+        closeAssistantAriaLabel: '关闭助手',
+        apiKeyPrompt: '添加 DeepSeek API Key 以开始对话。',
+        apiKeyHintPrefix: '你也可以把 Key 放到',
+        apiKeyHintMiddle: '中，变量名为',
+        apiKeyHintSuffix: '。',
+        apiKeyCreatePrefix: '在这里创建 Key：',
+        chatPlaceholder: '问我关于你的学习旅程...',
+        sendLabel: '发送',
+        welcomeMessage: '你好！我是你的 XJTLU AI 助手。今天我能帮你什么？',
+        notifications: ['需要帮忙吗？', '打开 AI 指南', '问我任何问题'],
+        genericError: '出了点问题，请稍后再试。',
+      }
+))
 
 const showChat = ref(false)
 const inputMessage = ref('')
@@ -143,11 +192,228 @@ const currentMood = ref('happy')
 const eyeState = ref('normal')
 const mouthState = ref('smile')
 const showNotification = ref(false)
-const notificationText = ref(NOTIFICATIONS[0])
+const notificationText = ref(uiText.value.notifications[0])
 const messagesContainer = ref(null)
+const chatOwnerKey = ref('guest')
+const viewportSize = ref({
+  width: typeof window === 'undefined' ? 1280 : window.innerWidth,
+  height: typeof window === 'undefined' ? 720 : window.innerHeight,
+})
+const birdPosition = ref({ x: 0, y: 0 })
+const isDragging = ref(false)
+const suppressAvatarClick = ref(false)
+const hasCustomBirdPosition = ref(false)
 
 let notificationIntervalId = null
 let notificationTimeoutId = null
+let isHydratingHistory = false
+const activeDrag = {
+  pointerId: null,
+  startX: 0,
+  startY: 0,
+  originX: 0,
+  originY: 0,
+  moved: false,
+}
+
+function clampNumber(value, min, max) {
+  const safeMax = max < min ? min : max
+  return Math.min(Math.max(value, min), safeMax)
+}
+
+function getLayoutMetrics() {
+  const isMobile = viewportSize.value.width <= 640
+
+  return {
+    margin: isMobile ? 16 : 24,
+    avatarSize: isMobile ? 96 : 108,
+    chatGap: isMobile ? 6 : 4,
+    chatWidth: Math.min(360, Math.max(0, viewportSize.value.width - 32)),
+    chatHeight: Math.min(isMobile ? 500 : 520, Math.max(0, viewportSize.value.height - (isMobile ? 124 : 140))),
+    viewportPadding: 16,
+  }
+}
+
+function buildDefaultBirdPosition() {
+  const { margin, avatarSize } = getLayoutMetrics()
+
+  return {
+    x: Math.max(margin, viewportSize.value.width - margin - avatarSize),
+    y: Math.max(margin, viewportSize.value.height - margin - avatarSize),
+  }
+}
+
+function clampBirdPosition(position) {
+  const { margin, avatarSize } = getLayoutMetrics()
+
+  return {
+    x: clampNumber(position.x, margin, viewportSize.value.width - margin - avatarSize),
+    y: clampNumber(position.y, margin, viewportSize.value.height - margin - avatarSize),
+  }
+}
+
+function loadBirdPosition() {
+  try {
+    const raw = localStorage.getItem(BIRD_POSITION_STORAGE_KEY)
+    if (!raw) {
+      return buildDefaultBirdPosition()
+    }
+
+    const parsed = JSON.parse(raw)
+    if (typeof parsed?.x !== 'number' || typeof parsed?.y !== 'number') {
+      return buildDefaultBirdPosition()
+    }
+
+    hasCustomBirdPosition.value = true
+    return clampBirdPosition(parsed)
+  } catch (storageError) {
+    return buildDefaultBirdPosition()
+  }
+}
+
+function persistBirdPosition() {
+  try {
+    localStorage.setItem(BIRD_POSITION_STORAGE_KEY, JSON.stringify(birdPosition.value))
+  } catch (storageError) {
+    console.warn('Failed to persist AI bird position.', storageError)
+  }
+}
+
+function refreshViewportSize() {
+  viewportSize.value = {
+    width: window.innerWidth,
+    height: window.innerHeight,
+  }
+
+  birdPosition.value = hasCustomBirdPosition.value
+    ? clampBirdPosition(birdPosition.value)
+    : buildDefaultBirdPosition()
+}
+
+const containerStyle = computed(() => ({
+  left: `${birdPosition.value.x}px`,
+  top: `${birdPosition.value.y}px`,
+}))
+
+const chatBoxStyle = computed(() => {
+  const { avatarSize, chatGap, chatWidth, chatHeight, viewportPadding } = getLayoutMetrics()
+  const maxLeft = viewportSize.value.width - viewportPadding - chatWidth
+  const maxTop = viewportSize.value.height - viewportPadding - chatHeight
+  const preferredLeft = birdPosition.value.x + avatarSize - chatWidth
+  const preferredTop = birdPosition.value.y - chatGap - chatHeight
+  const fallbackBelowTop = birdPosition.value.y + avatarSize + chatGap
+  const shouldOpenBelow = preferredTop < viewportPadding && fallbackBelowTop <= maxTop
+  const safeLeft = clampNumber(preferredLeft, viewportPadding, maxLeft)
+  const safeTop = shouldOpenBelow
+    ? clampNumber(fallbackBelowTop, viewportPadding, maxTop)
+    : clampNumber(preferredTop, viewportPadding, maxTop)
+
+  return {
+    left: `${safeLeft - birdPosition.value.x}px`,
+    top: `${safeTop - birdPosition.value.y}px`,
+    right: 'auto',
+    bottom: 'auto',
+  }
+})
+
+function resolveChatOwnerKey() {
+  const userId = authStore.user?.id
+  if (userId !== undefined && userId !== null && String(userId).trim() !== '') {
+    return `user:${userId}`
+  }
+
+  const email = typeof authStore.user?.email === 'string' ? authStore.user.email.trim().toLowerCase() : ''
+  if (email) {
+    return `email:${email}`
+  }
+
+  return 'guest'
+}
+
+function buildHistoryStorageKey(ownerKey) {
+  return `${CHAT_HISTORY_STORAGE_PREFIX}:${ownerKey}`
+}
+
+function normalizeStoredMessages(rawMessages) {
+  if (!Array.isArray(rawMessages)) {
+    return []
+  }
+
+  return rawMessages
+    .filter((entry) => (
+      entry &&
+      (entry.role === 'assistant' || entry.role === 'user') &&
+      typeof entry.content === 'string'
+    ))
+    .map((entry) => ({
+      role: entry.role,
+      content: entry.content,
+    }))
+}
+
+function loadMessagesForOwner(ownerKey) {
+  if (!ownerKey) {
+    return
+  }
+
+  isHydratingHistory = true
+
+  try {
+    if (ownerKey === 'guest') {
+      if (isConfigured.value) {
+        seedWelcomeMessage()
+      } else {
+        messages.value = []
+      }
+      return
+    }
+
+    const raw = localStorage.getItem(buildHistoryStorageKey(ownerKey))
+    const normalizedMessages = normalizeStoredMessages(raw ? JSON.parse(raw) : [])
+
+    if (normalizedMessages.length > 0) {
+      messages.value = normalizedMessages
+      return
+    }
+
+    if (isConfigured.value) {
+      seedWelcomeMessage()
+    } else {
+      messages.value = []
+    }
+  } catch (storageError) {
+    if (isConfigured.value) {
+      seedWelcomeMessage()
+    } else {
+      messages.value = []
+    }
+  } finally {
+    isHydratingHistory = false
+    nextTick(scrollMessagesToBottom)
+  }
+}
+
+function persistMessagesForOwner(ownerKey) {
+  if (!ownerKey || ownerKey === 'guest' || isHydratingHistory) {
+    return
+  }
+
+  try {
+    localStorage.setItem(buildHistoryStorageKey(ownerKey), JSON.stringify(messages.value))
+  } catch (storageError) {
+    console.warn('Failed to persist AI chat history.', storageError)
+  }
+}
+
+function switchChatOwner(nextOwnerKey) {
+  if (!nextOwnerKey || nextOwnerKey === chatOwnerKey.value) {
+    return
+  }
+
+  persistMessagesForOwner(chatOwnerKey.value)
+  chatOwnerKey.value = nextOwnerKey
+  loadMessagesForOwner(nextOwnerKey)
+}
 
 function setMood(mood) {
   currentMood.value = mood
@@ -166,7 +432,7 @@ function seedWelcomeMessage() {
   messages.value = [
     {
       role: 'assistant',
-      content: WELCOME_MESSAGE,
+      content: uiText.value.welcomeMessage,
     },
   ]
 }
@@ -185,7 +451,8 @@ function triggerNotification() {
     return
   }
 
-  notificationText.value = NOTIFICATIONS[Math.floor(Math.random() * NOTIFICATIONS.length)]
+  const notifications = uiText.value.notifications
+  notificationText.value = notifications[Math.floor(Math.random() * notifications.length)]
   showNotification.value = true
 
   if (notificationTimeoutId !== null) {
@@ -196,6 +463,64 @@ function triggerNotification() {
     showNotification.value = false
     notificationTimeoutId = null
   }, 3200)
+}
+
+function handleAvatarPointerDown(event) {
+  if (event.button !== undefined && event.button !== 0) {
+    return
+  }
+
+  activeDrag.pointerId = event.pointerId
+  activeDrag.startX = event.clientX
+  activeDrag.startY = event.clientY
+  activeDrag.originX = birdPosition.value.x
+  activeDrag.originY = birdPosition.value.y
+  activeDrag.moved = false
+  suppressAvatarClick.value = false
+
+  event.currentTarget?.setPointerCapture?.(event.pointerId)
+}
+
+function handleAvatarPointerMove(event) {
+  if (activeDrag.pointerId !== event.pointerId) {
+    return
+  }
+
+  const deltaX = event.clientX - activeDrag.startX
+  const deltaY = event.clientY - activeDrag.startY
+
+  if (!activeDrag.moved && Math.hypot(deltaX, deltaY) < DRAG_THRESHOLD) {
+    return
+  }
+
+  event.preventDefault()
+  activeDrag.moved = true
+  isDragging.value = true
+  birdPosition.value = clampBirdPosition({
+    x: activeDrag.originX + deltaX,
+    y: activeDrag.originY + deltaY,
+  })
+}
+
+function handleAvatarPointerEnd(event) {
+  if (activeDrag.pointerId !== event.pointerId) {
+    return
+  }
+
+  if (event.currentTarget?.hasPointerCapture?.(event.pointerId)) {
+    event.currentTarget.releasePointerCapture(event.pointerId)
+  }
+
+  suppressAvatarClick.value = activeDrag.moved
+  isDragging.value = false
+
+  if (activeDrag.moved) {
+    hasCustomBirdPosition.value = true
+    persistBirdPosition()
+  }
+
+  activeDrag.pointerId = null
+  activeDrag.moved = false
 }
 
 function scrollMessagesToBottom() {
@@ -213,6 +538,15 @@ function toggleChat() {
     hideNotification()
     nextTick(scrollMessagesToBottom)
   }
+}
+
+function handleAvatarClick() {
+  if (suppressAvatarClick.value) {
+    suppressAvatarClick.value = false
+    return
+  }
+
+  toggleChat()
 }
 
 function saveInputApiKey() {
@@ -236,7 +570,7 @@ async function sendCurrentMessage() {
     return
   }
 
-  const safetyIssue = getSafetyIssue(userMessage)
+  const safetyIssue = getSafetyIssue(userMessage, currentLanguage.value)
   if (safetyIssue) {
     inputMessage.value = ''
     messages.value.push({
@@ -259,11 +593,11 @@ async function sendCurrentMessage() {
   scrollMessagesToBottom()
 
   const history = messages.value.slice(0, -1)
-  const reply = await sendMessage(userMessage, history)
+  const reply = await sendMessage(userMessage, history, currentLanguage.value)
 
   messages.value.push({
     role: 'assistant',
-    content: reply || error.value || 'Something went wrong. Please try again in a moment.',
+    content: reply || error.value || uiText.value.genericError,
   })
 
   setMood(reply ? 'happy' : 'sad')
@@ -279,10 +613,9 @@ watch(isLoading, (loading) => {
 
   if (error.value) {
     setMood('sad')
-    return
+  } else {
+    setMood('happy')
   }
-
-  setMood('happy')
 })
 
 watch(
@@ -292,17 +625,50 @@ watch(
   },
 )
 
+watch(
+  messages,
+  () => {
+    persistMessagesForOwner(chatOwnerKey.value)
+  },
+  { deep: true },
+)
+
+watch(
+  () => resolveChatOwnerKey(),
+  (nextOwnerKey, previousOwnerKey) => {
+    if (!previousOwnerKey || nextOwnerKey === previousOwnerKey) {
+      return
+    }
+    switchChatOwner(nextOwnerKey)
+  },
+)
+
+watch(
+  () => currentLanguage.value,
+  () => {
+    if (messages.value.length === 1 && messages.value[0]?.role === 'assistant') {
+      messages.value[0].content = uiText.value.welcomeMessage
+    }
+
+    if (!showNotification.value) {
+      notificationText.value = uiText.value.notifications[0]
+    }
+  },
+)
+
 onMounted(() => {
   loadApiKey()
-
-  if (isConfigured.value) {
-    seedWelcomeMessage()
-  }
+  birdPosition.value = loadBirdPosition()
+  chatOwnerKey.value = resolveChatOwnerKey()
+  loadMessagesForOwner(chatOwnerKey.value)
+  window.addEventListener('resize', refreshViewportSize)
 
   notificationIntervalId = window.setInterval(triggerNotification, 15000)
 })
 
 onBeforeUnmount(() => {
+  persistMessagesForOwner(chatOwnerKey.value)
+
   if (notificationIntervalId !== null) {
     window.clearInterval(notificationIntervalId)
   }
@@ -310,16 +676,19 @@ onBeforeUnmount(() => {
   if (notificationTimeoutId !== null) {
     window.clearTimeout(notificationTimeoutId)
   }
+
+  window.removeEventListener('resize', refreshViewportSize)
 })
 </script>
 
 <style scoped>
 .xjtlu-bird-container {
   position: fixed;
-  right: 24px;
-  bottom: 24px;
+  left: 0;
+  top: 0;
   z-index: 1300;
   pointer-events: none;
+  will-change: left, top;
 }
 
 .bird-wrapper,
@@ -334,13 +703,23 @@ onBeforeUnmount(() => {
   padding: 0;
   border: none;
   background: transparent;
-  cursor: pointer;
+  cursor: grab;
   filter: drop-shadow(0 16px 22px rgba(7, 12, 22, 0.28));
   transition: transform 0.24s ease;
+  user-select: none;
+  touch-action: none;
 }
 
 .bird-avatar:hover {
   transform: translateY(-4px) scale(1.03);
+}
+
+.bird-avatar.dragging,
+.bird-avatar.dragging:hover,
+.bird-avatar.dragging.clickable:hover {
+  cursor: grabbing;
+  transform: none;
+  animation: none;
 }
 
 .bird-avatar.clickable:hover {
@@ -948,11 +1327,6 @@ onBeforeUnmount(() => {
 }
 
 @media (max-width: 640px) {
-  .xjtlu-bird-container {
-    right: 16px;
-    bottom: 16px;
-  }
-
   .bird-avatar {
     width: 96px;
     height: 96px;
