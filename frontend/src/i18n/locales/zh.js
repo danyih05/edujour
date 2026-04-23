@@ -209,7 +209,7 @@ export default {
     y2_1: {
       title: '身份锻炉',
       subtitle: '为 Y2-1 锻造一个新的学生身份，这个形象会回写到地图上的旅者身上。',
-      charge: '锻造充能 {current} / 4',
+      charge: '锻造充能 {current} / {total}',
       preview: '实时预览',
       cardTitle: '学生身份卡',
       fields: {
@@ -230,7 +230,7 @@ export default {
       outfitDesc: '它会成为旅者的主服装颜色。',
       toolTitle: '5. 选择一个随身工具',
       toolDesc: '每位探索者都需要一个能代表自己解决问题方式的物件。',
-      progressTitle: '{current} / 4 枚徽记已充能',
+      progressTitle: '{current} / {total} 枚徽记已充能',
       progressNeedName: '先给你的旅者起一个代号。',
       progressCharging: '继续为剩余徽记充能，直到身份足够稳定，可以封印。',
       progressReady: '四枚徽记已全部充能，学生身份卡已经准备就绪。',

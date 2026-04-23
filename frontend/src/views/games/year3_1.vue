@@ -1044,12 +1044,18 @@ button {
     radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.28), transparent 36%),
     linear-gradient(180deg, #1e1b4b, #0f172a 78%);
   box-shadow: 0 0 60px rgba(99, 102, 241, 0.26);
+  max-height: 90vh;         /* 新增 */
+  overflow-y: auto;         /* 新增 */
+  padding-right: 10px;
 }
 
 .victory-card {
   border: 2px solid #fde047;
   background: linear-gradient(180deg, #1e3a8a, #0f172a);
   box-shadow: 0 0 60px rgba(253, 224, 71, 0.24);
+  max-height: 90vh;         /* 新增 */
+  overflow-y: auto;         /* 新增 */
+  padding-right: 10px;
 }
 
 .unlock-glyph,
@@ -1219,6 +1225,15 @@ button {
 .modal-fade-enter-from,
 .modal-fade-leave-to {
   opacity: 0;
+}
+
+@media (max-width: 560px) {
+  .unlock-card,
+  .victory-card {
+    max-height: 85vh;       /* 给小屏多留一点边距 */
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;  /* iOS 顺滑滚动 */
+  }
 }
 
 @keyframes spinMix {
