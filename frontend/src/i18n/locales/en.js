@@ -209,7 +209,7 @@ export default {
     y2_1: {
       title: 'Identity Forge',
       subtitle: 'Forge a new student identity for Y2-1. This appearance will be written back to the traveler on the map.',
-      charge: 'Forge Charge {current} / 4',
+      charge: 'Forge Charge {current} / {total}',
       preview: 'Live Preview',
       cardTitle: 'Student Identity Card',
       fields: {
@@ -230,7 +230,7 @@ export default {
       outfitDesc: 'It becomes the main outfit color for your traveler.',
       toolTitle: '5. Carry one familiar tool',
       toolDesc: 'Every explorer needs one item that represents how they solve problems.',
-      progressTitle: '{current} / 4 sigils charged',
+      progressTitle: '{current} / {total} sigils charged',
       progressNeedName: 'Start by giving your traveler a codename.',
       progressCharging: 'Keep charging the remaining sigils until the identity is stable enough to seal.',
       progressReady: 'All four sigils are charged. Your student card is ready.',

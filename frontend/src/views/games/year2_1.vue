@@ -15,7 +15,9 @@
 
     <div class="main">
       <section class="preview">
-        <div class="charge-left">{{ t('pages.y2_1.charge', { current: chargedChoices }) }}</div>
+        <div class="charge-left">
+          {{ t('pages.y2_1.charge', { current: completedSteps, total: totalSteps }) }}
+        </div>
         <p class="label">{{ t('pages.y2_1.preview') }}</p>
         <div class="stage">
           <div class="avatar" :style="avatarStyle">
@@ -213,9 +215,11 @@
         </div>
 
         <div class="progress">
-          <strong>{{ t('pages.y2_1.progressTitle', { current: chargedChoices }) }}</strong>
+          <strong>
+            {{ t('pages.y2_1.progressTitle', { current: completedSteps, total: totalSteps }) }}
+          </strong>
           <div class="progressbar">
-            <div class="fill" :style="{ width: `${chargedChoices * 25}%` }"></div>
+            <div class="fill" :style="{ width: progressPercent + '%' }"></div>
           </div>
           <p>{{ progressCopy }}</p>
         </div>
@@ -277,7 +281,6 @@ const ZH_COPY = {
   awaitingChoice: '待选择',
   noExperience: '目前暂无相关经历',
   modalDesc: '身份封印后，系统会把 GPA 档位、经历标签、语言成绩和 GRE 信息一起写入角色卡。',
-  progressNeedExtra: '四枚徽记已充能，但还需要补全经历、语言考试和 GRE 信息。',
 }
 
 const EN_COPY = {
@@ -301,7 +304,6 @@ const EN_COPY = {
   awaitingChoice: 'Pending',
   noExperience: 'No related experience yet',
   modalDesc: 'Once sealed, the role card will store your GPA band, experience tags, language-test score, and GRE info.',
-  progressNeedExtra: 'All four sigils are charged, but experience, language, and GRE information still need to be completed.',
 }
 
 const gpaDefs = [
@@ -390,6 +392,35 @@ const state = reactive({
   greScore: '',
 })
 
+const totalSteps = 8   // 一共 8 个必填步骤
+
+const completedSteps = computed(() => {
+  let steps = 0
+  if (state.name) steps += 1
+  if (selectedGpa.value) steps += 1
+  if (selectedHair.value) steps += 1
+  if (selectedOutfit.value) steps += 1
+  if (selectedTool.value) steps += 1
+  if (experienceAnswered.value) steps += 1
+  if (languageAnswered.value) steps += 1
+  if (greAnswered.value) steps += 1
+  return steps
+})
+
+const sealReady = computed(() => completedSteps.value === totalSteps)
+
+// 进度条百分比（0～100）
+const progressPercent = computed(() =>
+  Math.floor((completedSteps.value / totalSteps) * 100)
+)
+
+// 底部提示文字
+const progressCopy = computed(() => {
+  if (!state.name) return t('pages.y2_1.progressNeedName')
+  if (completedSteps.value < totalSteps) return t('pages.y2_1.progressCharging')
+  return t('pages.y2_1.progressReady')
+})
+
 const showSummary = ref(false)
 
 const ui = computed(() => (currentLanguage.value === 'en' ? EN_COPY : ZH_COPY))
@@ -465,15 +496,6 @@ const roleCard = computed(() => {
 
 const selectedRoleIcon = computed(() => roleCard.value.icon)
 
-const chargedChoices = computed(() => {
-  let charged = 0
-  if (selectedGpa.value) charged += 1
-  if (selectedHair.value) charged += 1
-  if (selectedOutfit.value) charged += 1
-  if (selectedTool.value) charged += 1
-  return charged
-})
-
 const experienceAnswered = computed(() => Object.values(state.experiences).every(Boolean))
 
 const languageAnswered = computed(() => {
@@ -487,17 +509,6 @@ const greAnswered = computed(() => {
   if (state.greMode === 'none') return true
   return Boolean(state.greScore.trim())
 })
-
-const sealReady = computed(() => Boolean(
-  state.name &&
-  selectedGpa.value &&
-  selectedHair.value &&
-  selectedOutfit.value &&
-  selectedTool.value &&
-  experienceAnswered.value &&
-  languageAnswered.value &&
-  greAnswered.value,
-))
 
 const experienceSummary = computed(() => {
   if (!experienceAnswered.value) return ui.value.awaitingChoice
@@ -521,13 +532,6 @@ const greSummary = computed(() => {
   if (!state.greMode) return ui.value.awaitingChoice
   if (state.greMode === 'none') return ui.value.noneYet
   return `GRE ${state.greScore.trim()}`
-})
-
-const progressCopy = computed(() => {
-  if (!state.name) return t('pages.y2_1.progressNeedName')
-  if (chargedChoices.value < 4) return t('pages.y2_1.progressCharging')
-  if (!experienceAnswered.value || !languageAnswered.value || !greAnswered.value) return ui.value.progressNeedExtra
-  return t('pages.y2_1.progressReady')
 })
 
 const avatarStyle = computed(() => ({
@@ -646,6 +650,8 @@ function returnToMap() {
   background: rgba(30, 41, 59, 0.72);
   border: 1px solid rgba(248, 214, 162, 0.28);
   z-index: 5;
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 .reward-badge {
@@ -674,6 +680,10 @@ function returnToMap() {
   padding: 24px 28px 28px;
   overflow-y: auto;
   height: 100%;
+  overflow-y: auto;
+  will-change: transform;       /* 提前告知浏览器 */
+  transform: translateZ(0);     /* 强制提升到合成层 */
+  backface-visibility: hidden;  /* 减少多余绘制 */
 }
 
 .preview {
@@ -1209,6 +1219,8 @@ input:focus {
   .panel {
     padding-left: 18px;
     padding-right: 18px;
+    -webkit-overflow-scrolling: touch;   /* iOS 顺滑滚动 */
+    overflow-y: auto;
   }
 
   .topbar {
