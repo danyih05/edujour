@@ -28,6 +28,8 @@ export default {
       saveAndReturn: '保存并返回',
     },
     labels: {
+      previous: '上一题',
+      next: '下一题',
       currentBalance: '当前余额',
       currentStatus: '当前状态',
       progress: '当前进度',
@@ -303,6 +305,12 @@ export default {
       },
       regionsTitle: '目的地预览',
       regionsCopy: '左右滑动地区卡，比较每条路径的特点，然后在右侧回答问题。',
+      common: {
+        labels: {
+          previous: '上一题',
+          next: '下一题',
+        },
+      },
       questions: [
         {
           q: '哪种学习节奏更适合你？',

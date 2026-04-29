@@ -49,6 +49,25 @@
             <span>{{ choice.text }}</span>
           </button>
         </div>
+        <!-- 回溯导航按钮 -->
+        <div v-if="questions.length > 0 && !showResult" class="nav-buttons">
+          <button
+            type="button"
+            class="btn-nav"
+            :disabled="currentQ === 0"
+            @click="goToPrevQuestion"
+          >
+            ← {{ t('common.labels.previous') || '上一题' }}
+          </button>
+          <button
+            type="button"
+            class="btn-nav"
+            :disabled="currentQ === questions.length - 1"
+            @click="goToNextQuestion"
+          >
+            {{ t('common.labels.next') || '下一题' }} →
+          </button>
+        </div>
       </section>
     </div>
 
@@ -143,10 +162,28 @@ const questions = computed(() => {
 
 const currentQ = ref(0)
 const selectedChoice = ref(null)
-const scores = reactive({ uk: 0, hk: 0, sg: 0, us: 0, eu: 0 })
 const showResult = ref(false)
 const winner = ref('uk')
 const highlightedRoutes = ref([])
+
+// 记录每一次作答：{ questionIndex: number, choiceId: 'a'|'b' }
+const answersHistory = ref([])
+
+// 基于回答历史动态计算五条路线的当前得分
+const scores = computed(() => {
+  const totals = { uk: 0, hk: 0, sg: 0, us: 0, eu: 0 }
+  answersHistory.value.forEach((h) => {
+    const q = questions.value[h.questionIndex]
+    if (!q) return
+    const choice = q.choices.find((c) => c.id === h.choiceId)
+    if (!choice) return
+    Object.entries(choice.weights).forEach(([key, val]) => {
+      totals[key] = (totals[key] || 0) + val
+    })
+  })
+  return totals
+})
+
 
 const question = computed(() => questions.value[currentQ.value] || null)
 const routes = computed(() => [
@@ -179,47 +216,65 @@ function portalClass(type) {
 
 function answerQuestion(choiceId) {
   if (!question.value) return
+  const qIndex = currentQ.value
+
+  // 如果当前题目已经答过，则替换并删除之后的所有作答
+  const existingIdx = answersHistory.value.findIndex((h) => h.questionIndex === qIndex)
+  if (existingIdx >= 0) {
+    answersHistory.value.splice(existingIdx, answersHistory.value.length - existingIdx, {
+      questionIndex: qIndex,
+      choiceId,
+    })
+  } else {
+    answersHistory.value.push({ questionIndex: qIndex, choiceId })
+  }
+
   selectedChoice.value = choiceId
-  const choice = question.value.choices.find((item) => item.id === choiceId)
-  if (!choice) return
 
-  Object.entries(choice.weights).forEach(([route, value]) => {
-    scores[route] += value
-  })
+  // 高亮刚刚获得分数的路线
+  const choice = question.value.choices.find((c) => c.id === choiceId)
+  highlightedRoutes.value = Object.keys(choice.weights).filter((r) => choice.weights[r] > 0)
+  setTimeout(() => { highlightedRoutes.value = [] }, 1000)
 
-  // Highlight routes that gained points
-  highlightedRoutes.value = Object.keys(choice.weights).filter(route => choice.weights[route] > 0)
-
-  // Clear highlight after a short delay
-  setTimeout(() => {
-    highlightedRoutes.value = []
-  }, 1000)
-
-  currentQ.value += 1
-  selectedChoice.value = null
-
-  if (currentQ.value >= questions.value.length) {
-    const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1])
+  // 所有题目都已作答 → 显示结果
+  if (answersHistory.value.length === questions.value.length) {
+    const final = scores.value  // 利用刚刚更新的 computed
+    const sorted = Object.entries(final).sort((a, b) => b[1] - a[1])
     winner.value = sorted[0]?.[0] || 'uk'
     showResult.value = true
     nextTick(() => {
-    // 稍微延迟，等待弹窗 DOM 完全挂载后滚动
-    setTimeout(() => {
-      const el = document.querySelector('.result-overlay')
-      if (el) el.scrollIntoView({ behavior: 'smooth' })
-    }, 100)
-  })
+      setTimeout(() => {
+        const el = document.querySelector('.result-overlay')
+        if (el) el.scrollIntoView({ behavior: 'smooth' })
+      }, 100)
+    })
+    return
   }
+
+  // 自动前进到下一题
+  currentQ.value = qIndex + 1
+  const next = answersHistory.value.find((h) => h.questionIndex === currentQ.value)
+  selectedChoice.value = next ? next.choiceId : null
+}
+
+function goToPrevQuestion() {
+  if (currentQ.value <= 0) return
+  currentQ.value--
+  const prev = answersHistory.value.find((h) => h.questionIndex === currentQ.value)
+  selectedChoice.value = prev ? prev.choiceId : null
+}
+
+function goToNextQuestion() {
+  if (currentQ.value >= questions.value.length - 1) return
+  currentQ.value++
+  const next = answersHistory.value.find((h) => h.questionIndex === currentQ.value)
+  selectedChoice.value = next ? next.choiceId : null
 }
 
 function resetGame() {
   currentQ.value = 0
   selectedChoice.value = null
-  scores.uk = 0
-  scores.hk = 0
-  scores.sg = 0
-  scores.us = 0
-  scores.eu = 0
+  answersHistory.value = []
   showResult.value = false
   winner.value = 'uk'
 }
@@ -293,6 +348,41 @@ function completeWithReward() {
 .btn-claim:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+/* ---- 回溯导航按钮 ---- */
+.nav-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.btn-nav {
+  padding: 8px 18px;
+  border: 2px solid rgba(249, 217, 118, 0.55);
+  border-radius: 999px;
+  background: rgba(11, 19, 26, 0.7);
+  color: #f9d976;
+  font-weight: 700;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: 0.25s ease;
+  backdrop-filter: blur(4px);
+}
+
+.btn-nav:hover:not(:disabled) {
+  background: rgba(249, 217, 118, 0.15);
+  border-color: #f9d976;
+  transform: translateY(-1px);
+  box-shadow: 0 0 14px rgba(249, 217, 118, 0.25);
+}
+
+.btn-nav:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  border-color: rgba(255, 255, 255, 0.15);
+  color: #8a99b0;
 }
 
 .crossroads-game {
