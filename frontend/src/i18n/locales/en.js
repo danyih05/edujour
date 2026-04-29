@@ -307,16 +307,20 @@ export default {
       routes: {
         uk: 'Path of Albion (UK)',
         us: 'Path of the New World (USA)',
+        australia: 'Path of Australia',
         eu: 'Path of Continental Europe',
         sg: 'Path of the Lion City (Singapore)',
         hk: 'Path of the Orient (Hong Kong)',
+        niche: 'Japan / Korea and other niche regions',
       },
       routeKeywords: {
         uk: ['Classic campus', 'Academic tradition'],
         us: ['Fast-track', 'Career ambition'],
+        australia: ['Southern hemisphere', 'Livable cities'],
         eu: ['Cultural depth', 'Research focus'],
         sg: ['Practical edge', 'Asia gateway'],
         hk: ['City pulse', 'Finance link'],
+        niche: ['Niche route', 'Custom planning'],
       },
       claim: 'Accept Route Suggestion and Proceed',
       manualRegion: {
@@ -422,6 +426,12 @@ export default {
           desc: '<b>Your selection points to the USA.</b><br><br>You value fast-track career ambition, diverse internships, and a dynamic academic ecosystem. The next step is to align your application with practical outcomes and strong extracurricular evidence.',
           analysis: 'The US is ideal for students who want broad opportunity, flexibility, and early career momentum. Keep building real evidence and a compelling personal story.',
         },
+        australia: {
+          title: 'Route Result: Southern Cross Explorer',
+          icon: '🦘',
+          desc: '<b>Your selection points to Australia.</b><br><br>You value a clear application rhythm, an English-speaking environment, livable cities, and a relatively stable study path. Next, compare program requirements with city resources.',
+          analysis: 'Australia suits students who want a steady English-speaking route with strong city life. Keep checking program fit, internship access, and visa planning.',
+        },
         eu: {
           title: 'Route Result: Scholar of Continental Europe',
           icon: '🏛️',
@@ -440,6 +450,12 @@ export default {
           desc: '<b>Your selection points to Hong Kong.</b><br><br>You value city vibrancy, finance-tech connections, and a strong Asian ecosystem. Plan for a compact timeline and clear evidence that matches the market demand.',
           analysis: 'Hong Kong works well for students who want a busy urban experience with strong regional networks. Build your personal story around speed, relevance, and adaptability.',
         },
+        niche: {
+          title: 'Route Result: Niche Region Explorer',
+          icon: '🧭',
+          desc: '<b>Your selection points to Japan / Korea and other niche regions.</b><br><br>These routes usually depend more on language, program fit, timeline, and school-specific rules, so they need more individual planning.',
+          analysis: 'Niche regions. Please contact your DA for more study abroad information.',
+        },
       },
     },
     y2_3: {
@@ -448,6 +464,7 @@ export default {
       currentAvatar: 'Current profile: GPA 82/100 | STEM/CS track | 1 ordinary internship',
       matchedRoute: 'Matched destination: {country}',
       fallbackCopy: 'No saved country match was found yet, so the game is showing a cross-region fallback set for now. Once you finish the previous level, this list will switch automatically.',
+<<<<<<< HEAD
       regionSelector: {
         title: 'Unhappy with the match? Choose a region',
         copy: 'Changing the region immediately swaps the school deck below, so you can tier the list around your own target.',
@@ -461,6 +478,9 @@ export default {
         add: 'Add card',
         added: 'Already added',
       },
+=======
+      nicheMessage: 'Niche regions. Please contact your DA for more study abroad information.',
+>>>>>>> b6c92d6 (Update edujour project)
       predict: 'Divinate the Scales',
       feedbackTitle: 'Tiering Prophecy',
       seal: 'Seal This Tier Plan and Return',

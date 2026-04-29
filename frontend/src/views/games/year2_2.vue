@@ -130,44 +130,44 @@ const { currentLanguage, t, tm, localize } = useAppI18n()
 
 const questionWeights = [
   {
-    a: { hk: 2, sg: 2, us: 1, uk: 0, eu: 0 },
-    b: { uk: 2, eu: 2, us: 1, hk: 0, sg: 0 },
+    a: { hk: 2, sg: 2, us: 1, australia: 2, niche: 1, uk: 0, eu: 0 },
+    b: { uk: 2, eu: 2, us: 1, australia: 0, niche: 0, hk: 0, sg: 0 },
   },
   {
-    a: { hk: 2, sg: 1, eu: 1, uk: 0, us: 0 },
-    b: { us: 2, uk: 1, eu: 1, hk: 0, sg: 0 },
+    a: { hk: 2, sg: 1, eu: 1, australia: 2, niche: 1, uk: 0, us: 0 },
+    b: { us: 2, uk: 1, eu: 1, australia: 0, niche: 0, hk: 0, sg: 0 },
   },
   {
-    a: { hk: 2, sg: 2, uk: 0, us: 1, eu: 0 },
-    b: { uk: 2, eu: 2, us: 0, hk: 0, sg: 0 },
+    a: { hk: 2, sg: 2, niche: 3, australia: 1, uk: 0, us: 1, eu: 0 },
+    b: { uk: 2, eu: 2, australia: 1, us: 0, niche: 0, hk: 0, sg: 0 },
   },
   {
-    a: { sg: 2, hk: 1, eu: 1, uk: 0, us: 0 },
-    b: { us: 2, uk: 1, eu: 1, hk: 0, sg: 0 },
+    a: { sg: 2, hk: 1, australia: 2, eu: 1, niche: 0, uk: 0, us: 0 },
+    b: { us: 2, uk: 1, eu: 1, australia: 0, niche: 1, hk: 0, sg: 0 },
   },
   {
-    a: { hk: 2, sg: 2, us: 0, uk: 0, eu: 0 },
-    b: { uk: 2, eu: 2, us: 0, hk: 0, sg: 0 },
+    a: { hk: 2, sg: 2, australia: 2, niche: 2, us: 0, uk: 0, eu: 0 },
+    b: { uk: 2, eu: 2, australia: 0, niche: 0, us: 0, hk: 0, sg: 0 },
   },
   {
-    a: { sg: 2, hk: 1, eu: 1, uk: 0, us: 0 },
-    b: { us: 2, uk: 1, eu: 1, hk: 0, sg: 0 },
+    a: { sg: 2, hk: 1, australia: 2, niche: 2, eu: 1, uk: 0, us: 0 },
+    b: { us: 2, uk: 1, eu: 1, australia: 0, niche: 0, hk: 0, sg: 0 },
   },
   {
-    a: { hk: 2, sg: 1, us: 1, uk: 0, eu: 0 },
-    b: { uk: 2, eu: 1, us: 0, hk: 0, sg: 0 },
+    a: { hk: 2, sg: 1, australia: 1, niche: 3, us: 1, uk: 0, eu: 0 },
+    b: { uk: 2, eu: 1, australia: 0, niche: 0, us: 0, hk: 0, sg: 0 },
   },
   {
-    a: { uk: 2, eu: 2, hk: 0, sg: 0, us: 0 },
-    b: { us: 2, sg: 2, hk: 0, uk: 0, eu: 0 },
+    a: { uk: 2, eu: 2, australia: 1, niche: 0, hk: 0, sg: 0, us: 0 },
+    b: { us: 2, sg: 2, australia: 2, niche: 0, hk: 0, uk: 0, eu: 0 },
   },
   {
-    a: { hk: 2, sg: 2, uk: 0, us: 0, eu: 0 },
-    b: { us: 2, eu: 2, hk: 0, sg: 0, uk: 0 },
+    a: { hk: 2, sg: 2, australia: 2, niche: 3, uk: 0, us: 0, eu: 0 },
+    b: { us: 2, eu: 2, australia: 0, niche: 0, hk: 0, sg: 0, uk: 0 },
   },
   {
-    a: { uk: 2, eu: 2, sg: 0, hk: 0, us: 0 },
-    b: { us: 2, hk: 2, sg: 0, uk: 0, eu: 0 },
+    a: { uk: 2, eu: 2, australia: 0, niche: 0, sg: 0, hk: 0, us: 0 },
+    b: { us: 2, hk: 2, australia: 2, niche: 3, sg: 0, uk: 0, eu: 0 },
   },
 ]
 
@@ -197,7 +197,7 @@ const answersHistory = ref([])
 
 // 基于回答历史动态计算五条路线的当前得分
 const scores = computed(() => {
-  const totals = { uk: 0, hk: 0, sg: 0, us: 0, eu: 0 }
+  const totals = { uk: 0, hk: 0, sg: 0, us: 0, eu: 0, australia: 0, niche: 0 }
   answersHistory.value.forEach((h) => {
     const q = questions.value[h.questionIndex]
     if (!q) return
@@ -215,9 +215,11 @@ const question = computed(() => questions.value[currentQ.value] || null)
 const routes = computed(() => [
   { id: 'uk', icon: '🏰', label: t('pages.y2_2.routes.uk'), keywords: [t('pages.y2_2.routeKeywords.uk.0'), t('pages.y2_2.routeKeywords.uk.1')] },
   { id: 'us', icon: '🗽', label: t('pages.y2_2.routes.us'), keywords: [t('pages.y2_2.routeKeywords.us.0'), t('pages.y2_2.routeKeywords.us.1')] },
+  { id: 'australia', icon: '🦘', label: t('pages.y2_2.routes.australia'), keywords: [t('pages.y2_2.routeKeywords.australia.0'), t('pages.y2_2.routeKeywords.australia.1')] },
   { id: 'eu', icon: '🏛️', label: t('pages.y2_2.routes.eu'), keywords: [t('pages.y2_2.routeKeywords.eu.0'), t('pages.y2_2.routeKeywords.eu.1')] },
   { id: 'sg', icon: '🌏', label: t('pages.y2_2.routes.sg'), keywords: [t('pages.y2_2.routeKeywords.sg.0'), t('pages.y2_2.routeKeywords.sg.1')] },
   { id: 'hk', icon: '🏙️', label: t('pages.y2_2.routes.hk'), keywords: [t('pages.y2_2.routeKeywords.hk.0'), t('pages.y2_2.routeKeywords.hk.1')] },
+  { id: 'niche', icon: '🧭', label: t('pages.y2_2.routes.niche'), keywords: [t('pages.y2_2.routeKeywords.niche.0'), t('pages.y2_2.routeKeywords.niche.1')] },
 ])
 const countryOptions = getYear2CountrySchoolOptions()
 
@@ -227,7 +229,7 @@ const result = computed(() => {
   const localizedResult = tm(`pages.y2_2.results.${winner.value}`) || {}
   return {
     title: localizedResult.title || '',
-    icon: localizedResult.icon || (winner.value === 'uk' ? '🏰' : winner.value === 'hk' ? '🏙️' : winner.value === 'us' ? '🗽' : winner.value === 'sg' ? '🌏' : '🏛️'),
+    icon: localizedResult.icon || (winner.value === 'uk' ? '🏰' : winner.value === 'hk' ? '🏙️' : winner.value === 'us' ? '🗽' : winner.value === 'sg' ? '🌏' : winner.value === 'australia' ? '🦘' : winner.value === 'niche' ? '🧭' : '🏛️'),
     desc: localizedResult.desc || '',
     analysis: localizedResult.analysis || '',
   }

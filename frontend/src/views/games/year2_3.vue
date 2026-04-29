@@ -96,7 +96,14 @@
         :items="guideItems"
       />
 
-      <div class="card-deck" :class="{ selecting: selectedCardId }" @dragover.prevent @drop="dropOn('deck')">
+      <section v-if="isNicheCountry" class="niche-info-panel">
+        <div class="niche-icon">{{ countryConfig.icon }}</div>
+        <h3>{{ matchedCountryLabel }}</h3>
+        <p>{{ nicheMessage }}</p>
+        <button type="button" class="btn-complete" @click="completeWithResult">{{ t('pages.y2_3.seal') }}</button>
+      </section>
+
+      <div v-else class="card-deck" :class="{ selecting: selectedCardId }" @dragover.prevent @drop="dropOn('deck')">
         <SchoolCard
           v-for="card in cardsIn('deck')"
           :key="card.id"
@@ -109,7 +116,7 @@
         />
       </div>
 
-      <div class="tiers">
+      <div v-if="!isNicheCountry" class="tiers">
         <section
           v-for="tier in tiers"
           :key="tier.id"
@@ -134,13 +141,13 @@
         </section>
       </div>
 
-      <div class="controls">
+      <div v-if="!isNicheCountry" class="controls">
         <button type="button" class="btn-predict" @click="evaluateTiers">
           <i class="fas fa-crystal-ball"></i> {{ t('pages.y2_3.predict') }}
         </button>
       </div>
 
-      <section v-if="feedback.length" class="feedback-panel">
+      <section v-if="!isNicheCountry && feedback.length" class="feedback-panel">
         <div class="fb-title">
           <span><i class="fas fa-scroll"></i> {{ t('pages.y2_3.feedbackTitle') }}</span>
           <span class="fb-score">+{{ score }} <i class="fas fa-coins"></i></span>
@@ -215,7 +222,13 @@ const selectedCountryKey = ref(persistedCountryKey.value || profileMatchedCountr
 const usingFallbackCountry = computed(() => selectedCountryKey.value === 'global')
 const countryConfig = computed(() => getYear2CountrySchoolConfig(selectedCountryKey.value || 'global'))
 const matchedCountryLabel = computed(() => localize(countryConfig.value.label))
+<<<<<<< HEAD
 const baseSchoolCards = computed(() => countryConfig.value.schools.map((school) => ({
+=======
+const isNicheCountry = computed(() => countryConfig.value.key === 'niche')
+const nicheMessage = computed(() => localize(countryConfig.value.nicheMessage) || t('pages.y2_3.nicheMessage'))
+const schoolCards = computed(() => countryConfig.value.schools.map((school) => ({
+>>>>>>> b6c92d6 (Update edujour project)
   ...school,
   name: localize(school.name),
   tag: localize(school.tag),
@@ -289,6 +302,15 @@ watch(() => schoolCards.value.map((card) => card.id).join('|'), () => {
 }, { immediate: true })
 
 const guideItems = computed(() => {
+  if (isNicheCountry.value) {
+    return [
+      {
+        title: matchedCountryLabel.value,
+        text: nicheMessage.value,
+      },
+    ]
+  }
+
   const tierBuckets = getTierBuckets(schoolCards.value)
   const joinNames = (items) => items.map((item) => item.name).join(' / ')
   const reachExamples = joinNames(tierBuckets.reach)
@@ -392,6 +414,8 @@ function addFeedback(key, status, icon, title, text) {
 }
 
 function evaluateTiers() {
+  if (isNicheCountry.value) return
+
   if (cardsIn('deck').length) {
     window.alert(t('pages.y2_3.alertCompleteDeck'))
     return
@@ -516,6 +540,21 @@ function evaluateTiers() {
 }
 
 function completeWithResult() {
+  if (isNicheCountry.value) {
+    emit('complete', {
+      completed: true,
+      passed: true,
+      resultType: 'summary',
+      resultData: {
+        matchedCountry: matchedCountryLabel.value,
+        selectedCountry: countryConfig.value.key,
+        message: nicheMessage.value,
+      },
+      language: currentLanguage.value,
+    })
+    return
+  }
+
   const tierBuckets = {
     reach: cardsIn('reach').map((card) => card.name),
     match: cardsIn('match').map((card) => card.name),
@@ -827,6 +866,42 @@ function completeWithResult() {
   gap: 15px;
   flex-wrap: wrap;
   justify-content: center;
+}
+
+.niche-info-panel {
+  margin-top: 10px;
+  padding: 28px;
+  border: 2px dashed #475569;
+  border-radius: 16px;
+  background: rgba(0, 0, 0, 0.36);
+  text-align: center;
+  box-shadow: inset 0 0 24px rgba(96, 165, 250, 0.08);
+}
+
+.niche-icon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 12px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(59, 130, 246, 0.18);
+  border: 1px solid rgba(147, 197, 253, 0.32);
+  font-size: 2rem;
+}
+
+.niche-info-panel h3 {
+  margin: 0 0 10px;
+  color: #dbeafe;
+  font-size: 1.3rem;
+}
+
+.niche-info-panel p {
+  max-width: 620px;
+  margin: 0 auto 20px;
+  color: #fcd34d;
+  font-weight: 800;
+  line-height: 1.65;
 }
 
 .tiers {
