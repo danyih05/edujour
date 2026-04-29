@@ -82,6 +82,9 @@
         <label class="field">
           <span>{{ copy.login.email }}</span>
           <input v-model.trim="form.email" type="email" :placeholder="copy.login.email">
+          <small v-if="mode === 'register'" class="field-hint">
+            {{ currentLanguage === 'en' ? 'Please use your real university email' : '请填写真实学校邮箱' }}
+          </small>
         </label>
 
         <label class="field">
