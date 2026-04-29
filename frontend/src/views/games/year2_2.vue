@@ -101,7 +101,7 @@ import KnowledgeGuidePanel from '@/components/KnowledgeGuidePanel.vue'
 import { getYear2CountrySchoolConfig, persistMatchedCountryKey } from '@/config/year2CountrySchools'
 
 const emit = defineEmits(['complete', 'close'])
-const { t, tm } = useAppI18n()
+const { currentLanguage, t, tm } = useAppI18n()
 
 const questionWeights = [
   {
@@ -285,6 +285,16 @@ function completeWithReward() {
 
   emit('complete', {
     rewardCoins: 30,
+    resultType: 'result',
+    resultData: {
+      recommendedCountry: result.value.title,
+      matchedCountry: winnerCountryConfig.value.canonicalName,
+      winner: matchedCountryKey,
+      scores: { ...scores.value },
+      answers: answersHistory.value.map((answer) => ({ ...answer })),
+      explanation: result.value.analysis || result.value.desc,
+    },
+    language: currentLanguage.value,
     profile: {
       matchedCountryKey,
       matchedCountry: winnerCountryConfig.value.canonicalName,

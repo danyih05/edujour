@@ -893,7 +893,21 @@ function completeNode() {
       payload: { year: 'y3', nodeId: 6 },
     }, '*')
   }
-  emit('complete', { year: 'y3', nodeId: 6 })
+  emit('complete', {
+    year: 'y3',
+    nodeId: 6,
+    resultType: 'summary',
+    resultData: {
+      clearedStages: gameState.cleared
+        .map((cleared, index) => (cleared ? localizedStages.value[index]?.title || `Stage ${index + 1}` : ''))
+        .filter(Boolean),
+      gems: gameState.gems,
+      level: gameState.level,
+      potions: gameState.potions,
+      selectedTool: selectedToolKey.value,
+    },
+    language: currentLanguage.value,
+  })
 }
 function resetGameAndRestart() {
   // 重置 gameState 到初始值

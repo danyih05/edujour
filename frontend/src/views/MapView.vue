@@ -208,7 +208,14 @@
         <button v-if="!isChromeFreeLevel" class="absolute-close-btn" @click="closeGame"><i class="fas fa-times"></i></button>
         <div v-if="!isChromeFreeLevel" class="modal-header"><span>{{ activeLevelTitle }}</span></div>
         <div class="game-stage native-stage" :class="{ 'chrome-free-stage': isChromeFreeLevel }">
-          <component v-if="nativeGameComponent" :is="nativeGameComponent" @complete="handleNativeComplete" @close="closeGame" />
+          <GameCompletedView
+            v-if="activeGameResult"
+            :result="activeGameResult"
+            :title="activeLevelTitle"
+            @retry="retryActiveLevel"
+            @back="closeGame"
+          />
+          <component v-else-if="nativeGameComponent" :is="nativeGameComponent" @complete="handleNativeComplete" @close="closeGame" />
           <div v-else class="missing-native-game">{{ t('map.missingLevel') }}</div>
         </div>
       </div>
@@ -261,6 +268,7 @@ import { computed, defineAsyncComponent, nextTick, onBeforeUnmount, onMounted, r
 import { useRouter } from 'vue-router'
 import { getPortalText, useAppI18n } from '@/composables/useAppI18n'
 import AvatarBadge from '@/components/AvatarBadge.vue'
+import GameCompletedView from '@/components/GameCompletedView.vue'
 import PrizeShop from '@/components/PrizeShop.vue'
 import HealingSandbox from '@/components/HealingSandbox.vue'
 import { LEVEL_DEFINITIONS } from '@/config/levels'
@@ -365,6 +373,11 @@ const nativeGameComponent = computed(() => {
 const year2Complete = computed(() => store.y2.levels.length > 0 && store.y2.levels.every((level) => level.completed))
 const isChromeFreeLevel = computed(() => Boolean(activeLevel.value && chromeFreeFiles.has(activeLevel.value.file)))
 const activeLevelTitle = computed(() => activeLevel.value?.i18nKey ? t(`${activeLevel.value.i18nKey}.title`) : '')
+const activeGameId = computed(() => activeLevel.value ? `${activeLevel.value.year === 'y3' ? 'year3' : 'year2'}_${activeLevel.value.id}` : '')
+const activeGameResult = computed(() => {
+  const result = activeGameId.value ? store.getGameResult(activeGameId.value) : null
+  return result?.completed ? result : null
+})
 let openLevelTimer = null
 const travelerTimers = { y2: null, y3: null }
 const setMapAreaRef = (year) => (element) => { mapAreas[year] = element || null }
@@ -427,7 +440,26 @@ function openLevel(year, node) {
 }
 function closeGame() { if (openLevelTimer) { clearTimeout(openLevelTimer); openLevelTimer = null } activeLevel.value = null }
 async function redeemPrize(prize) { const label = store.year === 'y2' ? t('common.labels.coins') : t('common.labels.gems'); statusMessage.value = ''; try { await store.purchasePrize(prize); redeemMessage.value = `&#x1F389; ${t('map.redeemSuccess', { name: prize.name, cost: prize.cost, currency: label, balance: store.currentCoins })}` } catch (error) { redeemMessage.value = error.message || t('map.redeemNotEnough') } }
-async function handleNativeComplete(payload = {}) { if (!activeLevel.value) return; const year = activeLevel.value.year; const levelId = activeLevel.value.id; const profile = payload.profile || payload; const rewardCoins = Number(payload.rewardCoins) || 0; statusMessage.value = ''; try { await store.completeNode(year, levelId, { rewardCoins, profile }); closeGame(); syncTraveler(year, store[year].currentNode) } catch (error) { statusMessage.value = error.message || copy.value.map.syncFailed } }
+function buildResultPayload(payload = {}) {
+  const fallbackResultData = Object.fromEntries(
+    Object.entries(payload).filter(([key, value]) => (
+      !['profile', 'resultType', 'resultData', 'completed', 'passed', 'language', 'year', 'nodeId'].includes(key)
+      && value !== undefined
+    )),
+  )
+  return {
+    completed: payload.completed ?? true,
+    passed: payload.passed ?? true,
+    resultType: payload.resultType || (payload.resultData ? 'result' : 'passed'),
+    resultData: payload.resultData || fallbackResultData,
+    language: payload.language || currentLanguage.value,
+  }
+}
+function retryActiveLevel() {
+  if (!activeLevel.value) return
+  store.clearLevelResult(activeLevel.value.year, activeLevel.value.id)
+}
+async function handleNativeComplete(payload = {}) { if (!activeLevel.value) return; const year = activeLevel.value.year; const levelId = activeLevel.value.id; const profile = Object.prototype.hasOwnProperty.call(payload, 'profile') ? payload.profile : undefined; const rewardCoins = Number(payload.rewardCoins) || 0; statusMessage.value = ''; store.saveLevelResult(year, levelId, buildResultPayload(payload)); try { await store.completeNode(year, levelId, { rewardCoins, profile }); closeGame(); syncTraveler(year, store[year].currentNode) } catch (error) { statusMessage.value = error.message || copy.value.map.syncFailed } }
 async function resetGame() { closeGame(); showPrizeShop.value = false; showHealingSandbox.value = false; showResetConfirm.value = false; redeemMessage.value = ''; statusMessage.value = ''; try { await store.resetStore(); syncTraveler('y2', 1) } catch (error) { statusMessage.value = error.message || copy.value.map.syncFailed } }
 async function handleLogout() { await authStore.logout(); store.clearState(); await router.replace({ name: 'login' }) }
 function handleYear3Unlock() {

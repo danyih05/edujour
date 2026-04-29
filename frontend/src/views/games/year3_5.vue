@@ -53,9 +53,10 @@ import { computed, onBeforeUnmount, onMounted, ref, watchEffect } from 'vue'
 import { useAppI18n } from '@/composables/useAppI18n'
 
 const emit = defineEmits(['complete'])
-const { t, tm } = useAppI18n()
+const { currentLanguage, t, tm } = useAppI18n()
 
 const currentNodeId = ref('start')
+const visitedNodes = ref(['start'])
 const previousTitle = ref(typeof document !== 'undefined' ? document.title : '')
 const showCompleteModal = ref(false)
 const rewardAmount = ref(50)   // 与原有奖励值一致
@@ -77,6 +78,7 @@ function restartGame() {
   showCompleteModal.value = false
   // 重置故事到开始节点
   currentNodeId.value = 'start'
+  visitedNodes.value = ['start']
   // 如果有其他需要重置的状态（如 hearts 等），可以在这里重置
   // 由于故事树没有额外状态，只重置节点 ID 即可
 }
@@ -86,6 +88,7 @@ function renderNode(nodeId) {
     return
   }
   currentNodeId.value = nodeId
+  visitedNodes.value.push(nodeId)
 }
 function confirmComplete() {
   showCompleteModal.value = false
@@ -95,7 +98,18 @@ function confirmComplete() {
       payload: { year: 'y3', nodeId: 5, rewardCoins: rewardAmount.value },
     }, '*')
   }
-  emit('complete', { year: 'y3', nodeId: 5, rewardCoins: rewardAmount.value })
+  emit('complete', {
+    year: 'y3',
+    nodeId: 5,
+    rewardCoins: rewardAmount.value,
+    resultType: 'summary',
+    resultData: {
+      finalNode: currentNodeId.value,
+      visitedNodes: [...visitedNodes.value],
+      rewardCoins: rewardAmount.value,
+    },
+    language: currentLanguage.value,
+  })
 }
 
 function closeModal() {

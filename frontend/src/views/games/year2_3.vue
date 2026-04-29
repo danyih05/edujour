@@ -78,7 +78,7 @@
           </div>
         </div>
 
-        <button type="button" class="btn-complete" @click="emit('complete')">{{ t('pages.y2_3.seal') }}</button>
+        <button type="button" class="btn-complete" @click="completeWithResult">{{ t('pages.y2_3.seal') }}</button>
       </section>
     </section>
   </div>
@@ -98,7 +98,7 @@ import {
 } from '@/config/year2CountrySchools'
 
 const emit = defineEmits(['complete', 'close'])
-const { t, localize } = useAppI18n()
+const { currentLanguage, t, localize } = useAppI18n()
 const store = useGameStore()
 const TIER_ORDER = ['reach', 'match', 'safety']
 
@@ -376,6 +376,31 @@ function evaluateTiers() {
     if (feedbackPanel) {
       feedbackPanel.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }
+  })
+}
+
+function completeWithResult() {
+  const tierBuckets = {
+    reach: cardsIn('reach').map((card) => card.name),
+    match: cardsIn('match').map((card) => card.name),
+    safety: cardsIn('safety').map((card) => card.name),
+  }
+
+  emit('complete', {
+    completed: true,
+    passed: true,
+    resultType: 'summary',
+    resultData: {
+      matchedCountry: matchedCountryLabel.value,
+      tierBuckets,
+      score: score.value,
+      feedback: feedback.value.map((item) => ({
+        status: item.status,
+        title: item.title,
+        text: item.text,
+      })),
+    },
+    language: currentLanguage.value,
   })
 }
 </script>

@@ -12,7 +12,14 @@
       </div>
 
       <div class="game-stage" :class="{ 'chrome-free-stage': isChromeFreeLevel }">
-        <component :is="currentGame" :level-id="levelId" @complete="handleChildComplete" @close="goBack" />
+        <GameCompletedView
+          v-if="savedGameResult"
+          :result="savedGameResult"
+          :title="levelTitle"
+          @retry="retryLevel"
+          @back="goBack"
+        />
+        <component v-else :is="currentGame" :level-id="levelId" @complete="handleChildComplete" @close="goBack" />
       </div>
 
       <div class="game-actions" v-if="!isMissingLevel && !isChromeFreeLevel">
@@ -26,6 +33,7 @@
 
 <script setup>
 import { computed, defineAsyncComponent, defineComponent, h, watchEffect } from 'vue'
+import GameCompletedView from '@/components/GameCompletedView.vue'
 import { useAppI18n } from '@/composables/useAppI18n'
 import { useRoute, useRouter } from 'vue-router'
 import { getLevelDefinition } from '@/config/levels'
@@ -34,7 +42,7 @@ import { useGameStore } from '@/stores/game'
 const route = useRoute()
 const router = useRouter()
 const store = useGameStore()
-const { t } = useAppI18n()
+const { currentLanguage, t } = useAppI18n()
 const chromeFreeFiles = new Set(['year3_8.vue'])
 
 store.hydrate()
@@ -50,6 +58,11 @@ watchEffect(() => {
 })
 
 const levelDefinition = computed(() => getLevelDefinition(store.year, levelId.value))
+const gameId = computed(() => `${store.year === 'y3' ? 'year3' : 'year2'}_${levelId.value}`)
+const savedGameResult = computed(() => {
+  const result = store.getGameResult(gameId.value)
+  return result?.completed ? result : null
+})
 
 const MissingLevelView = defineComponent({
   setup() {
@@ -98,9 +111,30 @@ function goBack() {
   router.push({ name: 'map' })
 }
 
+function buildResultPayload(payload = {}) {
+  const fallbackResultData = Object.fromEntries(
+    Object.entries(payload).filter(([key, value]) => (
+      !['profile', 'resultType', 'resultData', 'completed', 'passed', 'language', 'year', 'nodeId'].includes(key)
+      && value !== undefined
+    )),
+  )
+  return {
+    completed: payload.completed ?? true,
+    passed: payload.passed ?? true,
+    resultType: payload.resultType || (payload.resultData ? 'result' : 'passed'),
+    resultData: payload.resultData || fallbackResultData,
+    language: payload.language || currentLanguage.value,
+  }
+}
+
+function retryLevel() {
+  store.clearGameResult(gameId.value)
+}
+
 async function handleChildComplete(payload = {}) {
-  const profile = payload.profile || payload
+  const profile = Object.prototype.hasOwnProperty.call(payload, 'profile') ? payload.profile : undefined
   const rewardCoins = Number(payload.rewardCoins) || 0
+  store.saveGameResult(gameId.value, buildResultPayload(payload))
   try {
     await store.completeNode(store.year, levelId.value, { rewardCoins, profile })
     goBack()

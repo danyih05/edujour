@@ -13,6 +13,7 @@ import {
 import { useAuthStore } from '@/stores/auth'
 
 const GAME_UI_STORAGE_KEY = 'gradquest-game-ui'
+const GAME_RESULTS_STORAGE_KEY = 'gradquest-game-results'
 
 const createYearState = (year, coins) => ({
   coins,
@@ -27,11 +28,63 @@ const createDefaultState = () => ({
   loadedUserId: null,
   loadPromise: null,
   travelerProfile: null,
+  gameResults: {},
   shopItems: [],
   inventoryItems: [],
   y2: createYearState('y2', 0),
   y3: createYearState('y3', 0),
 })
+
+function makeGameId(year, levelId) {
+  const normalizedYear = year === 'y3' || String(year).includes('3') ? 'year3' : 'year2'
+  return `${normalizedYear}_${Number(levelId)}`
+}
+
+function safeParseJson(value, fallback) {
+  try {
+    return JSON.parse(value || 'null') || fallback
+  } catch (error) {
+    console.warn('Failed to parse GradQuest storage payload.', error)
+    return fallback
+  }
+}
+
+function normalizeGameResult(gameId, payload = {}) {
+  return {
+    gameId,
+    completed: Boolean(payload.completed ?? true),
+    passed: Boolean(payload.passed ?? payload.completed ?? true),
+    completedAt: payload.completedAt || new Date().toISOString(),
+    resultType: payload.resultType || 'passed',
+    resultData: payload.resultData && typeof payload.resultData === 'object' ? payload.resultData : {},
+    ...(payload.language ? { language: payload.language } : {}),
+  }
+}
+
+function applyLocalResultsToLevels(levels, year, results) {
+  const nextLevels = levels.map((level) => {
+    const result = results[makeGameId(year, level.id)]
+    if (!result?.completed) return level
+    return {
+      ...level,
+      completed: true,
+      unlocked: true,
+    }
+  })
+
+  nextLevels.forEach((level, index) => {
+    if (!level.completed && !level.skipped) return
+    const nextLevel = nextLevels[index + 1]
+    if (nextLevel) {
+      nextLevels[index + 1] = {
+        ...nextLevel,
+        unlocked: true,
+      }
+    }
+  })
+
+  return nextLevels
+}
 
 function mergeLevels(defaultLevels, remoteLevels) {
   if (!Array.isArray(remoteLevels)) return defaultLevels
@@ -135,14 +188,28 @@ export const useGameStore = defineStore('game', {
       if (this.hydrated) return
 
       try {
-        const saved = JSON.parse(localStorage.getItem(GAME_UI_STORAGE_KEY) || 'null')
+        const saved = safeParseJson(localStorage.getItem(GAME_UI_STORAGE_KEY), null)
         if (saved?.year === 'y2' || saved?.year === 'y3') {
           this.year = saved.year
         }
+        this.hydrateGameResults()
       } catch (error) {
         console.warn('Failed to hydrate GradQuest UI state.', error)
       } finally {
         this.hydrated = true
+      }
+    },
+
+    hydrateGameResults() {
+      try {
+        const saved = safeParseJson(localStorage.getItem(GAME_RESULTS_STORAGE_KEY), {})
+        this.gameResults = saved && typeof saved === 'object' && !Array.isArray(saved) ? saved : {}
+        ;['y2', 'y3'].forEach((year) => {
+          this[year].levels = applyLocalResultsToLevels(this[year].levels, year, this.gameResults)
+          this[year].currentNode = deriveCurrentNode(this[year].levels)
+        })
+      } catch (error) {
+        console.warn('Failed to hydrate GradQuest game results.', error)
       }
     },
 
@@ -151,6 +218,14 @@ export const useGameStore = defineStore('game', {
         localStorage.setItem(GAME_UI_STORAGE_KEY, JSON.stringify({ year: this.year }))
       } catch (error) {
         console.warn('Failed to persist GradQuest UI state.', error)
+      }
+    },
+
+    persistGameResults() {
+      try {
+        localStorage.setItem(GAME_RESULTS_STORAGE_KEY, JSON.stringify(this.gameResults))
+      } catch (error) {
+        console.warn('Failed to persist GradQuest game results.', error)
       }
     },
 
@@ -215,11 +290,66 @@ export const useGameStore = defineStore('game', {
 
       ;['y2', 'y3'].forEach((year) => {
         const remoteYear = payload?.years?.[year] || {}
-        const mergedLevels = mergeLevels(createInitialLevels(year), remoteYear.levels || [])
+        const mergedLevels = applyLocalResultsToLevels(
+          mergeLevels(createInitialLevels(year), remoteYear.levels || []),
+          year,
+          this.gameResults,
+        )
         this[year].coins = sharedCoins
         this[year].levels = mergedLevels
         this[year].currentNode = deriveCurrentNode(mergedLevels)
       })
+    },
+
+    saveGameResult(gameId, payload = {}) {
+      const normalized = normalizeGameResult(gameId, payload)
+      this.gameResults = {
+        ...this.gameResults,
+        [gameId]: normalized,
+      }
+      this.persistGameResults()
+      ;['y2', 'y3'].forEach((year) => {
+        this[year].levels = applyLocalResultsToLevels(this[year].levels, year, this.gameResults)
+        this[year].currentNode = deriveCurrentNode(this[year].levels)
+      })
+      return normalized
+    },
+
+    saveLevelResult(year, levelId, payload = {}) {
+      return this.saveGameResult(makeGameId(year, levelId), payload)
+    },
+
+    getGameResult(gameId) {
+      return this.gameResults[gameId] || null
+    },
+
+    getLevelResult(year, levelId) {
+      return this.getGameResult(makeGameId(year, levelId))
+    },
+
+    isGameCompleted(gameId) {
+      return Boolean(this.getGameResult(gameId)?.completed)
+    },
+
+    isLevelCompleted(year, levelId) {
+      return this.isGameCompleted(makeGameId(year, levelId))
+    },
+
+    clearGameResult(gameId) {
+      if (!this.gameResults[gameId]) return
+      const nextResults = { ...this.gameResults }
+      delete nextResults[gameId]
+      this.gameResults = nextResults
+      this.persistGameResults()
+    },
+
+    clearLevelResult(year, levelId) {
+      this.clearGameResult(makeGameId(year, levelId))
+    },
+
+    clearAllGameResults() {
+      this.gameResults = {}
+      this.persistGameResults()
     },
 
     async refreshCommerce() {
@@ -296,6 +426,7 @@ export const useGameStore = defineStore('game', {
     async resetStore() {
       try {
         const payload = await resetProgressRequest()
+        this.clearAllGameResults()
         this.applyProgress(payload)
         await this.refreshCommerce()
         this.year = 'y2'
@@ -313,6 +444,7 @@ export const useGameStore = defineStore('game', {
       this.loadedUserId = null
       this.loadPromise = null
       this.travelerProfile = defaults.travelerProfile
+      this.gameResults = defaults.gameResults
       this.shopItems = defaults.shopItems
       this.inventoryItems = defaults.inventoryItems
       this.y2 = defaults.y2
@@ -321,6 +453,7 @@ export const useGameStore = defineStore('game', {
 
       try {
         localStorage.removeItem(GAME_UI_STORAGE_KEY)
+        localStorage.removeItem(GAME_RESULTS_STORAGE_KEY)
       } catch (error) {
         console.warn('Failed to clear GradQuest UI state.', error)
       }
