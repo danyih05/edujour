@@ -319,6 +319,11 @@ export default {
         hk: ['City pulse', 'Finance link'],
       },
       claim: 'Accept Route Suggestion and Proceed',
+      manualRegion: {
+        title: 'Unhappy with the match? Manually change region',
+        copy: 'Your chosen region will be saved for the next level, and Y2-3 will show schools from that region.',
+        schools: 'Next-level schools:',
+      },
       
       questionCount: 'Question {current} / {total}',
       guide: {
@@ -443,6 +448,19 @@ export default {
       currentAvatar: 'Current profile: GPA 82/100 | STEM/CS track | 1 ordinary internship',
       matchedRoute: 'Matched destination: {country}',
       fallbackCopy: 'No saved country match was found yet, so the game is showing a cross-region fallback set for now. Once you finish the previous level, this list will switch automatically.',
+      regionSelector: {
+        title: 'Unhappy with the match? Choose a region',
+        copy: 'Changing the region immediately swaps the school deck below, so you can tier the list around your own target.',
+        preview: 'Current schools:',
+      },
+      schoolSearch: {
+        title: 'Want more schools from this region?',
+        copy: 'Only extra schools from the currently selected region appear here. Each region has 5 options, so regions do not get mixed.',
+        placeholder: 'Search current-region school / tier',
+        emptyOption: 'Choose a current-region school',
+        add: 'Add card',
+        added: 'Already added',
+      },
       predict: 'Divinate the Scales',
       feedbackTitle: 'Tiering Prophecy',
       seal: 'Seal This Tier Plan and Return',

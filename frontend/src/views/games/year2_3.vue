@@ -12,6 +12,82 @@
           <span>{{ t('pages.y2_3.matchedRoute', { country: matchedCountryLabel }) }}</span>
         </div>
         <p v-if="usingFallbackCountry" class="fallback-copy">{{ t('pages.y2_3.fallbackCopy') }}</p>
+
+        <section class="region-selector" aria-label="Region selector">
+          <div class="region-selector-head">
+            <div>
+              <strong>{{ t('pages.y2_3.regionSelector.title') }}</strong>
+              <p>{{ t('pages.y2_3.regionSelector.copy') }}</p>
+            </div>
+          </div>
+          <div class="region-options">
+            <button
+              v-for="option in countryOptions"
+              :key="option.key"
+              type="button"
+              class="region-option"
+              :class="{ active: selectedCountryKey === option.key }"
+              @click="selectCountry(option.key)"
+            >
+              <span>{{ option.icon }}</span>
+              <strong>{{ localize(option.label) }}</strong>
+            </button>
+          </div>
+          <div class="region-school-preview">
+            <span class="preview-label">{{ t('pages.y2_3.regionSelector.preview') }}</span>
+            <span
+              v-for="school in schoolCards"
+              :key="school.id"
+              class="preview-school"
+            >
+              {{ school.name }}
+            </span>
+          </div>
+        </section>
+
+        <section class="school-search-panel" aria-label="School search">
+          <div class="school-search-head">
+            <div>
+              <strong>{{ t('pages.y2_3.schoolSearch.title') }}</strong>
+              <p>{{ t('pages.y2_3.schoolSearch.copy') }}</p>
+            </div>
+          </div>
+          <div class="school-search-controls">
+            <input
+              v-model.trim="schoolSearchQuery"
+              class="school-search-input"
+              type="search"
+              :placeholder="t('pages.y2_3.schoolSearch.placeholder')"
+            >
+            <select v-model="selectedSchoolCaseId" class="school-search-select">
+              <option value="">{{ t('pages.y2_3.schoolSearch.emptyOption') }}</option>
+              <option
+                v-for="school in filteredSchoolCases"
+                :key="school.id"
+                :value="school.id"
+              >
+                {{ school.name }} · {{ school.countryLabelText }}
+              </option>
+            </select>
+          </div>
+          <div v-if="selectedSchoolCase" class="school-case-card">
+            <div class="school-case-main">
+              <span class="school-case-icon">{{ selectedSchoolCase.icon }}</span>
+              <div>
+                <strong>{{ selectedSchoolCase.name }}</strong>
+                <p>{{ selectedSchoolCase.caseInfo }}</p>
+              </div>
+            </div>
+            <button
+              type="button"
+              class="btn-add-school"
+              :disabled="isSelectedCaseInDeck"
+              @click="addSelectedSchoolCase"
+            >
+              {{ isSelectedCaseInDeck ? t('pages.y2_3.schoolSearch.added') : t('pages.y2_3.schoolSearch.add') }}
+            </button>
+          </div>
+        </section>
       </div>
 
       <KnowledgeGuidePanel
@@ -92,7 +168,9 @@ import { useGameStore } from '@/stores/game'
 import {
   getPersistedMatchedCountryKey,
   getTierBuckets,
+  getYear2SchoolCases,
   getYear2CountrySchoolConfig,
+  getYear2CountrySchoolOptions,
   persistMatchedCountryKey,
   resolveMatchedCountryKey,
 } from '@/config/year2CountrySchools'
@@ -132,15 +210,53 @@ const tiers = computed(() => ([
 
 const persistedCountryKey = ref(getPersistedMatchedCountryKey())
 const profileMatchedCountryKey = computed(() => resolveMatchedCountryKey(store.travelerProfile))
-const matchedCountryKey = computed(() => profileMatchedCountryKey.value || persistedCountryKey.value || '')
-const usingFallbackCountry = computed(() => !matchedCountryKey.value)
-const countryConfig = computed(() => getYear2CountrySchoolConfig(matchedCountryKey.value || 'global'))
+const countryOptions = getYear2CountrySchoolOptions()
+const selectedCountryKey = ref(persistedCountryKey.value || profileMatchedCountryKey.value || 'global')
+const usingFallbackCountry = computed(() => selectedCountryKey.value === 'global')
+const countryConfig = computed(() => getYear2CountrySchoolConfig(selectedCountryKey.value || 'global'))
 const matchedCountryLabel = computed(() => localize(countryConfig.value.label))
-const schoolCards = computed(() => countryConfig.value.schools.map((school) => ({
+const baseSchoolCards = computed(() => countryConfig.value.schools.map((school) => ({
   ...school,
   name: localize(school.name),
   tag: localize(school.tag),
 })))
+const addedSchoolIds = ref([])
+const schoolCases = computed(() => getYear2SchoolCases().map((school) => ({
+  ...school,
+  name: localize(school.name),
+  tag: localize(school.tag),
+  countryLabelText: localize(school.countryLabel || getYear2CountrySchoolConfig(school.countryKey).label),
+  caseInfo: localize(school.caseInfo),
+})).filter((school) => school.countryKey === selectedCountryKey.value))
+const addedSchoolCards = computed(() => addedSchoolIds.value
+  .map((id) => schoolCases.value.find((school) => school.id === id))
+  .filter(Boolean))
+const schoolCards = computed(() => {
+  const baseIds = new Set(baseSchoolCards.value.map((school) => school.id))
+  return [
+    ...baseSchoolCards.value,
+    ...addedSchoolCards.value.filter((school) => !baseIds.has(school.id)),
+  ]
+})
+const schoolSearchQuery = ref('')
+const selectedSchoolCaseId = ref('')
+const filteredSchoolCases = computed(() => {
+  const query = schoolSearchQuery.value.trim().toLowerCase()
+  const list = schoolCases.value
+  if (!query) return list
+  return list.filter((school) => (
+    school.name.toLowerCase().includes(query) ||
+    school.countryLabelText.toLowerCase().includes(query) ||
+    school.tag.toLowerCase().includes(query)
+  ))
+})
+const selectedSchoolCase = computed(() => (
+  schoolCases.value.find((school) => school.id === selectedSchoolCaseId.value) ||
+  (schoolSearchQuery.value ? filteredSchoolCases.value[0] : null)
+))
+const isSelectedCaseInDeck = computed(() => (
+  Boolean(selectedSchoolCase.value && schoolCards.value.some((school) => school.id === selectedSchoolCase.value.id))
+))
 
 const locations = reactive({})
 const selectedCardId = ref('')
@@ -150,7 +266,12 @@ const score = ref(50)
 
 watch(profileMatchedCountryKey, (nextKey) => {
   if (!nextKey) return
-  persistedCountryKey.value = nextKey
+  if (!persistedCountryKey.value || selectedCountryKey.value === 'global') {
+    selectedCountryKey.value = nextKey
+    addedSchoolIds.value = []
+    selectedSchoolCaseId.value = ''
+    schoolSearchQuery.value = ''
+  }
   persistMatchedCountryKey(nextKey)
 }, { immediate: true })
 
@@ -210,6 +331,21 @@ const guideItems = computed(() => {
 
 function cardsIn(location) {
   return schoolCards.value.filter((card) => locations[card.id] === location)
+}
+
+function selectCountry(countryKey) {
+  selectedCountryKey.value = countryKey
+  persistedCountryKey.value = countryKey
+  persistMatchedCountryKey(countryKey)
+  addedSchoolIds.value = []
+  selectedSchoolCaseId.value = ''
+  schoolSearchQuery.value = ''
+}
+
+function addSelectedSchoolCase() {
+  const school = selectedSchoolCase.value
+  if (!school || isSelectedCaseInDeck.value) return
+  addedSchoolIds.value = [...addedSchoolIds.value, school.id]
 }
 
 function selectCard(cardId) {
@@ -478,6 +614,205 @@ function completeWithResult() {
   font-size: 0.92rem;
 }
 
+.region-selector {
+  width: min(820px, 100%);
+  margin: 18px auto 0;
+  padding: 16px;
+  border: 1px solid rgba(147, 197, 253, 0.26);
+  border-radius: 16px;
+  background: rgba(15, 23, 42, 0.62);
+  text-align: left;
+}
+
+.region-selector-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+
+.region-selector-head strong {
+  color: #dbeafe;
+  font-size: 1rem;
+}
+
+.region-selector-head p {
+  margin: 4px 0 0;
+  color: #a9b6ca;
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
+.region-options {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.region-option {
+  min-height: 58px;
+  padding: 8px 6px;
+  border: 1px solid rgba(148, 163, 184, 0.34);
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.88);
+  color: #dbeafe;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  gap: 3px;
+  font-weight: 900;
+  transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+}
+
+.region-option span {
+  font-size: 1.25rem;
+}
+
+.region-option strong {
+  font-size: 0.78rem;
+  line-height: 1.1;
+  text-align: center;
+}
+
+.region-option:hover,
+.region-option.active {
+  transform: translateY(-2px);
+  border-color: #fbbf24;
+  background: rgba(30, 64, 175, 0.58);
+  box-shadow: 0 8px 18px rgba(30, 64, 175, 0.24);
+}
+
+.region-school-preview {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.preview-label {
+  color: #93c5fd;
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.preview-school {
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(59, 130, 246, 0.16);
+  color: #dbeafe;
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.school-search-panel {
+  width: min(820px, 100%);
+  margin: 12px auto 0;
+  padding: 16px;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  border-radius: 16px;
+  background: rgba(6, 78, 59, 0.22);
+  text-align: left;
+}
+
+.school-search-head strong {
+  color: #d1fae5;
+  font-size: 1rem;
+}
+
+.school-search-head p {
+  margin: 4px 0 12px;
+  color: #a9b6ca;
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
+.school-search-controls {
+  display: grid;
+  grid-template-columns: minmax(180px, 0.85fr) minmax(260px, 1.15fr);
+  gap: 10px;
+}
+
+.school-search-input,
+.school-search-select {
+  width: 100%;
+  min-height: 42px;
+  border: 1px solid rgba(125, 211, 252, 0.5);
+  border-radius: 10px;
+  background: #f8fafc;
+  color: #172033;
+  padding: 0 12px;
+  font-weight: 800;
+  box-shadow: 0 8px 18px rgba(8, 47, 73, 0.18);
+}
+
+.school-search-input::placeholder {
+  color: #64748b;
+}
+
+.school-search-input:focus,
+.school-search-select:focus {
+  outline: 3px solid rgba(56, 189, 248, 0.28);
+  border-color: #38bdf8;
+}
+
+.school-search-select option {
+  background: #f8fafc;
+  color: #172033;
+  font-weight: 800;
+}
+
+.school-case-card {
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.74);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.school-case-main {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.school-case-icon {
+  font-size: 2rem;
+}
+
+.school-case-main strong {
+  color: #f8fafc;
+  font-size: 0.98rem;
+}
+
+.school-case-main p {
+  margin: 4px 0 0;
+  color: #cbd5e1;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.btn-add-school {
+  flex: 0 0 auto;
+  min-height: 38px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #10b981, #047857);
+  color: #fff;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.btn-add-school:disabled {
+  background: rgba(148, 163, 184, 0.48);
+  cursor: not-allowed;
+}
+
 .card-deck,
 .tier-zone {
   border: 2px dashed #475569;
@@ -662,6 +997,9 @@ function completeWithResult() {
 }
 
 @media (max-width: 820px) {
+  .region-options { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .school-search-controls { grid-template-columns: 1fr; }
+  .school-case-card { align-items: stretch; flex-direction: column; }
   .tiers { grid-template-columns: 1fr; }
   .tier-zone { min-height: 170px; }
 }

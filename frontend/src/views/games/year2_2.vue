@@ -77,6 +77,27 @@
         <div class="tarot-icon">{{ result.icon }}</div>
         <div class="tarot-desc" v-html="result.desc"></div>
         <div v-if="result.analysis" class="result-analysis" v-html="result.analysis"></div>
+        <div class="manual-region-panel">
+          <div class="manual-region-title">{{ t('pages.y2_2.manualRegion.title') }}</div>
+          <p>{{ t('pages.y2_2.manualRegion.copy') }}</p>
+          <div class="manual-region-options">
+            <button
+              v-for="option in countryOptions"
+              :key="option.key"
+              type="button"
+              class="manual-region-option"
+              :class="{ active: selectedResultKey === option.key }"
+              @click="selectResultCountry(option.key)"
+            >
+              <span>{{ option.icon }}</span>
+              <strong>{{ localize(option.label) }}</strong>
+            </button>
+          </div>
+          <div class="manual-region-schools">
+            <span>{{ t('pages.y2_2.manualRegion.schools') }}</span>
+            <b v-for="school in selectedResultSchools" :key="school.id">{{ localize(school.name) }}</b>
+          </div>
+        </div>
         <div class="reward-badge">
           🎉 +30 {{ t('common.labels.coins') }}
         </div>
@@ -98,10 +119,14 @@
 import { computed, nextTick, reactive, ref } from 'vue'
 import { useAppI18n } from '@/composables/useAppI18n'
 import KnowledgeGuidePanel from '@/components/KnowledgeGuidePanel.vue'
-import { getYear2CountrySchoolConfig, persistMatchedCountryKey } from '@/config/year2CountrySchools'
+import {
+  getYear2CountrySchoolConfig,
+  getYear2CountrySchoolOptions,
+  persistMatchedCountryKey,
+} from '@/config/year2CountrySchools'
 
 const emit = defineEmits(['complete', 'close'])
-const { currentLanguage, t, tm } = useAppI18n()
+const { currentLanguage, t, tm, localize } = useAppI18n()
 
 const questionWeights = [
   {
@@ -164,6 +189,7 @@ const currentQ = ref(0)
 const selectedChoice = ref(null)
 const showResult = ref(false)
 const winner = ref('uk')
+const selectedResultKey = ref('uk')
 const highlightedRoutes = ref([])
 
 // 记录每一次作答：{ questionIndex: number, choiceId: 'a'|'b' }
@@ -193,6 +219,7 @@ const routes = computed(() => [
   { id: 'sg', icon: '🌏', label: t('pages.y2_2.routes.sg'), keywords: [t('pages.y2_2.routeKeywords.sg.0'), t('pages.y2_2.routeKeywords.sg.1')] },
   { id: 'hk', icon: '🏙️', label: t('pages.y2_2.routes.hk'), keywords: [t('pages.y2_2.routeKeywords.hk.0'), t('pages.y2_2.routeKeywords.hk.1')] },
 ])
+const countryOptions = getYear2CountrySchoolOptions()
 
 const guideItems = computed(() => tm('pages.y2_2.guide.items') || [])
 
@@ -207,6 +234,8 @@ const result = computed(() => {
 })
 
 const winnerCountryConfig = computed(() => getYear2CountrySchoolConfig(winner.value))
+const selectedCountryConfig = computed(() => getYear2CountrySchoolConfig(selectedResultKey.value))
+const selectedResultSchools = computed(() => selectedCountryConfig.value.schools)
 
 function portalClass(type) {
   const value = scores[type] || 0
@@ -241,6 +270,7 @@ function answerQuestion(choiceId) {
     const final = scores.value  // 利用刚刚更新的 computed
     const sorted = Object.entries(final).sort((a, b) => b[1] - a[1])
     winner.value = sorted[0]?.[0] || 'uk'
+    selectedResultKey.value = winner.value
     showResult.value = true
     nextTick(() => {
       setTimeout(() => {
@@ -277,10 +307,15 @@ function resetGame() {
   answersHistory.value = []
   showResult.value = false
   winner.value = 'uk'
+  selectedResultKey.value = 'uk'
+}
+
+function selectResultCountry(countryKey) {
+  selectedResultKey.value = countryKey
 }
 
 function completeWithReward() {
-  const matchedCountryKey = winnerCountryConfig.value.key
+  const matchedCountryKey = selectedCountryConfig.value.key || winnerCountryConfig.value.key
   persistMatchedCountryKey(matchedCountryKey)
 
   emit('complete', {
@@ -297,7 +332,7 @@ function completeWithReward() {
     language: currentLanguage.value,
     profile: {
       matchedCountryKey,
-      matchedCountry: winnerCountryConfig.value.canonicalName,
+      matchedCountry: selectedCountryConfig.value.canonicalName || winnerCountryConfig.value.canonicalName,
     },
   })
 }
@@ -806,6 +841,81 @@ function completeWithReward() {
   color: #f8f3dc;
   font-size: 0.95rem;
   line-height: 1.7;
+}
+
+.manual-region-panel {
+  width: 100%;
+  margin-top: 16px;
+  padding: 16px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.1);
+  text-align: left;
+}
+
+.manual-region-title {
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+.manual-region-panel p {
+  margin: 6px 0 12px;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 0.86rem;
+  line-height: 1.45;
+}
+
+.manual-region-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.manual-region-option {
+  min-height: 54px;
+  padding: 7px 6px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.22);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  gap: 2px;
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.manual-region-option strong {
+  font-size: 0.72rem;
+  line-height: 1.1;
+  text-align: center;
+}
+
+.manual-region-option.active,
+.manual-region-option:hover {
+  border-color: #f9d976;
+  background: rgba(249, 217, 118, 0.2);
+}
+
+.manual-region-schools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 12px;
+}
+
+.manual-region-schools span {
+  color: #f9d976;
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.manual-region-schools b {
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.13);
+  color: rgba(255, 255, 255, 0.86);
+  font-size: 0.72rem;
 }
 
 .btn-claim {

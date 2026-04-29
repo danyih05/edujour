@@ -319,6 +319,11 @@ export default {
         hk: ['都市节奏', '金融链接'],
       },
       claim: '接受路径建议并继续',
+      manualRegion: {
+        title: '如果不满意系统定位，可以手动改地区',
+        copy: '你选择的地区会保存给下一关，Y2-3 会按该地区展示对应学校。',
+        schools: '下一关学校：',
+      },
       questionCount: '问题 {current} / {total}',
       guide: {
         button: '知识图鉴',
@@ -448,6 +453,19 @@ export default {
       currentAvatar: '当前画像：GPA 82/100 ｜ STEM/CS 方向 ｜ 1 段普通实习',
       matchedRoute: '当前匹配国家：{country}',
       fallbackCopy: '还没有读到上一关的匹配结果，当前先展示一组跨地区兜底学校。完成上一关后，这里会自动切换成对应国家。',
+      regionSelector: {
+        title: '对定位不满意？手动选择地区',
+        copy: '切换地区后，下方学校卡牌会立刻换成该地区对应学校，你可以按自己的目标重新分层。',
+        preview: '当前学校：',
+      },
+      schoolSearch: {
+        title: '想加入更多当前地区学校？',
+        copy: '这里只显示当前所选地区的额外学校。每个地区提供 5 所可选学校，不会和其他地区混在一起。',
+        placeholder: '搜索当前地区学校 / 层级',
+        emptyOption: '选择当前地区学校',
+        add: '加入卡牌',
+        added: '已在卡牌中',
+      },
       predict: '开始分层推演',
       feedbackTitle: '分层预言',
       seal: '确认这份分层方案并返回',
