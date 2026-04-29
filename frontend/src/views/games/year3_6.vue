@@ -147,6 +147,10 @@
               >{{ heroDamage.text }}</div>
             </div>
 
+            <div v-if="currentToolBattleTip" class="tool-battle-tip">
+              {{ currentToolBattleTip }}
+            </div>
+
             <div class="ui-bottom">
               <div class="message-box">
                 <template v-for="(line, index) in typedMessageLines" :key="`${index}-${line}`">
@@ -163,8 +167,9 @@
                   :disabled="skill.pp <= 0"
                   @click="useSkill(skill.id)"
                 >
-                  <div class="skill-name">{{ skill.name }}</div>
+                  <div class="skill-name"><span>{{ skill.name }}</span></div>
                   <div class="skill-type" :class="skill.cssType">{{ skill.cssLabel }}</div>
+                  <div v-if="skill.bonusText" class="skill-bonus">{{ skill.bonusText }}</div>
                   <div class="skill-pp">{{ t('pages.y3_6.battle.ppLabel', { current: skill.pp, max: skill.maxPp }) }}</div>
                 </button>
               </div>
@@ -242,6 +247,23 @@
       >
         ↓
       </button>
+      <div
+        v-if="showToolBonusModal"
+        class="tool-bonus-modal"
+        @click.self="confirmToolBonusModal"
+      >
+        <div class="tool-bonus-card">
+          <div class="tool-bonus-kicker">{{ toolBonusModalContent.kicker }}</div>
+          <h3>{{ toolBonusModalContent.title }}</h3>
+          <p>{{ toolBonusModalContent.body }}</p>
+          <div class="tool-bonus-effect">
+            {{ toolBonusModalContent.effect }}
+          </div>
+          <button class="btn next" type="button" @click="confirmToolBonusModal">
+            {{ toolBonusModalContent.button }}
+          </button>
+        </div>
+      </div>
       <div v-if="showNotifyModal" class="modal" style="display: flex;" @click.self="showNotifyModal = false">
         <div class="modal-card" style="width: 360px; text-align: center;">
           <p style="margin-bottom: 20px;">{{ notifyMessage }}</p>
@@ -255,23 +277,56 @@
 <script setup>
 import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch, watchEffect } from 'vue'
 import { useAppI18n } from '@/composables/useAppI18n'
+import { useGameStore } from '@/stores/game'
 
 const emit = defineEmits(['complete'])
-const { t, tm } = useAppI18n()
+const { currentLanguage, t, tm } = useAppI18n()
+const gameStore = useGameStore()
 const showNotifyModal = ref(false)
 const notifyMessage = ref('')
 const BASE_STAGES = [
   { id: 0, gemReward: 1, enemy: { icon: '🐲', hp: 150, atk: 20 } },
   { id: 1, gemReward: 1, enemy: { icon: '🧟', hp: 200, atk: 30 } },
-  { id: 2, gemReward: 1, enemy: { icon: '💀', hp: 280, atk: 45 } },
+  { id: 2, gemReward: 1, enemy: { icon: '🧙‍♀️', hp: 280, atk: 45 } },
 ]
 
 const BASE_SKILLS = [
-  { id: 0, pp: 15, maxPp: 15, power: 30, class: 'attack', cssType: 'type-normal' },
-  { id: 1, pp: 3, maxPp: 3, power: 80, class: 'heavy', cssType: 'type-fire' },
+  { id: 0, pp: 15, maxPp: 15, power: 18, class: 'attack', cssType: 'type-normal' },
+  { id: 1, pp: 1, maxPp: 1, power: 55, class: 'heavy', cssType: 'type-fire' },
   { id: 2, pp: 5, maxPp: 5, power: 0, class: 'shield', cssType: 'type-magic' },
   { id: 3, pp: 4, maxPp: 4, power: -80, class: 'heal', cssType: 'type-heal' },
 ]
+
+const TOOL_BATTLE_BONUSES = {
+  quill: {
+    toolName: { zh: '清晰羽笔', en: 'Clarity Quill' },
+    affectedSkill: { zh: '攻击技能', en: 'attack skills' },
+    damageBonus: 15,
+  },
+  prism: {
+    toolName: { zh: '棱镜透镜', en: 'Prism Lens' },
+    affectedSkill: { zh: '疗愈技能', en: 'healing skill' },
+    healBonus: 25,
+  },
+  satchel: {
+    toolName: { zh: '罗盘行囊', en: 'Compass Satchel' },
+    affectedSkill: { zh: '防护技能', en: 'shield skill' },
+    shieldMultiplier: 0.2,
+  },
+}
+
+const STAGE_SKILL_NAMES = {
+  zh: [
+    ['语言刷题', '小分冲刺斩', '成绩有效盾', '考前冰美式'],
+    ['素材打磨', '外教精修斩', '套磁护盾', '改稿冰美式'],
+    ['表格核对', 'DDL 爆破斩', '上传确认盾', '通宵冰美式'],
+  ],
+  en: [
+    ['Drill Rush', 'Subscore Slash', 'Validity Shield', 'Pre-Test Americano'],
+    ['Draft Polish', "Proofreader's Slash", 'Cold Email Shield', 'Revision Americano'],
+    ['Form Check', 'DDL Breaker', 'Upload Shield', 'Overnight Americano'],
+  ],
+}
 
 const gameState = reactive({
   gems: 0,
@@ -298,6 +353,7 @@ const heroHit = ref(false)
 const enemyHit = ref(false)
 const heroDamage = reactive({ key: 0, text: '', color: '#ff4757', visible: false })
 const enemyDamage = reactive({ key: 0, text: '', color: '#ff4757', visible: false })
+const showToolBonusModal = ref(false)
 
 const victoryRewardState = ref({ key: 'pages.y3_6.settlement.rewardReplay', params: {} })
 const messageLineStates = ref([{ descriptor: { key: 'pages.y3_6.battle.preparing' }, length: 0 }])
@@ -324,6 +380,114 @@ const dusts = Array.from({ length: 10 }, (_, index) => ({
 
 const localizedStageContent = computed(() => tm('pages.y3_6.stages') || [])
 const localizedSkillContent = computed(() => tm('pages.y3_6.skills') || [])
+const selectedToolKey = computed(() => gameStore.travelerLook.toolKey || '')
+const activeToolBonus = computed(() => TOOL_BATTLE_BONUSES[selectedToolKey.value] || null)
+const isZh = computed(() => currentLanguage.value === 'zh')
+const currentToolBattleTip = computed(() => {
+  const bonus = activeToolBonus.value
+  if (!bonus) return ''
+
+  const toolName = bonus.toolName[isZh.value ? 'zh' : 'en']
+  if (bonus.damageBonus) {
+    return isZh.value
+      ? `你目前选择了${toolName}手持物，攻击技能优化为每次多打 ${bonus.damageBonus} 点血。`
+      : `You selected the ${toolName}. Attack skills now deal +${bonus.damageBonus} HP each time.`
+  }
+
+  if (bonus.healBonus) {
+    return isZh.value
+      ? `你目前选择了${toolName}手持物，疗愈技能优化为每次多回 ${bonus.healBonus} 点血。`
+      : `You selected the ${toolName}. Healing now restores +${bonus.healBonus} HP each time.`
+  }
+
+  const shieldPercent = Math.round((1 - bonus.shieldMultiplier) * 100)
+  return isZh.value
+    ? `你目前选择了${toolName}手持物，防护技能优化为护盾减伤提升到 ${shieldPercent}%。`
+    : `You selected the ${toolName}. Shield mitigation is upgraded to ${shieldPercent}%.`
+})
+const toolBonusModalContent = computed(() => {
+  const bonus = activeToolBonus.value
+  if (!bonus) {
+    return {
+      kicker: '',
+      title: '',
+      body: '',
+      effect: '',
+      button: isZh.value ? '开始战斗' : 'Start Battle',
+    }
+  }
+
+  const lang = isZh.value ? 'zh' : 'en'
+  const toolName = bonus.toolName[lang]
+  const affectedSkill = bonus.affectedSkill[lang]
+
+  if (bonus.damageBonus) {
+    return isZh.value
+      ? {
+          kicker: '手持物加持已激活',
+          title: `您选择了${toolName}手持物`,
+          body: `功能是强化输出判断：您的${affectedSkill}得到提升。`,
+          effect: `每次使用攻击类技能多扣 ${bonus.damageBonus} 点血。`,
+          button: '开始战斗',
+        }
+      : {
+          kicker: 'Tool bonus activated',
+          title: `You chose the ${toolName}`,
+          body: `Its function is to sharpen your offense: your ${affectedSkill} are boosted.`,
+          effect: `Attack skills deal +${bonus.damageBonus} HP each use.`,
+          button: 'Start Battle',
+        }
+  }
+
+  if (bonus.healBonus) {
+    return isZh.value
+      ? {
+          kicker: '手持物加持已激活',
+          title: `您选择了${toolName}手持物`,
+          body: `功能是强化恢复节奏：您的${affectedSkill}得到提升。`,
+          effect: `每次使用疗愈技能多回 ${bonus.healBonus} 点血。`,
+          button: '开始战斗',
+        }
+      : {
+          kicker: 'Tool bonus activated',
+          title: `You chose the ${toolName}`,
+          body: `Its function is to improve recovery: your ${affectedSkill} is boosted.`,
+          effect: `Healing restores +${bonus.healBonus} HP each use.`,
+          button: 'Start Battle',
+        }
+  }
+
+  const shieldPercent = Math.round((1 - bonus.shieldMultiplier) * 100)
+  return isZh.value
+    ? {
+        kicker: '手持物加持已激活',
+        title: `您选择了${toolName}手持物`,
+        body: `功能是强化抗压防守：您的${affectedSkill}得到提升。`,
+        effect: `每次使用防护技能可抵挡约 ${shieldPercent}% 伤害。`,
+        button: '开始战斗',
+      }
+    : {
+        kicker: 'Tool bonus activated',
+        title: `You chose the ${toolName}`,
+        body: `Its function is to strengthen defense: your ${affectedSkill} is boosted.`,
+        effect: `Shield skills block about ${shieldPercent}% damage each use.`,
+        button: 'Start Battle',
+      }
+})
+const getSkillBonusText = (skill) => {
+  const bonus = activeToolBonus.value
+  if (!bonus) return ''
+  if (skill.id === 0 && bonus.damageBonus) {
+    return isZh.value ? `+${bonus.damageBonus} 伤害` : `+${bonus.damageBonus} damage`
+  }
+  if (skill.class === 'heal' && bonus.healBonus) {
+    return isZh.value ? `+${bonus.healBonus} 回血` : `+${bonus.healBonus} heal`
+  }
+  if (skill.class === 'shield' && bonus.shieldMultiplier) {
+    return isZh.value ? `${Math.round((1 - bonus.shieldMultiplier) * 100)}% 减伤` : `${Math.round((1 - bonus.shieldMultiplier) * 100)}% block`
+  }
+  return ''
+}
 
 const localizedStages = computed(() => BASE_STAGES.map((stage, index) => {
   const localized = localizedStageContent.value[index] || {}
@@ -347,11 +511,13 @@ const currentStage = computed(() => (
 
 const displaySkills = computed(() => heroSkillState.map((skill, index) => {
   const localized = localizedSkillContent.value[index] || {}
+  const stageNames = STAGE_SKILL_NAMES[isZh.value ? 'zh' : 'en']?.[currentStageId.value] || []
   return {
     ...skill,
-    name: localized.name || '',
+    name: stageNames[index] || localized.name || '',
     cssLabel: localized.cssLabel || '',
     log: localized.log || '',
+    bonusText: getSkillBonusText(skill),
   }
 }))
 
@@ -509,6 +675,15 @@ function initBattle() {
 
   renderRocoBattleUI()
 
+  if (activeToolBonus.value) {
+    showToolBonusModal.value = true
+    return
+  }
+
+  startBattleIntro()
+}
+
+function startBattleIntro() {
   setManagedTimeout(() => {
     typeWriter({ key: 'pages.y3_6.battle.wildAppears', params: { enemy: enemyName.value } }, () => {
       setManagedTimeout(() => {
@@ -516,6 +691,11 @@ function initBattle() {
       }, 800)
     })
   }, 500)
+}
+
+function confirmToolBonusModal() {
+  showToolBonusModal.value = false
+  startBattleIntro()
 }
 
 function typeWriter(descriptor, callback, clear = true) {
@@ -594,7 +774,8 @@ function useSkill(skillIdx) {
     if (skillState.class === 'attack' || skillState.class === 'heavy') {
       heroAttack.value = true
       setManagedTimeout(() => {
-        const damage = skillState.power + Math.floor(Math.random() * 15) + (gameState.level - 1) * 10
+        const toolDamageBonus = skillState.id === 0 ? activeToolBonus.value?.damageBonus || 0 : 0
+        const damage = skillState.power + Math.floor(Math.random() * 15) + (gameState.level - 1) * 10 + toolDamageBonus
         enemy.hp = Math.max(0, enemy.hp - damage)
         enemyHit.value = true
         popDamage('enemy', `-${damage}`, '#ff4757')
@@ -606,7 +787,8 @@ function useSkill(skillIdx) {
         }, 400)
       }, 200)
     } else if (skillState.class === 'heal') {
-      const heal = Math.abs(skillState.power) + (gameState.level * 15)
+      const toolHealBonus = activeToolBonus.value?.healBonus || 0
+      const heal = Math.abs(skillState.power) + (gameState.level * 15) + toolHealBonus
       gameState.hero.hp = Math.min(gameState.hero.maxHp, gameState.hero.hp + heal)
       popDamage('hero', `+${heal}`, '#48bb78')
       setManagedTimeout(() => checkWinOrNext(), 800)
@@ -637,7 +819,7 @@ function enemyTurn() {
     setManagedTimeout(() => {
       let damage = enemy.atk + Math.floor(Math.random() * 20)
       if (gameState.hero.shield) {
-        damage = Math.floor(damage * 0.3)
+        damage = Math.floor(damage * (activeToolBonus.value?.shieldMultiplier || 0.3))
         gameState.hero.shield = false
         typeWriter({ key: 'pages.y3_6.battle.shieldAbsorbed' }, null, false)
       }
@@ -753,6 +935,7 @@ function closeModal() {
   if (gameState.inBattle && !window.confirm(t('pages.y3_6.battle.confirmFlee'))) return
   cancelTypeWriter()
   clearTurnWatchdog()
+  showToolBonusModal.value = false
   modalVisible.value = false
   gameState.inBattle = false
   updateScrollCue()
@@ -1110,8 +1293,75 @@ onBeforeUnmount(() => {
 .hp-text { text-align: right; font-size: 0.9rem; font-weight: bold; margin-top: 4px; }
 .shield-tag { color: #3182ce; font-size: 0.85rem; font-weight: bold; margin-top: 4px; display: none; }
 
+.tool-battle-tip {
+  flex: 0 0 auto;
+  padding: 9px 16px;
+  background: linear-gradient(135deg, rgba(255, 252, 239, 0.98), rgba(238, 247, 255, 0.96));
+  border-top: 3px solid #f6e05e;
+  color: #253044;
+  font-size: 0.9rem;
+  font-weight: 900;
+  line-height: 1.35;
+  text-align: center;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.9);
+}
+
+.tool-bonus-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 140;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  background: rgba(4, 8, 18, 0.72);
+}
+
+.tool-bonus-card {
+  width: min(440px, 92vw);
+  padding: 24px;
+  border-radius: 18px;
+  border: 1px solid rgba(246, 224, 94, 0.42);
+  background: linear-gradient(180deg, #fffaf0, #edf7ff);
+  color: #243142;
+  text-align: center;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+}
+
+.tool-bonus-kicker {
+  margin-bottom: 8px;
+  color: #9a6b09;
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0;
+}
+
+.tool-bonus-card h3 {
+  margin: 0 0 12px;
+  color: #172033;
+  font-size: 1.35rem;
+}
+
+.tool-bonus-card p {
+  margin: 0;
+  color: #435165;
+  font-size: 0.98rem;
+  line-height: 1.6;
+}
+
+.tool-bonus-effect {
+  margin: 16px 0 20px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.72);
+  color: #0f766e;
+  font-size: 1rem;
+  font-weight: 900;
+  line-height: 1.45;
+}
+
 .ui-bottom {
-  min-height: 146px; flex: 0 0 146px; background: linear-gradient(to bottom, #2d3748, #1a202c);
+  min-height: 170px; flex: 0 0 170px; background: linear-gradient(to bottom, #2d3748, #1a202c);
   border-top: 4px solid #f6e05e; display: flex; align-items: stretch;
 }
 .message-box {
@@ -1119,20 +1369,26 @@ onBeforeUnmount(() => {
   color: #fff; border-right: 4px solid #4a5568; display: flex; align-items: center; text-shadow: 0 2px 4px rgba(0,0,0,0.5); font-family: "Georgia", serif;
 }
 .action-menu {
-  width: 500px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(56px, 1fr));
+  width: 500px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(68px, 1fr));
   padding: 10px; gap: 10px; display: none; align-content: center;
 }
 .skill-btn {
   background: linear-gradient(to bottom, #fffaf0, #e2e8f0); border: 3px solid #a0aec0;
-  min-height: 56px; padding: 5px 8px; border-radius: 10px; cursor: pointer; display: flex; flex-direction: column;
-  justify-content: center; align-items: center; transition: 0.15s;
+  min-height: 0; height: 68px; padding: 5px 8px; border-radius: 10px; cursor: pointer; display: flex; flex-direction: column;
+  justify-content: center; align-items: center; gap: 2px; overflow: hidden; transition: 0.15s;
 }
 .skill-btn:hover { background: #fefcbf; border-color: #d69e2e; transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
 .skill-btn:active { transform: scale(0.95); }
 .skill-btn:disabled { filter: grayscale(1); opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none;}
-.skill-name { font-weight: 900; font-size: 0.92rem; color: #2d3748; line-height: 1.08; text-align: center; }
-.skill-pp { font-size: 0.72rem; color: #718096; font-weight: bold; margin-top: 2px; }
-.skill-type { font-size: 0.66rem; padding: 1px 6px; border-radius: 4px; color: #fff; margin-top: 2px; font-weight: bold;}
+.skill-name { width: 100%; min-height: 17px; font-weight: 900; font-size: 0.84rem; color: #2d3748; line-height: 1.05; text-align: center; white-space: nowrap; overflow: hidden; }
+.skill-name span { display: inline-block; max-width: 100%; padding: 0 6px; vertical-align: top; }
+.skill-btn:hover .skill-name span {
+  max-width: none;
+  animation: skillNameScroll 3.2s linear infinite;
+}
+.skill-pp { font-size: 0.66rem; color: #718096; font-weight: bold; line-height: 1.05; }
+.skill-type { font-size: 0.58rem; padding: 1px 6px; border-radius: 999px; color: #fff; font-weight: bold; line-height: 1.15;}
+.skill-bonus { font-size: 0.58rem; color: #0f766e; background: rgba(15, 118, 110, 0.12); border-radius: 999px; padding: 1px 6px; font-weight: 900; line-height: 1.15; }
 .type-normal { background: #a0aec0; } .type-fire { background: #e53e3e; } .type-magic { background: #805ad5; } .type-heal { background: #38b2ac; }
 
 .final-reward-screen { text-align: center; padding: 18px 8px 8px; }
@@ -1141,6 +1397,10 @@ onBeforeUnmount(() => {
 @keyframes twinkle { 0%,100% { opacity: .22; transform: scale(1); } 50% { opacity: .9; transform: scale(1.5); } }
 @keyframes drift { 0% { transform: translate(0,0) scale(.8); opacity: 0; } 15% { opacity: .55; } 100% { transform: translate(70px,-180px) scale(1.25); opacity: 0; } }
 @keyframes wave { 0%,100% { transform: skewY(0deg); } 50% { transform: skewY(7deg); } }
+@keyframes skillNameScroll {
+  0%, 15% { transform: translateX(0); }
+  85%, 100% { transform: translateX(-34%); }
+}
 
 @media (max-width: 1100px) {
   .title-box {

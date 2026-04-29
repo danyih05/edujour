@@ -123,6 +123,8 @@ export const useGameStore = defineStore('game', {
       const mapAvatar = state.travelerProfile?.mapAvatar || {}
 
       return {
+        characterKey: mapAvatar.characterKey || state.travelerProfile?.avatar?.characterKey || 'robot',
+        toolKey: mapAvatar.toolKey || state.travelerProfile?.avatar?.toolKey || '',
         hairColor: mapAvatar.hairColor || '#3a2a25',
         outfitColor: mapAvatar.outfitColor || '#ffd46d',
       }

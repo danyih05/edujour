@@ -125,10 +125,19 @@
 
           <div class="traveler" :class="{ walking: traveler.y2.walking, reached: traveler.y2.reached }" :style="[travelerStyle, { left: traveler.y2.left, top: traveler.y2.top }]">
             <div class="traveler-shadow"></div>
-            <div class="traveler-body">
-              <div class="traveler-hair"></div>
-              <div class="traveler-face"><span class="eye left"></span><span class="eye right"></span><span class="blush left"></span><span class="blush right"></span><span class="mouth"></span></div>
-              <div class="traveler-arm left"></div><div class="traveler-arm right"></div><div class="traveler-leg left"></div><div class="traveler-leg right"></div>
+            <img class="traveler-image" :src="travelerImage" alt="">
+            <button
+              v-if="travelerTool"
+              type="button"
+              class="traveler-tool"
+              :class="`tool-${travelerTool.key}`"
+              @click.stop="toggleToolBubble"
+            >
+              <img :src="travelerTool.image" alt="">
+            </button>
+            <div v-if="showToolBubble && travelerTool" class="tool-skill-bubble">
+              <strong>{{ travelerToolSkill.title }}</strong>
+              <span>{{ travelerToolSkill.body }}</span>
             </div>
           </div>
         </div>
@@ -160,10 +169,19 @@
 
             <div class="traveler" :class="{ walking: traveler.y3.walking, reached: traveler.y3.reached }" :style="[travelerStyle, { left: traveler.y3.left, top: traveler.y3.top }]">
               <div class="traveler-shadow"></div>
-              <div class="traveler-body">
-                <div class="traveler-hair"></div>
-                <div class="traveler-face"><span class="eye left"></span><span class="eye right"></span><span class="blush left"></span><span class="blush right"></span><span class="mouth"></span></div>
-                <div class="traveler-arm left"></div><div class="traveler-arm right"></div><div class="traveler-leg left"></div><div class="traveler-leg right"></div>
+              <img class="traveler-image" :src="travelerImage" alt="">
+              <button
+                v-if="travelerTool"
+                type="button"
+                class="traveler-tool"
+                :class="`tool-${travelerTool.key}`"
+                @click.stop="toggleToolBubble"
+              >
+                <img :src="travelerTool.image" alt="">
+              </button>
+              <div v-if="showToolBubble && travelerTool" class="tool-skill-bubble">
+                <strong>{{ travelerToolSkill.title }}</strong>
+                <span>{{ travelerToolSkill.body }}</span>
               </div>
             </div>
             
@@ -249,6 +267,12 @@ import { LEVEL_DEFINITIONS } from '@/config/levels'
 import { useAuthStore } from '@/stores/auth'
 import { useGameStore } from '@/stores/game'
 import HelpGuide from '@/components/HelpGuide.vue'
+import mapMonkey from '@/assets/avatars/map-monkey.png'
+import mapPuppy from '@/assets/avatars/map-puppy.png'
+import mapRobot from '@/assets/avatars/map-robot.png'
+import toolPrism from '@/assets/avatars/tool-prism.png'
+import toolQuill from '@/assets/avatars/tool-quill.png'
+import toolSatchel from '@/assets/avatars/tool-satchel.png'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -304,6 +328,33 @@ const mapAreas = reactive({ y2: null, y3: null })
 const nodeRefs = reactive({ y2: {}, y3: {} })
 const traveler = reactive({ y2: { left: '50%', top: '50%', walking: false, reached: false }, y3: { left: '50%', top: '50%', walking: false, reached: false } })
 const travelerStyle = computed(() => ({ '--traveler-hair': store.travelerLook.hairColor, '--traveler-outfit': store.travelerLook.outfitColor }))
+const travelerImages = {
+  monkey: mapMonkey,
+  puppy: mapPuppy,
+  robot: mapRobot,
+}
+const travelerTools = {
+  prism: { key: 'prism', image: toolPrism },
+  quill: { key: 'quill', image: toolQuill },
+  satchel: { key: 'satchel', image: toolSatchel },
+}
+const travelerImage = computed(() => travelerImages[store.travelerLook.characterKey] || mapRobot)
+const travelerTool = computed(() => travelerTools[store.travelerLook.toolKey] || null)
+const showToolBubble = ref(false)
+const toolSkillCopy = computed(() => (
+  currentLanguage.value === 'en'
+    ? {
+        prism: { title: 'Healing Boost', body: 'Increases recovery and reflection power.' },
+        quill: { title: 'Attack Boost', body: 'Sharpens ideas into stronger strikes.' },
+        satchel: { title: 'Protection Boost', body: 'Adds extra guard for the journey.' },
+      }
+    : {
+        prism: { title: '增加疗愈', body: '提升恢复与自我修复能力。' },
+        quill: { title: '增强攻击', body: '把思路凝成更有力的攻击。' },
+        satchel: { title: '增加防护', body: '为旅程提供额外保护。' },
+      }
+))
+const travelerToolSkill = computed(() => toolSkillCopy.value[travelerTool.value?.key] || { title: '', body: '' })
 const nativeGameComponent = computed(() => {
   if (!activeLevel.value) return null
   const loader = gameModules[`./games/${activeLevel.value.file}`]
@@ -334,7 +385,10 @@ function getNodeCenter(year, nodeId) { const map = mapAreas[year]; const node = 
 function moveTravelerToNode(year, nodeId) { const center = getNodeCenter(year, nodeId); if (!center) return; traveler[year].left = `${center.left}px`; traveler[year].top = `${center.top}px`; traveler[year].walking = true; traveler[year].reached = false; if (travelerTimers[year]) clearTimeout(travelerTimers[year]); travelerTimers[year] = window.setTimeout(() => { traveler[year].walking = false; traveler[year].reached = true }, 850) }
 function syncTraveler(year, nodeId = store[year].currentNode) { nextTick(() => window.requestAnimationFrame(() => moveTravelerToNode(year, nodeId))) }
 function switchYear(year) { if (store.year === year) { syncTraveler(year); return } store.switchYear(year) }
-function switchYearAndClose(year) { switchYear(year); showMobileMenu.value = false }
+function switchYearAndClose(year) { switchYear(year); showMobileMenu.value = false; showToolBubble.value = false }
+function toggleToolBubble() {
+  showToolBubble.value = !showToolBubble.value
+}
 function showTooltipNow(node, year, type = 'locked') {
   let text = ''
   if (type === 'locked') {
@@ -528,11 +582,17 @@ onMounted(() => {
   }
 })
 
-watch(() => store.year, (year) => syncTraveler(year, store[year].currentNode))
+watch(() => store.year, (year) => {
+  showToolBubble.value = false
+  syncTraveler(year, store[year].currentNode)
+})
 watch(() => store.y2.currentNode, (nodeId) => { if (store.year === 'y2') syncTraveler('y2', nodeId) })
 watch(() => store.y3.currentNode, (nodeId) => { if (store.year === 'y3') syncTraveler('y3', nodeId) })
 watch(() => store.year, () => {
   if (showGuide.value) nextTick(() => updateGuidePosition())
+})
+watch(() => store.travelerLook.toolKey, () => {
+  showToolBubble.value = false
 })
 onMounted(async () => {
   window.addEventListener('keydown', handleEscape)
@@ -937,22 +997,23 @@ onBeforeUnmount(() => { window.removeEventListener('keydown', handleEscape); win
 .node-label { position: absolute; top: calc(var(--y3-node-size) + 12px); left: 50%; transform: translateX(-50%); min-width: 140px; text-align: center; font-size: 0.82rem; font-weight: 900; color: #f8fafc; white-space: nowrap; pointer-events: none; text-shadow: 0 0 10px rgba(0, 0, 0, 0.85); }
 .n1 { left: calc(48.84% - var(--y3-node-offset)); top: calc(13.88% - var(--y3-node-offset)); } .n2 { left: calc(65.72% - var(--y3-node-offset)); top: calc(25.61% - var(--y3-node-offset)); } .n3 { left: calc(72.71% - var(--y3-node-offset)); top: calc(53.94% - var(--y3-node-offset)); } .n4 { left: calc(65.72% - var(--y3-node-offset)); top: calc(82.27% - var(--y3-node-offset)); } .n5 { left: calc(48.84% - var(--y3-node-offset)); top: calc(95.00% - var(--y3-node-offset)); } .n6 { left: calc(31.96% - var(--y3-node-offset)); top: calc(82.27% - var(--y3-node-offset)); } .n7 { left: calc(24.97% - var(--y3-node-offset)); top: calc(53.94% - var(--y3-node-offset)); } .n8 { left: calc(31.96% - var(--y3-node-offset)); top: calc(25.61% - var(--y3-node-offset)); }
 .n5 .node-label { top: auto; bottom: calc(var(--y3-node-size) + 12px); }
-.traveler { --traveler-scale: 1; position: absolute; width: 78px; height: 96px; z-index: 18; pointer-events: none; transition: left 0.8s cubic-bezier(0.22, 1, 0.36, 1), top 0.8s cubic-bezier(0.22, 1, 0.36, 1), transform 0.25s ease; transform: translate(-50%, -92%) scale(var(--traveler-scale)); transform-origin: 50% 92%; }
+.traveler { --traveler-scale: 1; position: absolute; width: 92px; height: 122px; z-index: 18; pointer-events: none; transition: left 0.8s cubic-bezier(0.22, 1, 0.36, 1), top 0.8s cubic-bezier(0.22, 1, 0.36, 1), transform 0.25s ease; transform: translate(-50%, -92%) scale(var(--traveler-scale)); transform-origin: 50% 92%; }
 .y3 .traveler { --traveler-scale: 0.86; }
 .traveler.walking { animation: bob-walk 0.55s ease-in-out infinite; }
 .traveler.reached::after { content: '\2728'; position: absolute; right: -6px; top: -10px; font-size: 1.15rem; animation: sparkle-pop 0.8s ease; }
-.traveler-shadow { position: absolute; bottom: 3px; left: 50%; width: 42px; height: 12px; transform: translateX(-50%); background: rgba(0, 0, 0, 0.18); border-radius: 50%; filter: blur(2px); }
-.traveler-body { position: absolute; left: 50%; bottom: 8px; width: 54px; height: 70px; transform: translateX(-50%); }
-.traveler-face { position: absolute; top: 2px; left: 50%; width: 44px; height: 42px; transform: translateX(-50%); background: #ffe8c7; border: 3px solid #273640; border-radius: 50% 50% 46% 46%; z-index: 3; }
-.traveler.reached .traveler-face { box-shadow: 0 0 0 6px rgba(255, 214, 102, 0.18); }
-.traveler-hair { position: absolute; top: -2px; left: 50%; width: 48px; height: 24px; transform: translateX(-50%); background: var(--traveler-hair); border: 3px solid #273640; border-bottom: none; border-radius: 20px 20px 10px 10px; z-index: 4; }
-.eye { position: absolute; top: 15px; width: 6px; height: 9px; background: #273640; border-radius: 50%; } .eye.left { left: 11px; } .eye.right { right: 11px; }
-.blush { position: absolute; top: 22px; width: 8px; height: 5px; background: rgba(255, 140, 140, 0.55); border-radius: 50%; } .blush.left { left: 5px; } .blush.right { right: 5px; }
-.mouth { position: absolute; left: 50%; bottom: 8px; width: 10px; height: 5px; transform: translateX(-50%); border-bottom: 3px solid #b55b5b; border-radius: 0 0 10px 10px; }
-.traveler-body::after { content: ''; position: absolute; top: 33px; left: 50%; width: 34px; height: 24px; transform: translateX(-50%); background: var(--traveler-outfit); border: 3px solid #273640; border-radius: 14px 14px 10px 10px; z-index: 2; }
-.traveler-arm, .traveler-leg { position: absolute; background: #ffe8c7; border: 3px solid #273640; z-index: 1; }
-.traveler-arm { top: 38px; width: 10px; height: 22px; border-radius: 10px; } .traveler-arm.left { left: 4px; transform: rotate(18deg); } .traveler-arm.right { right: 4px; transform: rotate(-18deg); }
-.traveler-leg { bottom: 0; width: 10px; height: 22px; border-radius: 10px; background: #fff3d9; } .traveler-leg.left { left: 16px; } .traveler-leg.right { right: 16px; }
+.traveler-shadow { position: absolute; bottom: 6px; left: 50%; width: 52px; height: 14px; transform: translateX(-50%); background: rgba(0, 0, 0, 0.22); border-radius: 50%; filter: blur(3px); }
+.traveler-image { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; display: block; filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.35)); }
+.traveler-tool { position: absolute; right: -34px; bottom: 30px; width: 64px; height: 64px; padding: 0; display: grid; place-items: center; transform: rotate(8deg); z-index: 4; border: none; background: transparent; cursor: pointer; pointer-events: auto; }
+.traveler-tool img { width: 100%; height: 100%; object-fit: contain; display: block; filter: drop-shadow(0 8px 10px rgba(0, 0, 0, 0.38)); }
+.traveler-tool:hover img { transform: scale(1.08); filter: drop-shadow(0 10px 14px rgba(0, 0, 0, 0.42)) drop-shadow(0 0 10px rgba(248, 214, 162, 0.45)); }
+.traveler-tool.tool-prism { right: -36px; bottom: 50px; width: 60px; height: 60px; }
+.traveler-tool.tool-satchel { right: -32px; bottom: 34px; width: 70px; height: 70px; transform: rotate(-6deg); }
+.tool-skill-bubble { position: absolute; right: -124px; bottom: 46px; width: 104px; min-height: 56px; padding: 10px 12px; z-index: 5; pointer-events: auto; color: #243142; background: #fffaf0; border: 2px solid rgba(248, 214, 162, 0.9); border-radius: 44% 56% 48% 52% / 58% 44% 56% 42%; box-shadow: 0 12px 20px rgba(0, 0, 0, 0.24), inset 0 0 0 2px rgba(255, 255, 255, 0.72); font-family: Georgia, serif; text-align: center; transform: rotate(-2deg); }
+.tool-skill-bubble::before, .tool-skill-bubble::after { content: ''; position: absolute; background: #fffaf0; border: 2px solid rgba(248, 214, 162, 0.9); border-radius: 50%; z-index: -1; }
+.tool-skill-bubble::before { width: 26px; height: 22px; left: 10px; top: -11px; }
+.tool-skill-bubble::after { width: 18px; height: 17px; right: 14px; bottom: -8px; }
+.tool-skill-bubble strong { display: block; color: #1e3a5f; font-size: 0.72rem; line-height: 1.15; }
+.tool-skill-bubble span { display: block; margin-top: 3px; color: #64748b; font-size: 0.58rem; line-height: 1.25; font-family: system-ui, sans-serif; font-weight: 800; }
 .modal-overlay { position: fixed; inset: 0; background: rgba(10, 20, 30, 0.85); backdrop-filter: blur(8px); display: flex; justify-content: center; align-items: center; z-index: 600; }
 .game-modal-content { background: #fffcf3; width: 95%; max-width: 1200px; height: 90vh; border-radius: 24px; padding: 25px; border: 3px solid #e2bc7c; box-shadow: 0 25px 40px rgba(0, 0, 0, 0.6); display: flex; flex-direction: column; position: relative; }
 .chrome-free-modal { background: transparent; width: 100vw; max-width: 100vw; height: 100vh; padding: 0; border: none; box-shadow: none; }
