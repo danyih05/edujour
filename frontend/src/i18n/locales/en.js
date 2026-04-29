@@ -28,6 +28,8 @@ export default {
       saveAndReturn: 'Save and Return',
     },
     labels: {
+      previous: 'Previous',
+      next: 'Next',
       currentBalance: 'Current Balance',
       currentStatus: 'Current Status',
       progress: 'Progress',
@@ -291,6 +293,7 @@ export default {
         hk: ['City pulse', 'Finance link'],
       },
       claim: 'Accept Route Suggestion and Proceed',
+      
       questionCount: 'Question {current} / {total}',
       guide: {
         button: 'Knowledge Guide',

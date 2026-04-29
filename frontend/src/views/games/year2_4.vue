@@ -69,6 +69,7 @@
         <h3>{{ t('pages.y2_4.completionTitle') }}</h3>
         <p>{{ completedCorrect }} / {{ cases.length }} {{ t('pages.y2_4.correctLabel') }}</p>
         <p class="completion-copy">{{ t('pages.y2_4.completionCopy') }}</p>
+        <p class="analysis-text">{{ completionAnalysis }}</p>
         <div class="completion-actions">
           <button type="button" class="btn-retry" @click="retryGame">
             {{ t('common.actions.retry') }}
@@ -89,7 +90,7 @@ import KnowledgeGuidePanel from '@/components/KnowledgeGuidePanel.vue'
 
 const rewardCoins = 30
 const emit = defineEmits(['complete', 'close'])
-const { tm, t } = useAppI18n()
+const { tm, t, currentLanguage } = useAppI18n()
 
 const caseMeta = [
   { id: 1, icon: '🧑‍💻', gpaClass: 'danger', truthClass: 'success' },
@@ -117,6 +118,35 @@ const guideItems = computed(() => tm('pages.y2_4.guide.items') || [])
 
 const currentCase = computed(() => {
   return cases.value[currentCaseIndex.value] || null
+})
+
+const completionAnalysis = computed(() => {
+  const correct = completedCorrect.value
+  const total = cases.value.length
+  const ratio = correct / total
+  const isEn = currentLanguage.value === 'en'
+
+  if (ratio <= 0.2) {
+    return isEn
+      ? 'You may be underestimating the complexity of applications. Try to study more real-life cases before making decisions.'
+      : '你可能低估了申请的复杂性，建议在做决定之前多研究一些真实案例。'
+  } else if (ratio <= 0.4) {
+    return isEn
+      ? 'You might be a bit too optimistic. Take time to review the details of each situation.'
+      : '你或许有点过于乐观了，多花点时间审视每个案例的细节吧。'
+  } else if (ratio <= 0.6) {
+    return isEn
+      ? 'You have a balanced view of the application process. Keep learning from real examples.'
+      : '你对申请难度的判断比较平衡，继续从真实案例中学习吧。'
+  } else if (ratio <= 0.8) {
+    return isEn
+      ? 'You are quite realistic, but still have room to refine your judgement.'
+      : '你已经相当务实了，但判断力还可以再打磨一下。'
+  } else {
+    return isEn
+      ? 'You may be overestimating the difficulty. Your instincts are sharp — trust them more!'
+      : '你可能高估了申请的难度。你的直觉其实很准，对自己更有信心一点！'
+  }
 })
 
 const progressPercent = computed(() => {
@@ -439,6 +469,15 @@ function retryGame() {
   justify-content: center;
   gap: 14px;
   flex-wrap: wrap;
+}
+
+.analysis-text {
+  color: #fde68a;
+  font-style: italic;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin-top: 8px;
+  padding: 0 12px;
 }
 
 .btn-retry {

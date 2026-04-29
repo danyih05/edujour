@@ -62,7 +62,7 @@ import { useAppI18n } from '@/composables/useAppI18n'
 import KnowledgeGuidePanel from '@/components/KnowledgeGuidePanel.vue'
 
 const emit = defineEmits(['complete', 'close'])
-const { t, tm } = useAppI18n()
+const { t, tm, currentLanguage } = useAppI18n()
 
 const maxAP = 10
 const maxTaskAP = 5
@@ -106,16 +106,59 @@ function generateProphecy() {
     return
   }
 
-  const softInfo = points.info + points.net
-  if (softInfo >= 4) {
-    prophecy.value = t('pages.y2_5.prophecy.softInfo')
-  } else if (points.int >= 3 && points.proj >= 2 && points.gpa >= 2) {
-    prophecy.value = t('pages.y2_5.prophecy.techPath')
-  } else if (points.res >= 4 && points.lang === 0) {
-    prophecy.value = t('pages.y2_5.prophecy.researchNoLang')
+  const isEn = currentLanguage.value === 'en'
+
+  // 获取关键得分
+  const gpaScore = points.gpa || 0
+  const langScore = points.lang || 0
+  const projScore = points.proj || 0
+  const resScore = points.res || 0
+  const intScore = points.int || 0
+  const compScore = points.comp || 0
+  const infoScore = points.info || 0
+  const netScore = points.net || 0
+
+  const softTotal = infoScore + netScore
+  const hardTotal = gpaScore + langScore + projScore + resScore + intScore + compScore
+
+  // 基于背景（雅思6，均分80+，无项目/科研）生成个性化分析
+  let analysis = ''
+
+  if (isEn) {
+    analysis = `🌟 Personalized Stardust Analysis (based on your profile: IELTS 6.0, GPA 80+, no projects/research)\n\n`
+
+    if (softTotal >= 4) {
+      analysis += `You invested heavily in soft information (${softTotal} pts). With your current language score (IELTS 6.0) and average GPA, this may be a wise strategy to boost your profile through networking and information gathering. However, don't neglect tangible academic outputs – consider shifting 1-2 points to language or project next time.`
+    } else if (langScore >= 3 && gpaScore >= 2) {
+      analysis += `You focused on language (${langScore} pts) and academics (${gpaScore} pts). Given your IELTS 6.0, this is a strong move to compensate for the language gap. But without projects or research, your application may look one-dimensional. Try adding at least 2 points to project experience in future allocations.`
+    } else if (resScore >= 3 && projScore === 0) {
+      analysis += `You prioritized research (${resScore} pts) yet have no project experience. Research potential is great, but admissions often look for practical application. Since your IELTS is 6.0, pairing research with language improvement would create a more balanced profile.`
+    } else if (intScore >= 2 && projScore >= 2) {
+      analysis += `You built a solid internship/project combo (${intScore}+${projScore} pts). This is promising, but with an IELTS 6.0 and no research background, you risk being filtered out by language requirements. Increase language training points to at least 3 to offset this weakness.`
+    } else if (gpaScore >= 3 && langScore <= 1) {
+      analysis += `You emphasized GPA strength (${gpaScore} pts), which is good for your 80+ average. However, ignoring language (${langScore} pts) is risky when your IELTS is only 6.0. Add at least 2-3 points to language preparation to meet typical admission thresholds.`
+    } else {
+      analysis += `Your allocation is relatively balanced. With IELTS 6.0, GPA 80+, and no research/projects, you'll need to actively compensate through language and project points in future terms. Consider focusing on language (3+ pts) and adding at least 2 points to project to strengthen your profile.`
+    }
   } else {
-    prophecy.value = t('pages.y2_5.prophecy.steady')
+    analysis = `🌟 个性化星尘分析（基于你的背景: 雅思6.0，均分80+，无项目/科研经历）\n\n`
+
+    if (softTotal >= 4) {
+      analysis += `你在软性信息方面投入了 ${softTotal} 点。以你目前的语言成绩（雅思6.0）和均分来说，通过人脉和信息收集提升背景是个策略，但也不要忽视硬实力的提升——下次可以试试把1-2点分给语言或项目。`
+    } else if (langScore >= 3 && gpaScore >= 2) {
+      analysis += `你重点加强了语言（${langScore} 点）和学术（${gpaScore} 点）。在雅思只有6.0的情况下，这是个补短的明智选择。但因为没有项目或科研经历，申请材料可能显得单一。下一次建议至少再投入2点到项目经历上。`
+    } else if (resScore >= 3 && projScore === 0) {
+      analysis += `你把大部分点数给了科研（${resScore} 点），但没有任何项目经历。科研潜力固然重要，招生官往往更看重实践应用。考虑到你的雅思只有6.0，建议同时提升语言（至少2点）并补充项目经历。`
+    } else if (intScore >= 2 && projScore >= 2) {
+      analysis += `你构建了不错的实习+项目组合（${intScore}+${projScore} 点），这是积极信号。但雅思6.0和缺乏科研背景可能让你在初筛阶段吃亏。强烈建议把语言至少提升到3点，以避开硬性要求。`
+    } else if (gpaScore >= 3 && langScore <= 1) {
+      analysis += `你展示了均分80+的优势（${gpaScore} 点），但没有重视语言（${langScore} 点）。当雅思只有6.0时，这非常危险。下一步必须给语言分配2-3点，以满足常规录取门槛。`
+    } else {
+      analysis += `你的分配相对均衡。在雅思6.0、均分80+、无科研/项目的背景下，需要主动用语言和项目来补足短板。建议后续把语言点加到3以上，并至少用2点开启一个项目经历。`
+    }
   }
+
+  prophecy.value = analysis
 
   // 自动滚动到预言面板
   nextTick(() => {
