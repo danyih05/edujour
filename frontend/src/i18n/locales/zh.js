@@ -529,94 +529,63 @@ export default {
       },
     },
     y2_4: {
-      title: '学长档案馆',
-      intro: '先预测每位前人的结果，再揭示他们的真实走向。你会看到 GPA、实习、科研和项目之间真正影响申请的关系。',
+      title: '学长档案馆 – 专业分流',
+      intro: '根据真实数据预测每位前人的申请结果，看清GPA、实习、科研和项目真实的作用力。',
+      selectTrack: {
+        title: '选择你的路径',
+        intro: '请选择你的专业方向，查看电气（EE）或计算机（ICS）的真实案例。',
+        ee: '电气路径 (EE)',
+        ics: '计算机路径 (ICS)'
+      },
+      tracks: {
+        ee: '电子电气工程',
+        ics: '计算机科学'
+      },
+      caseIndicator: '第 {current}/{total} 案 – {track}',
       labels: {
-        senior: '档案',
         gpa: 'GPA',
         evidence: '核心证据',
+        weakness: '短板'
       },
       guide: {
         button: '档案启示录',
-        body: '从学长案例中学习：GPA 不是唯一决定因素。实习、项目、科研等硬核证据可以改变结果。',
+        body: '从学长案例中学习：GPA不是唯一决定因素。实习、项目、科研等硬核证据可以改变结果。同时发现你自己的判断偏见。',
         items: [
           {
-            title: '🔍 低 GPA + 强证据 = 奇迹',
-            content: 'GPA 80/100，搭配扎实的企业研发实习和高含金量项目，仍有冲击 Top 50 的可能，尤其对应用型 CS/软件方向。'
+            title: '🔍 低GPA + 强证据 = 奇迹',
+            content: 'GPA 80/100搭配扎实的企业研发实习和高含金量项目，仍有冲击Top 50的可能，尤其对应用型CS/软件方向。'
           },
           {
-            title: '⚠️ 高 GPA + 空心简历 = 风险',
+            title: '⚠️ 高GPA + 空心简历 = 风险',
             content: '只有高分远远不够。项目更看重相关经历、项目、科研和动机。“空心学霸”往往遭遇严重挫折。'
           },
           {
             title: '📌 证据为王',
-            content: '实习、项目、科研、竞赛等可展示的成果，能形成你的护城河。它们比单纯的高分更能证明你的能力和匹配度。'
+            content: '实习、项目、科研、竞赛等可展示的成果，能形成你的护城河。它们比单纯的高分更能证明你的能力。'
           },
           {
             title: '🎯 让经历匹配项目',
-            content: 'CV、PS、RL 都应该围绕项目真正看重的东西来组织。用你的证据证明你就是他们想要的人。'
+            content: 'CV、PS、RL都应该围绕项目真正看重的东西来组织。用你的证据证明你就是他们想要的人。'
+          },
+          {
+            title: '🧠 认识你的认知偏差',
+            content: '本游戏会检测你过度乐观或过度悲观的倾向，通过反馈帮你校准自己的期望。'
           }
         ]
       },
-      completionTitle: "🏆 归档挑战完成",  
-      correctLabel: "道正确",                  
-      completionCopy: "恭喜你完成了所有档案分析，继续你的冒险之旅吧！", 
-      claimAndContinue: "🎁 领取{coins}金币并开启下一关",
-      complete: '归档这份经验并返回',
-      completionCopy: '你完成了档案馆的学习，获得了奖励。选择重试练习或领取金币返回。',
       wrongAnswer: '预测错误',
-      cases: [
-        {
-          label: '学长 A',
-          track: '信息 / 计算机方向',
-          gpa: '80/100（危险）',
-          evidence: 'SAP 研发实习 + 高质量 GitHub 项目',
-          choices: ['A. 拒信深渊', 'B. 奇迹飞升（Top 50）'],
-          correctIndex: 1,
-          truthTitle: '真相：奇迹飞升到 Top 50。',
-          truth: '对于应用型 CS / 软件方向，扎实的企业研发实习和真正能展示工程能力的项目，会形成可见护城河。低 GPA 依然危险，但硬核技术证据能改变叙事。',
-        },
-        {
-          label: '学长 B',
-          track: '数据科学方向',
-          gpa: '91/100（顶级）',
-          evidence: '零实习、零科研、零像样项目',
-          choices: ['A. 横扫 Top 30', 'B. 严重受挫'],
-          correctIndex: 1,
-          truthTitle: '真相：严重受挫。',
-          truth: '这正是“空心学霸”陷阱。在 STEM 和商科相关项目里，高分并不是全部。项目更看重相关经历、项目、科研、实习、动机和匹配度。',
-        },
-        {
-          label: '学长 C',
-          track: '商科 / 金融方向',
-          gpa: '85/100（不错）',
-          evidence: '银行实习 + 案例竞赛获胜',
-          choices: ['A. 中等成功', 'B. 精英项目突破'],
-          correctIndex: 1,
-          truthTitle: '真相：精英项目突破。',
-          truth: '在商科方向，相关实习和竞赛结果能将不错的 GPA 提升到精英水平。实践经验证明了实际应用能力。',
-        },
-        {
-          label: '学长 D',
-          track: '工程方向',
-          gpa: '88/100（良好）',
-          evidence: '论文发表 + 创业项目',
-          choices: ['A. Top 20 成就', 'B. 意外拒信'],
-          correctIndex: 0,
-          truthTitle: '真相：Top 20 成就。',
-          truth: '工程项目重视创新。发表和创业项目能弥补不完美的 GPA。',
-        },
-        {
-          label: '学长 E',
-          track: '文科 / 人文方向',
-          gpa: '92/100（优秀）',
-          evidence: '诗歌发表 + 社区领导',
-          choices: ['A. 常春藤录取', 'B. 知名但非精英'],
-          correctIndex: 0,
-          truthTitle: '真相：常春藤录取。',
-          truth: '在人文领域，杰出的创意作品和领导力能在激烈竞争中获得顶尖录取。',
-        },
-      ],
+      complete: '查看人格报告',
+      completionTitle: '人格报告已解锁',
+      correctLabel: '正确',
+      claimAndContinue: '🎁 领取{coins}金币并继续',
+      completionCopy: '你已完成该路径的挑战，查看下方的判断风格分析。',
+      analysisLabel: '拒信原因分析',
+      personalityReport: {
+        title: '你的申请判断画像',
+        perfectBalance: '判断力完美平衡，未检测到明显偏差！',
+        optimistic: '乐观',
+        pessimistic: '悲观'
+      }
     },
     y2_5: {
       title: '命运星盘',
