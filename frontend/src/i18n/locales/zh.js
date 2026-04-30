@@ -469,7 +469,6 @@ export default {
       currentAvatar: '当前画像：GPA 82/100 ｜ STEM/CS 方向 ｜ 1 段普通实习',
       matchedRoute: '当前匹配国家：{country}',
       fallbackCopy: '还没有读到上一关的匹配结果，当前先展示一组跨地区兜底学校。完成上一关后，这里会自动切换成对应国家。',
-<<<<<<< HEAD
       regionSelector: {
         title: '对定位不满意？手动选择地区',
         copy: '切换地区后，下方学校卡牌会立刻换成该地区对应学校，你可以按自己的目标重新分层。',
@@ -483,9 +482,7 @@ export default {
         add: '加入卡牌',
         added: '已在卡牌中',
       },
-=======
       nicheMessage: '小众地区，请联系 DA 获得更多升学信息。',
->>>>>>> b6c92d6 (Update edujour project)
       predict: '开始分层推演',
       feedbackTitle: '分层预言',
       seal: '确认这份分层方案并返回',

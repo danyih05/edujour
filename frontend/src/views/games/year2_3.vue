@@ -222,17 +222,13 @@ const selectedCountryKey = ref(persistedCountryKey.value || profileMatchedCountr
 const usingFallbackCountry = computed(() => selectedCountryKey.value === 'global')
 const countryConfig = computed(() => getYear2CountrySchoolConfig(selectedCountryKey.value || 'global'))
 const matchedCountryLabel = computed(() => localize(countryConfig.value.label))
-<<<<<<< HEAD
 const baseSchoolCards = computed(() => countryConfig.value.schools.map((school) => ({
-=======
-const isNicheCountry = computed(() => countryConfig.value.key === 'niche')
-const nicheMessage = computed(() => localize(countryConfig.value.nicheMessage) || t('pages.y2_3.nicheMessage'))
-const schoolCards = computed(() => countryConfig.value.schools.map((school) => ({
->>>>>>> b6c92d6 (Update edujour project)
   ...school,
   name: localize(school.name),
   tag: localize(school.tag),
 })))
+const isNicheCountry = computed(() => countryConfig.value.key === 'niche')
+const nicheMessage = computed(() => localize(countryConfig.value.nicheMessage) || t('pages.y2_3.nicheMessage'))
 const addedSchoolIds = ref([])
 const schoolCases = computed(() => getYear2SchoolCases().map((school) => ({
   ...school,

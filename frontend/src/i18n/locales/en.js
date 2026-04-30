@@ -464,7 +464,6 @@ export default {
       currentAvatar: 'Current profile: GPA 82/100 | STEM/CS track | 1 ordinary internship',
       matchedRoute: 'Matched destination: {country}',
       fallbackCopy: 'No saved country match was found yet, so the game is showing a cross-region fallback set for now. Once you finish the previous level, this list will switch automatically.',
-<<<<<<< HEAD
       regionSelector: {
         title: 'Unhappy with the match? Choose a region',
         copy: 'Changing the region immediately swaps the school deck below, so you can tier the list around your own target.',
@@ -478,9 +477,7 @@ export default {
         add: 'Add card',
         added: 'Already added',
       },
-=======
       nicheMessage: 'Niche regions. Please contact your DA for more study abroad information.',
->>>>>>> b6c92d6 (Update edujour project)
       predict: 'Divinate the Scales',
       feedbackTitle: 'Tiering Prophecy',
       seal: 'Seal This Tier Plan and Return',
