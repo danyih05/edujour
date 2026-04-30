@@ -524,11 +524,27 @@ export default {
       },
     },
     y2_4: {
-      title: 'Senior Case Archives',
-      intro: 'Predict each predecessor’s outcome first, then reveal what the profile actually teaches about GPA, internships, research, and projects.',
+      title: 'Senior Case Archives – Track Specialization',
+      intro: 'Predict each predecessor’s outcome based on real data, then uncover what the profile really teaches about GPA, internships, and projects.',
+      selectTrack: {
+        title: 'Choose Your Path',
+        intro: 'Select your track to view cases from Electrical & Electronic Engineering (EE) or Information & Computer Science (ICS).',
+        ee: 'Electrical Path (EE)',
+        ics: 'Computer Path (ICS)'
+      },
+      tracks: {
+        ee: 'Electrical Engineering',
+        ics: 'Computer Science'
+      },
+      caseIndicator: 'Case {current} of {total} – {track}',
+      labels: {
+        gpa: 'GPA',
+        evidence: 'Core Evidence',
+        weakness: 'Weakness'
+      },
       guide: {
         button: 'Case Lessons',
-        body: 'Learn from senior cases: GPA is not the only factor. Evidence like internships, projects, and research can change the outcome.',
+        body: 'Learn from senior cases: GPA is not the only factor. Evidence like internships, projects, and research can change the outcome. Also, discover your own judgment biases.',
         items: [
           {
             title: '🔍 Low GPA + Strong Evidence = Miracle',
@@ -545,72 +561,28 @@ export default {
           {
             title: '🎯 Match Your Story to the Program',
             content: 'Your CV, PS, and RL should align with what the program values. Show how your evidence meets their requirements.'
+          },
+          {
+            title: '🧠 Know Your Bias',
+            content: 'This game detects if you are overly optimistic or pessimistic. Use the feedback to calibrate your own expectations.'
           }
         ]
       },
-      completionTitle: "🏆 Archive Challenge Completed",
-      correctLabel: "correct",
-      claimAndContinue: "🎁 Claim {coins} coins & continue",
-      completionCopy: 'You earned a reward for finishing the case archive. Choose to retry the exercise or claim your coins and return.',
       wrongAnswer: 'Incorrect Prediction',
-      labels: {
-        senior: 'Profile',
-        gpa: 'GPA',
-        evidence: 'Core Evidence',
-      },
-      complete: 'Archive the Lesson and Return',
-      cases: [
-        {
-          label: 'Senior A',
-          track: 'Information / Computer Science track',
-          gpa: '80/100 (Perilous)',
-          evidence: 'SAP R&D internship + high-quality GitHub project',
-          choices: ['A. The Abyss of Rejection', 'B. Miracle Ascension (Top 50)'],
-          correctIndex: 1,
-          truthTitle: 'Truth: Miracle Ascension to Top 50.',
-          truth: 'For applied CS / software tracks, a strong enterprise R&D internship and a serious project can build a visible moat. A low GPA is still dangerous, but strong technical evidence can change the story.',
-        },
-        {
-          label: 'Senior B',
-          track: 'Data Science track',
-          gpa: '91/100 (Supreme)',
-          evidence: 'Zero internship, zero research, zero serious project',
-          choices: ['A. Slaughter the Top 30 Realms', 'B. Severe Crushing Defeat'],
-          correctIndex: 1,
-          truthTitle: 'Truth: Severe Crushing Defeat.',
-          truth: 'This is the hollow-scholar trap. In STEM and business-related programs, top grades are not the whole application. Programs also look for relevant experience, projects, research, internships, motivation, and fit.',
-        },
-        {
-          label: 'Senior C',
-          track: 'Business / Finance track',
-          gpa: '85/100 (Decent)',
-          evidence: 'Banking internship + case competition win',
-          choices: ['A. Solid Mid-tier Success', 'B. Elite Program Breakthrough'],
-          correctIndex: 1,
-          truthTitle: 'Truth: Elite Program Breakthrough.',
-          truth: 'In business tracks, relevant internships and competition results can elevate a decent GPA to elite levels. Practical experience demonstrates real-world application.',
-        },
-        {
-          label: 'Senior D',
-          track: 'Engineering track',
-          gpa: '88/100 (Good)',
-          evidence: 'Research paper publication + startup project',
-          choices: ['A. Top 20 Achievement', 'B. Unexpected Rejection'],
-          correctIndex: 0,
-          truthTitle: 'Truth: Top 20 Achievement.',
-          truth: 'Engineering programs value innovation. Publications and entrepreneurial projects can compensate for a non-perfect GPA.',
-        },
-        {
-          label: 'Senior E',
-          track: 'Arts / Humanities track',
-          gpa: '92/100 (Excellent)',
-          evidence: 'Published poetry + community leadership',
-          choices: ['A. Ivy League Admission', 'B. Prestigious but Not Elite'],
-          correctIndex: 0,
-          truthTitle: 'Truth: Ivy League Admission.',
-          truth: 'In humanities, exceptional creative work and leadership can lead to top admissions, even with strong competition.',
-        },
-      ],
+      complete: 'See Personality Report',
+      completionTitle: 'Personality Report Unlocked',
+      correctLabel: 'correct',
+      claimAndContinue: '🎁 Claim {coins} coins & continue',
+      completionCopy: 'You completed the track. Review your judgement style below.',
+      analysisLabel: 'Rejection Reason Analysis',
+      personalityReport: {
+        title: 'Your Judgement Profile',
+        perfectBalance: 'Perfectly balanced judgment – no bias detected!',
+        optimistic: 'Optimistic',
+        pessimistic: 'Pessimistic',
+        // The actual descriptions are dynamically computed in the component (completionAnalysis),
+        // but here you can keep the dynamic logic solely in JS. These are fallback labels.
+      }
     },
     y2_5: {
       title: 'Astrolabe of Destiny',
