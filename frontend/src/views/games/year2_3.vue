@@ -1067,11 +1067,160 @@ function completeWithResult() {
   background: linear-gradient(135deg, #22c55e, #15803d);
 }
 
-@media (max-width: 820px) {
-  .region-options { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .school-search-controls { grid-template-columns: 1fr; }
-  .school-case-card { align-items: stretch; flex-direction: column; }
-  .tiers { grid-template-columns: 1fr; }
-  .tier-zone { min-height: 170px; }
+@media (max-width: 768px) {
+  .tier-game {
+    padding: 10px;
+  }
+
+  .balance-room {
+    padding: 12px;
+    border-radius: 16px;
+  }
+
+  .header {
+    margin-bottom: 10px;
+  }
+  .header h2 {
+    font-size: 1.25rem;
+  }
+  .header p {
+    font-size: 0.75rem;
+    margin-top: 4px;
+  }
+  .user-profile,
+  .matched-route {
+    padding: 5px 8px;
+    font-size: 0.7rem;
+    margin-top: 6px;
+  }
+  .fallback-copy {
+    font-size: 0.72rem;
+    margin-top: 6px;
+  }
+
+  /* 地区选择器 → 3列紧凑 */
+  .region-selector {
+    padding: 10px;
+    margin-top: 10px;
+  }
+  .region-options {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 5px;
+  }
+  .region-option {
+    min-height: 44px;
+    padding: 5px 3px;
+  }
+  .region-option span {
+    font-size: 0.95rem;
+  }
+  .region-option strong {
+    font-size: 0.6rem;
+  }
+  .region-school-preview {
+    margin-top: 8px;
+    gap: 4px;
+  }
+  .preview-school {
+    font-size: 0.66rem;
+    padding: 2px 6px;
+  }
+
+  /* 学校搜索面板 */
+  .school-search-panel {
+    padding: 10px;
+    margin-top: 8px;
+  }
+  .school-search-controls {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+  .school-search-input,
+  .school-search-select {
+    min-height: 44px;
+    font-size: 0.85rem;
+  }
+  .school-case-card {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 10px;
+  }
+  .btn-add-school {
+    width: 100%;
+    min-height: 44px;
+  }
+
+  /* 卡牌区 */
+  .card-deck {
+    padding: 10px;
+    gap: 8px;
+    min-height: 80px;
+  }
+  .school-card {
+    width: 100px;
+    min-height: 78px;
+    padding: 8px 6px;
+  }
+  .school-name {
+    font-size: 0.72rem;
+  }
+  .school-tag {
+    font-size: 0.62rem;
+    padding: 2px 5px;
+  }
+  .school-icon {
+    font-size: 1.5rem;
+  }
+
+  /* 选校层级 → 单列 */
+  .tiers {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .tier-zone {
+    min-height: 100px;
+    padding: 10px;
+  }
+  .tier-header {
+    font-size: 0.85rem;
+  }
+
+  .btn-predict {
+    padding: 12px 24px;
+    font-size: 0.95rem;
+    min-height: 48px;
+  }
+
+  .feedback-panel {
+    padding: 14px;
+  }
+  .fb-title {
+    font-size: 1rem;
+  }
+  .fb-text h4 {
+    font-size: 0.85rem;
+  }
+  .fb-text p {
+    font-size: 0.78rem;
+  }
+  .btn-complete {
+    min-height: 48px;
+  }
+
+  /* 特殊路径面板 */
+  .niche-info-panel {
+    padding: 14px;
+  }
+  .niche-icon {
+    width: 48px;
+    height: 48px;
+    font-size: 1.5rem;
+  }
+  .niche-info-panel h3 {
+    font-size: 1.1rem;
+  }
+  .niche-info-panel p {
+    font-size: 0.82rem;
+  }
 }
 </style>

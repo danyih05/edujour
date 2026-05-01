@@ -960,86 +960,212 @@ onBeforeUnmount(() => {
   color: #111827;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 768px) {
   .contract-guardian-page {
-    padding: 12px;
+    padding: 6px;
   }
 
-  .workspace {
-    grid-template-columns: 1fr;
-    padding: 20px;
-  }
-
-  .shard-pool {
-    position: static;
+  .game-container {
+    border-radius: 16px;
   }
 
   .header {
-    padding: 20px;
+    padding: 8px 10px;
+    gap: 8px;
   }
-
   .title h1 {
-    font-size: 1.55rem;
+    font-size: 1.1rem;
+  }
+  .title p {
+    font-size: 0.68rem;
+    margin-top: 2px;
+    max-width: none;
+  }
+  .progress-badge {
+    font-size: 0.7rem;
+    padding: 4px 10px;
+    white-space: nowrap;
   }
 
+  .workspace {
+    grid-template-columns: 1fr 1.15fr;
+    padding: 6px;
+    gap: 6px;
+  }
+
+  /* 护盾区 */
+  .shard-pool {
+    position: static;
+    padding: 6px;
+    border-radius: 14px;
+    max-height: none;
+    overflow-y: auto;
+  }
+  .shard-title {
+    font-size: 0.72rem;
+    margin-bottom: 4px;
+    gap: 4px;
+  }
+  .selection-console {
+    padding: 6px;
+    margin-bottom: 6px;
+    border-radius: 10px;
+  }
+  .selection-label {
+    font-size: 0.6rem;
+  }
   .selection-card {
-    flex-direction: column;
-    align-items: stretch;
+    margin-top: 4px;
+    gap: 6px;
+  }
+  .selection-main {
+    gap: 6px;
+  }
+  .selection-icon {
+    font-size: 0.9rem;
+  }
+  .selection-main strong {
+    font-size: 0.7rem;
+  }
+  .selection-clear {
+    padding: 4px 8px;
+    font-size: 0.6rem;
+    min-height: 32px;
   }
 
-  /* 错误 Toast 弹窗 - 居中显示 */
-  .error-toast {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: rgba(231, 76, 60, 0.96);
-    backdrop-filter: blur(10px);
-    color: white;
-    padding: 16px 28px;
-    border-radius: 20px;
-    font-weight: bold;
-    font-size: 1rem;
+  /* 关键：左右两栏保持并排，内部各变成两列 */
+  .shard-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    overflow-x: visible;
+    padding-bottom: 0;
+  }
+
+  .shard-column {
+    min-width: 0;
+    padding-right: 0;
+  }
+
+  .shard-grid {
+    display: grid;
+    grid-template-columns: repeat(1, 1fr);
+    gap: 4px;
+  }
+
+  .shard {
+    min-height: 68px;
+    padding: 6px;
+    border-radius: 10px;
+    gap: 2px;
+  }
+  .shard-icon {
+    font-size: 1.1rem;
+  }
+  .shard-name {
+    font-size: 0.62rem;
+    line-height: 1.15;
+  }
+  .shard-desc {
+    display: none;            /* 手机端隐藏描述 */
+  }
+
+  /* 合同区（保持不变） */
+  .contract {
+    padding: 8px;
+    border-radius: 14px;
+  }
+  .contract-header {
+    padding-bottom: 6px;
+    margin-bottom: 6px;
+    gap: 6px;
+  }
+  .contract-header h2 {
+    font-size: 0.78rem;
+  }
+  .contract-toolbar {
+    margin-bottom: 6px;
+  }
+  .active-shield-pill {
+    padding: 4px 8px;
+    font-size: 0.62rem;
+    gap: 4px;
+  }
+
+  .clause-list {
+    gap: 5px;
+    max-height: 360px;
+    padding-right: 2px;
+  }
+  .clause {
+    padding: 6px 8px;
+    border-radius: 8px;
+    border-left-width: 4px;
+  }
+  .clause-title {
+    font-size: 0.68rem;
+    gap: 4px;
+  }
+  .clause-status {
+    font-size: 0.58rem;
+    padding: 2px 5px;
+  }
+  .clause-detail {
+    font-size: 0.6rem;
+    margin-top: 3px;
+    line-height: 1.3;
+  }
+
+  .drop-zone {
+    margin-top: 4px;
+    padding: 5px;
+    border-radius: 6px;
+    font-size: 0.6rem;
+    min-height: 32px;
     display: flex;
     align-items: center;
-    gap: 12px;
-    box-shadow: 0 20px 35px rgba(0, 0, 0, 0.4);
-    z-index: 2000;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    max-width: 85vw;
-    text-align: center;
-    white-space: pre-wrap;
-    word-break: break-word;
-    pointer-events: none;
-    animation: toast-pop 0.2s ease-out;
+    justify-content: center;
+  }
+  .drop-action {
+    padding: 5px 10px;
+    font-size: 0.62rem;
+    min-height: 32px;
   }
 
-  .error-toast i {
-    font-size: 1.5rem;
+  .btn-complete,
+  .btn-reset {
+    padding: 8px 14px;
+    font-size: 0.78rem;
+    min-height: 44px;
+    margin-top: 8px;
   }
 
-  @keyframes toast-pop {
-    0% {
-      transform: translate(-50%, -50%) scale(0.8);
-      opacity: 0;
-    }
-    80% {
-      transform: translate(-50%, -50%) scale(1.02);
-    }
-    100% {
-      transform: translate(-50%, -50%) scale(1);
-      opacity: 1;
-    }
+  .feedback {
+    margin: 6px;
+    padding: 8px 10px;
+    border-radius: 10px;
+    font-size: 0.72rem;
   }
 
-  .toast-fade-enter-active,
-  .toast-fade-leave-active {
-    transition: opacity 0.2s ease, transform 0.2s ease;
+  .modal-card {
+    padding: 16px;
+    border-radius: 16px;
   }
-  .toast-fade-enter-from,
-  .toast-fade-leave-to {
-    opacity: 0;
-    transform: translate(-50%, -50%) scale(0.9);
+  .modal-card h2 {
+    font-size: 1rem;
+  }
+  .modal-card p,
+  .mastery-block {
+    font-size: 0.78rem;
+  }
+  .modal-card button {
+    min-height: 44px;
+  }
+
+  .error-toast {
+    font-size: 0.82rem;
+    padding: 10px 16px;
+    max-width: 90vw;
   }
 }
 </style>

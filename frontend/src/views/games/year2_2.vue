@@ -930,14 +930,100 @@ function completeWithReward() {
   font-weight: 900;
   cursor: pointer;
 }
-@media (max-width: 860px) {
+@media (max-width: 768px) {
+  .crossroads-game {
+    padding: 16px 12px 32px;
+  }
+
+  .header {
+    margin-bottom: 12px;
+  }
+  .header h2 {
+    font-size: 1.3rem;
+  }
+  .header p {
+    font-size: 0.82rem;
+    margin-top: 4px;
+  }
+
   .crossroads-layout {
     grid-template-columns: 1fr;
+    gap: 12px;
   }
-  
-  .region-list,
+
+  /* 左侧地区列表压缩 */
+  .region-column {
+    padding: 12px;
+    min-height: auto;
+  }
+  .region-header h3 {
+    font-size: 0.9rem;
+  }
+  .region-header p {
+    font-size: 0.78rem;
+    display: none;  /* 介绍文字暂时隐藏 */
+  }
+  .region-list {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+  .route-card {
+    padding: 8px;
+    min-height: auto;
+    gap: 2px;
+  }
+  .route-icon { font-size: 1.5rem; }
+  .route-label { font-size: 0.75rem; }
+  .route-keywords { font-size: 0.65rem; }
+
+  /* 右侧问答区放大 */
   .question-panel {
-    -webkit-overflow-scrolling: touch;
+    padding: 14px;
+    max-height: none;
+  }
+  .question-count {
+    padding: 6px 10px;
+    font-size: 0.8rem;
+  }
+  .question-text {
+    font-size: 0.92rem;
+  }
+  .choices {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .btn-choice {
+    padding: 12px 14px;
+    min-height: 60px;
+  }
+  .nav-buttons {
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .btn-nav {
+    padding: 10px 14px;
+    font-size: 0.82rem;
+    min-height: 44px;
+  }
+
+  /* 结果卡片适配 */
+  .result-overlay {
+    padding: 10px;
+  }
+  .tarot-card {
+    width: 100%;
+    padding: 20px 14px;
+    min-height: auto;
+  }
+  .tarot-title {
+    font-size: 1.1rem;
+  }
+  .tarot-icon {
+    font-size: 3rem;
+    margin: 12px 0;
+  }
+  .manual-region-options {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 @keyframes card-reveal {

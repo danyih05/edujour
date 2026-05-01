@@ -1,5 +1,6 @@
 <template>
   <div class="language-toggle" :aria-label="t('language.switchLabel')" role="group">
+    <!-- 桌面端保留原有并排按钮（移动端隐藏） -->
     <button
       type="button"
       class="lang-btn"
@@ -16,13 +17,23 @@
     >
       {{ t('language.en') }}
     </button>
+
+    <!-- 移动端圆形切换按钮（桌面端隐藏） -->
+    <button
+      type="button"
+      class="lang-circle-btn"
+      @click="toggleLanguage"
+      :aria-label="t('language.switchLabel')"
+    >
+      {{ currentLanguage === 'zh' ? '中' : 'EN' }}
+    </button>
   </div>
 </template>
 
 <script setup>
 import { useAppI18n } from '@/composables/useAppI18n'
 
-const { currentLanguage, setLanguage, t } = useAppI18n()
+const { currentLanguage, setLanguage, toggleLanguage, t } = useAppI18n()
 </script>
 
 <style scoped>
@@ -62,15 +73,47 @@ const { currentLanguage, setLanguage, t } = useAppI18n()
   background: #f8d48d;
 }
 
-@media (max-width: 760px) {
-  .language-toggle {
-    top: 12px;
-    right: 12px;
+/* 移动端圆形按钮默认隐藏 */
+.lang-circle-btn {
+  display: none;
+}
+
+/* 移动端适配（≤768px） */
+@media (max-width: 768px) {
+  /* 原有并排按钮隐藏 */
+  .lang-btn {
+    display: none;
   }
 
-  .lang-btn {
-    padding: 8px 12px;
-    font-size: 0.78rem;
+  /* 圆形切换按钮显示 */
+  .lang-circle-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: #f8d48d;          /* 与桌面端 active 态一致 */
+    color: #2c5a6e;
+    font-size: 0.84rem;
+    font-weight: 900;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: transform 0.18s ease;
   }
+
+  .lang-circle-btn:hover {
+    transform: scale(1.05);
+  }
+
+  /* 调整容器在移动端位置（保持原有设计） */
+  .language-toggle {
+  left: 12px;      /* 原 right:12px 改为 left:12px */
+  right: auto;
+  top: 12px;
+  padding: 4px;
+}
 }
 </style>

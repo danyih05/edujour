@@ -385,8 +385,92 @@ function generateProphecy() {
   background: linear-gradient(135deg, #22c55e, #15803d);
 }
 
-@media (max-width: 840px) {
-  .allocation-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .top-3-list { flex-direction: column; }
+@media (max-width: 768px) {
+  .action-game {
+    padding: 12px;
+  }
+
+  .astrolabe-room {
+    padding: 14px;
+    border-radius: 16px;
+  }
+
+  .header {
+    margin-bottom: 12px;
+  }
+  .header h2 {
+    font-size: 1.25rem;
+  }
+  .header p {
+    font-size: 0.78rem;
+    margin-top: 4px;
+  }
+
+  .energy-panel {
+    padding: 8px 16px;
+    margin-bottom: 14px;
+    font-size: 0.85rem;
+  }
+  .energy-icon {
+    font-size: 1.3rem;
+  }
+
+  /* 任务卡片网格 → 2列 */
+  .allocation-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .task-card {
+    padding: 10px 8px;
+    min-height: 140px;
+  }
+  .task-icon {
+    font-size: 1.4rem;
+  }
+  .task-name {
+    font-size: 0.72rem;
+    min-height: 1.8em;
+  }
+  .task-desc {
+    font-size: 0.62rem;
+    min-height: 1.8em;
+    margin: 4px 0 8px;
+  }
+  .btn-ap {
+    width: 28px;
+    height: 28px;
+    font-size: 0.85rem;
+  }
+
+  .btn-predict {
+    padding: 12px 28px;
+    font-size: 1rem;
+    min-height: 48px;
+  }
+
+  /* 预言面板 */
+  .prophecy-panel {
+    padding: 14px;
+  }
+  .prophecy-title {
+    font-size: 1rem;
+  }
+  .top-3-list {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .top-item {
+    min-height: 70px;
+    padding: 10px;
+    font-size: 0.85rem;
+  }
+  .analysis-text,
+  .seasonal-pact {
+    font-size: 0.82rem;
+    padding: 10px;
+  }
+  .btn-complete {
+    min-height: 48px;
+  }
 }
 </style>

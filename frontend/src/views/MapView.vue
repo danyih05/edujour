@@ -38,6 +38,9 @@
           <button class="mobile-menu-item" @click="showMobileMenu = false; showHealingSandbox = true">
             <i class="fas fa-leaf"></i> {{ t('map.sanctuary') }}
           </button>
+          <button class="mobile-menu-item" @click="showMobileMenu = false; showHelpModal = true">
+            <i class="fas fa-question-circle"></i> {{ t('help.title') }}
+          </button>
         </div>
         <div class="mobile-menu-section">
           <div class="mobile-menu-coins">
@@ -88,8 +91,18 @@
           </div>
         </div>
 
-        <div :ref="setMapAreaRef('y2')" class="map-area">
-          <div class="y2-map-shell">
+        <div
+          :ref="setMapAreaRef('y2')"
+          class="map-area"
+          @touchstart="handleMapTouchStart('y2', $event)"
+          @touchmove="handleMapTouchMove('y2', $event)"
+          @touchend="handleMapTouchEnd('y2', $event)"
+          @touchcancel="handleMapTouchEnd('y2', $event)"
+        >
+          <div
+            class="y2-map-shell"
+            :style="{ transform: mapTransformStyle.y2, transformOrigin: '0 0' }"
+          >
             <div class="orb y2-orb top-left"></div>
             <div class="orb y2-orb bottom-right"></div>
             <svg class="y2-magic-svg" viewBox="0 0 1050 650" preserveAspectRatio="xMidYMid meet">
@@ -121,25 +134,26 @@
                 </g>
               </g>
             </svg>
+            
           </div>
 
           <div class="traveler" :class="{ walking: traveler.y2.walking, reached: traveler.y2.reached }" :style="[travelerStyle, { left: traveler.y2.left, top: traveler.y2.top }]">
-            <div class="traveler-shadow"></div>
-            <img class="traveler-image" :src="travelerImage" alt="">
-            <button
-              v-if="travelerTool"
-              type="button"
-              class="traveler-tool"
-              :class="`tool-${travelerTool.key}`"
-              @click.stop="toggleToolBubble"
-            >
-              <img :src="travelerTool.image" alt="">
-            </button>
-            <div v-if="showToolBubble && travelerTool" class="tool-skill-bubble">
-              <strong>{{ travelerToolSkill.title }}</strong>
-              <span>{{ travelerToolSkill.body }}</span>
+              <div class="traveler-shadow"></div>
+              <img class="traveler-image" :src="travelerImage" alt="">
+              <button
+                v-if="travelerTool"
+                type="button"
+                class="traveler-tool"
+                :class="`tool-${travelerTool.key}`"
+                @click.stop="toggleToolBubble"
+              >
+                <img :src="travelerTool.image" alt="">
+              </button>
+              <div v-if="showToolBubble && travelerTool" class="tool-skill-bubble">
+                <strong>{{ travelerToolSkill.title }}</strong>
+                <span>{{ travelerToolSkill.body }}</span>
+              </div>
             </div>
-          </div>
         </div>
       </section>
 
@@ -153,8 +167,18 @@
           </div>
         </div>
 
-        <div :ref="setMapAreaRef('y3')" class="map-area">
-          <div class="y3-map-shell">
+        <div
+          :ref="setMapAreaRef('y3')"
+          class="map-area"
+          @touchstart="handleMapTouchStart('y3', $event)"
+          @touchmove="handleMapTouchMove('y3', $event)"
+          @touchend="handleMapTouchEnd('y3', $event)"
+          @touchcancel="handleMapTouchEnd('y3', $event)"
+        >
+          <div
+            class="y3-map-shell"
+            :style="{ transform: mapTransformStyle.y3, transformOrigin: '0 0' }"
+          >
             <div class="orb y3-orb top-left"></div>
             <div class="orb y3-orb bottom-right"></div>
             <div class="orb y3-orb center"></div>
@@ -164,7 +188,30 @@
                   <stop offset="0%" stop-color="#818cf8"></stop><stop offset="25%" stop-color="#fb7185"></stop><stop offset="55%" stop-color="#fb923c"></stop><stop offset="100%" stop-color="#fbbf24"></stop>
                 </linearGradient>
               </defs>
-              <path class="star-underlay" :d="y3Path" /><path class="star-glow" :d="y3Path" /><path class="star-road" :d="y3Path" /><path class="star-core" :d="y3Path" />
+              <path class="star-underlay" :d="y3Path" />
+              <path class="star-glow" :d="y3Path" />
+              <path class="star-road" :d="y3Path" />
+              <path class="star-core" :d="y3Path" />
+
+              <!-- 新的节点组，类似 Y2 的 SVG 节点 -->
+              <g
+                v-for="node in y3Nodes"
+                :key="node.id"
+                :ref="setNodeRef('y3', node.id)"
+                class="node-svg-group"
+                :class="{
+                  locked: !isAccessible('y3', node.id),
+                  completed: isCleared('y3', node.id) && isAccessible('y3', node.id),
+                  final: node.final
+                }"
+                @click="openLevel('y3', node)"
+                @mouseenter="showTooltip($event, node, 'y3')"
+                @mouseleave="hideTooltip"
+              >
+                <circle class="node-svg-circle" :cx="node.x" :cy="node.y" :r="node.radius" />
+                <text class="node-svg-icon" :x="node.x" :y="node.y - 2" text-anchor="middle" dominant-baseline="middle">{{ node.iconText }}</text>
+                <text class="node-svg-label" :x="node.x" :y="node.y + node.radius + 14" text-anchor="middle">{{ node.label }}</text>
+              </g>
             </svg>
 
             <div class="traveler" :class="{ walking: traveler.y3.walking, reached: traveler.y3.reached }" :style="[travelerStyle, { left: traveler.y3.left, top: traveler.y3.top }]">
@@ -185,19 +232,6 @@
               </div>
             </div>
             
-            <button v-for="node in y3Nodes" 
-              :key="node.id" 
-              :ref="setNodeRef('y3', node.id)" 
-              type="button" 
-              class="node" 
-              :class="[node.positionClass, { locked: !isAccessible('y3', node.id), completed: isCleared('y3', node.id), final: node.final }]" 
-              @click="openLevel('y3', node)"
-              @mouseenter="showTooltip($event, node, 'y3')"
-              @mouseleave="hideTooltip">
-              <span v-if="node.stacked" class="node-icon-stack"><i :class="[node.iconClass, 'icon-base']"></i><i :class="[node.iconTopClass, 'icon-top']"></i></span>
-              <i v-else :class="node.iconClass"></i>
-              <span class="node-label">{{ node.label }}</span>
-            </button>
           </div>
         </div>
       </section>
@@ -335,18 +369,48 @@ const y2NodeLayout = [{ id: 1, icon: '\uf2bb', radius: 28, x: 572, y: 368, textY
 const y3NodeLayout = [{ id: 1, positionClass: 'n1', iconClass: 'fas fa-hourglass-half' }, { id: 2, positionClass: 'n2', iconClass: 'fas fa-cubes' }, { id: 3, positionClass: 'n3', iconClass: 'fas fa-microscope' }, { id: 4, positionClass: 'n4', iconClass: 'fas fa-book-open', iconTopClass: 'fas fa-pen-nib', stacked: true }, { id: 5, positionClass: 'n5', iconClass: 'fas fa-cat' }, { id: 6, positionClass: 'n6', iconClass: 'fas fa-calendar-alt' }, { id: 7, positionClass: 'n7', iconClass: 'fas fa-biohazard' }, { id: 8, positionClass: 'n8', iconClass: 'fas fa-crown', final: true }]
 const y2Nodes = computed(() => y2NodeLayout.map((node) => ({
   ...node,
+  radius: windowWidth.value <= 768 ? node.radius + 10 : node.radius,
   label: `${node.id}. ${t(`${meta.y2[node.id].i18nKey}.mapLabel`)}`,
   title: t(`${meta.y2[node.id].i18nKey}.title`),
   file: meta.y2[node.id].file,
   i18nKey: meta.y2[node.id].i18nKey,
 })))
-const y3Nodes = computed(() => y3NodeLayout.map((node) => ({
-  ...node,
-  label: `${node.id}. ${t(`${meta.y3[node.id].i18nKey}.mapLabel`)}`,
-  title: t(`${meta.y3[node.id].i18nKey}.title`),
-  file: meta.y3[node.id].file,
-  i18nKey: meta.y3[node.id].i18nKey,
-})))
+const faUnicode = {
+  'fas fa-hourglass-half': '\uf252',
+  'fas fa-cubes': '\uf1b3',
+  'fas fa-microscope': '\uf610',
+  'fas fa-book-open': '\uf518',
+  'fas fa-pen-nib': '\uf5ad',
+  'fas fa-cat': '\uf6be',
+  'fas fa-calendar-alt': '\uf073',
+  'fas fa-biohazard': '\uf780',
+  'fas fa-crown': '\uf521',
+}
+const y3Nodes = computed(() => {
+  const isSmall = windowWidth.value <= 768
+  // 星形顶点坐标（映射自原 CSS 百分比）
+  const coords = {
+    1: { x: 623.5, y: 31 },          // 顶部顶点
+    2: { x: 863.563, y: 124.872 },   // 右上顶点
+    3: { x: 963, y: 351.5 },         // 右侧顶点
+    4: { x: 863.563, y: 578.128 },   // 右下顶点
+    5: { x: 623.5, y: 672 },         // 底部顶点
+    6: { x: 383.437, y: 578.128 },   // 左下顶点
+    7: { x: 284, y: 351.5 },         // 左侧顶点
+    8: { x: 383.437, y: 124.872 },   // 左上顶点
+  }
+  return y3NodeLayout.map((node) => ({
+    ...node,
+    x: coords[node.id].x,
+    y: coords[node.id].y,
+    radius: isSmall ? 56 : 32,        // 移动端稍大一些，但不会过分大
+    iconText: faUnicode[node.iconClass] || node.iconClass,
+    label: `${node.id}. ${t(`${meta.y3[node.id].i18nKey}.mapLabel`)}`,
+    title: t(`${meta.y3[node.id].i18nKey}.title`),
+    file: meta.y3[node.id].file,
+    i18nKey: meta.y3[node.id].i18nKey,
+  }))
+})
 const showPrizeShop = ref(false)
 const showHealingSandbox = ref(false)
 const showResetConfirm = ref(false)
@@ -376,6 +440,19 @@ const travelerTools = {
 const travelerImage = computed(() => travelerImages[store.travelerLook.characterKey] || mapRobot)
 const travelerTool = computed(() => travelerTools[store.travelerLook.toolKey] || null)
 const showToolBubble = ref(false)
+const mapScaleRange = { min: 0.8, max: 1.5 }
+const mapTransform = reactive({
+  y2: { x: 0, y: 0, scale: 1 },
+  y3: { x: 0, y: 0, scale: 1 },
+})
+const mapTouchState = reactive({
+  y2: { mode: '', startX: 0, startY: 0, baseX: 0, baseY: 0, baseScale: 1, startDistance: 0, startMidX: 0, startMidY: 0 },
+  y3: { mode: '', startX: 0, startY: 0, baseX: 0, baseY: 0, baseScale: 1, startDistance: 0, startMidX: 0, startMidY: 0 },
+})
+const mapTransformStyle = computed(() => ({
+  y2: `translate(${mapTransform.y2.x}px, ${mapTransform.y2.y}px) scale(${mapTransform.y2.scale})`,
+  y3: `translate(${mapTransform.y3.x}px, ${mapTransform.y3.y}px) scale(${mapTransform.y3.scale})`,
+}))
 const toolSkillCopy = computed(() => (
   currentLanguage.value === 'en'
     ? {
@@ -435,9 +512,87 @@ let tooltipTimer = null
 const getLevelState = (year, nodeId) => store.getLevel(year, nodeId)
 const isAccessible = (year, nodeId) => store.isNodeAccessible(year, nodeId)
 const isCleared = (year, nodeId) => Boolean(getLevelState(year, nodeId)?.completed || getLevelState(year, nodeId)?.skipped)
-function getNodeCenter(year, nodeId) { const map = mapAreas[year]; const node = nodeRefs[year][nodeId]; if (!map || !node) return null; const mr = map.getBoundingClientRect(); const nr = node.getBoundingClientRect(); if (!mr.width || !nr.width) return null; return { left: nr.left - mr.left + nr.width / 2, top: nr.top - mr.top + nr.height / 2 } }
-function moveTravelerToNode(year, nodeId) { const center = getNodeCenter(year, nodeId); if (!center) return; traveler[year].left = `${center.left}px`; traveler[year].top = `${center.top}px`; traveler[year].walking = true; traveler[year].reached = false; if (travelerTimers[year]) clearTimeout(travelerTimers[year]); travelerTimers[year] = window.setTimeout(() => { traveler[year].walking = false; traveler[year].reached = true }, 850) }
-function syncTraveler(year, nodeId = store[year].currentNode) { nextTick(() => window.requestAnimationFrame(() => moveTravelerToNode(year, nodeId))) }
+function getNodeCenter(year, nodeId) {
+  const map = mapAreas[year];          // .map-area 元素
+  const node = nodeRefs[year][nodeId];
+  if (!map || !node) return null;
+
+  const mapRect = map.getBoundingClientRect();
+  const nodeRect = node.getBoundingClientRect();
+
+  return {
+    left: nodeRect.left + nodeRect.width / 2 - mapRect.left,
+    top: nodeRect.top + nodeRect.height / 2 - mapRect.top
+  };
+}
+function clamp(value, min, max) {
+  return Math.min(max, Math.max(min, value))
+}
+function isMobilePortrait() {
+  if (typeof window === 'undefined') return false
+  return window.innerWidth <= 768 && window.innerHeight >= window.innerWidth
+}
+function getTouchDistance(touchA, touchB) {
+  return Math.hypot(touchA.clientX - touchB.clientX, touchA.clientY - touchB.clientY)
+}
+function getTouchMidPoint(touchA, touchB) {
+  return { x: (touchA.clientX + touchB.clientX) / 2, y: (touchA.clientY + touchB.clientY) / 2 }
+}
+
+function moveTravelerToNode(year, nodeId) { const center = getNodeCenter(year, nodeId); if (!center) return; traveler[year].left = `${center.left}px`; traveler[year].top = `${center.top}px`; traveler[year].walking = true; traveler[year].reached = false; if (travelerTimers[year]) clearTimeout(travelerTimers[year]); travelerTimers[year] = window.setTimeout(() => { traveler[year].walking = false; traveler[year].reached = true }, 600) }
+function syncTraveler(year, nodeId = store[year].currentNode) {
+  nextTick(() => window.requestAnimationFrame(() => {
+    moveTravelerToNode(year, nodeId)
+  }))
+}
+function handleMapTouchStart(year, event) {
+  if (!isMobilePortrait()) return
+  const state = mapTouchState[year]
+  if (event.touches.length >= 2) {
+    const [a, b] = event.touches
+    const mid = getTouchMidPoint(a, b)
+    state.mode = 'pinch'
+    state.baseScale = mapTransform[year].scale
+    state.startDistance = getTouchDistance(a, b)
+    state.startMidX = mid.x
+    state.startMidY = mid.y
+    state.baseX = mapTransform[year].x
+    state.baseY = mapTransform[year].y
+    return
+  }
+  if (event.touches.length === 1) {
+    const touch = event.touches[0]
+    state.mode = 'pan'
+    state.startX = touch.clientX
+    state.startY = touch.clientY
+    state.baseX = mapTransform[year].x
+    state.baseY = mapTransform[year].y
+  }
+}
+function handleMapTouchMove(year, event) {
+  if (!isMobilePortrait()) return
+  const state = mapTouchState[year]
+  if (state.mode === 'pinch' && event.touches.length >= 2) {
+    event.preventDefault()
+    const [a, b] = event.touches
+    const nextDistance = getTouchDistance(a, b)
+    const ratio = nextDistance / Math.max(1, state.startDistance)
+    const nextScale = clamp(state.baseScale * ratio, mapScaleRange.min, mapScaleRange.max)
+    mapTransform[year].scale = nextScale
+    moveTravelerToNode(year, store[year].currentNode)
+    return
+  }
+  if (state.mode === 'pan' && event.touches.length === 1) {
+    event.preventDefault()
+    const touch = event.touches[0]
+    mapTransform[year].x = state.baseX + (touch.clientX - state.startX)
+    mapTransform[year].y = state.baseY + (touch.clientY - state.startY)
+    moveTravelerToNode(year, store[year].currentNode) 
+  }
+}
+function handleMapTouchEnd(year) {
+  mapTouchState[year].mode = ''
+}
 function switchYear(year) { if (store.year === year) { syncTraveler(year); return } store.switchYear(year) }
 function switchYearAndClose(year) { switchYear(year); showMobileMenu.value = false; showToolBubble.value = false }
 function toggleToolBubble() {
@@ -525,6 +680,17 @@ function handleYear3Unlock() {
 function handleEscape(event) { if (event.key !== 'Escape') return; if (showResetConfirm.value) { showResetConfirm.value = false; return } if (activeLevel.value) { closeGame(); return } if (showYear3Unlock.value) { showYear3Unlock.value = false; return } if (showPrizeShop.value) { showPrizeShop.value = false; return } if (showHealingSandbox.value) showHealingSandbox.value = false }
 const handleResize = () => {
   syncTraveler(store.year);
+  if (!isMobilePortrait()) {
+    mapTransform.y2.x = 0
+    mapTransform.y2.y = 0
+    mapTransform.y2.scale = 1
+    mapTransform.y3.x = 0
+    mapTransform.y3.y = 0
+    mapTransform.y3.scale = 1
+  } else {
+    mapTransform.y2.scale = clamp(mapTransform.y2.scale, mapScaleRange.min, mapScaleRange.max)
+    mapTransform.y3.scale = clamp(mapTransform.y3.scale, mapScaleRange.min, mapScaleRange.max)
+  }
   if (showGuide.value) {
     updateGuidePosition();
   }
@@ -717,9 +883,9 @@ onBeforeUnmount(() => { window.removeEventListener('keydown', handleEscape); win
   width: 50px;
   height: 50px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.1);
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  color: #fff;
+  background: linear-gradient(135deg, #f3cf9a, #e2bc7c);
+  border: 2px solid #f3cf9a;
+  color: #2c5a6e;
   font-size: 1.4rem;
   cursor: pointer;
   display: none;
@@ -730,8 +896,8 @@ onBeforeUnmount(() => { window.removeEventListener('keydown', handleEscape); win
 }
 
 .mobile-menu-toggle:hover {
-  background: rgba(255, 255, 255, 0.2);
-  transform: scale(1.05);
+  transform: scale(1.08);
+  box-shadow: 0 0 18px rgba(243, 207, 154, 0.6);
 }
 
 .mobile-menu-overlay {
@@ -750,7 +916,7 @@ onBeforeUnmount(() => { window.removeEventListener('keydown', handleEscape); win
   height: 100vh;
   background: linear-gradient(180deg, rgba(15, 23, 42, 0.98) 0%, rgba(7, 11, 20, 0.98) 100%);
   backdrop-filter: blur(16px);
-  border-left: 2px solid rgba(243, 207, 154, 0.2);
+  border-left: 3px solid #f3cf9a;  /* 加粗，纯金色 */
   z-index: 1205;
   padding: 20px 0;
   overflow-y: auto;
@@ -1121,6 +1287,72 @@ onBeforeUnmount(() => { window.removeEventListener('keydown', handleEscape); win
 .confirm-btn:hover { transform: translateY(-2px); }
 .confirm-btn.cancel { background: rgba(30, 41, 59, 0.08); color: #334155; border: 2px solid rgba(148, 163, 184, 0.28); }
 .confirm-btn.reset { background: linear-gradient(135deg, #ef4444, #b91c1c); color: #fff; box-shadow: 0 8px 18px rgba(185, 28, 28, 0.22); }
+/* Year 3 SVG 节点样式 - 与 Y2 一致 */
+.node-svg-group {
+  cursor: pointer;
+  pointer-events: auto;
+}
+.node-svg-circle {
+  fill: #0f172a;
+  stroke: #ffd7a1;
+  stroke-width: 3.5;
+  filter: drop-shadow(0 0 12px rgba(255, 166, 92, 0.65));
+  transition: all 0.25s ease;
+}
+.node-svg-icon {
+  fill: #ffd7a1;
+  font-family: 'Font Awesome 6 Free';
+  font-weight: 900;
+  font-size: 1.35rem;
+  pointer-events: none;
+  transition: fill 0.2s ease;
+}
+.node-svg-label {
+  fill: #f8fafc;
+  font-size: 14px;
+  font-weight: 800;
+  pointer-events: none;
+  text-shadow: 0 0 10px rgba(0,0,0,0.8);
+}
+.node-svg-group:hover .node-svg-circle {
+  stroke: #ffe6ba;
+  filter: drop-shadow(0 0 18px rgba(255, 183, 77, 0.6));
+}
+.node-svg-group:hover .node-svg-icon {
+  fill: #ffe6ba;
+}
+
+/* 锁定状态 */
+.node-svg-group.locked .node-svg-circle {
+  stroke: #6b7280;
+  filter: grayscale(1) brightness(0.7);
+  opacity: 0.6;
+}
+.node-svg-group.locked .node-svg-icon,
+.node-svg-group.locked .node-svg-label {
+  fill: #9ca3af;
+}
+
+/* 完成状态 */
+.node-svg-group.completed .node-svg-circle {
+  stroke: #fbbf24;
+  fill: #1e2a4a;
+  filter: drop-shadow(0 0 20px #fbbf24);
+}
+.node-svg-group.completed .node-svg-icon {
+  fill: #fcd34d;
+}
+
+/* 最终节点 */
+.node-svg-group.final .node-svg-circle {
+  stroke-width: 5;
+  stroke: #ffe08a;
+  filter: drop-shadow(0 0 24px rgba(255, 224, 138, 0.6));
+}
+.node-svg-group.final .node-svg-icon {
+  fill: #ffe08a;
+}
+
 @keyframes fade-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes star-twinkle { 0% { opacity: 0.5; transform: scale(1); } 50% { opacity: 1; transform: scale(1.015); } 100% { opacity: 0.72; transform: scale(1.03); } }
 @keyframes map-star-twinkle { 0% { opacity: 0.42; filter: brightness(0.9); } 50% { opacity: 0.95; filter: brightness(1.25); } 100% { opacity: 0.64; filter: brightness(1); } }
@@ -1153,7 +1385,123 @@ onBeforeUnmount(() => { window.removeEventListener('keydown', handleEscape); win
   .header-right { width: 100%; flex-wrap: wrap; }
   .btn-action, .coin-panel, .switch-btn, .session-pill { width: 100%; justify-content: center; }
   .game-modal-content { padding: 18px; width: calc(100% - 24px); }
-  .absolute-close-btn { right: 8px; top: 8px; width: 44px; height: 44px; font-size: 1.2rem; }
-  .modal-header { padding-right: 44px; font-size: 1.2rem; }
+  .absolute-close-btn {
+    top: 8px;
+    right: 8px;
+    width: 44px;
+    height: 44px;
+    font-size: 1.4rem;
+  }
+  .modal-header { padding-right: 48px; font-size: 1.2rem; }
+}
+
+@media (max-width: 768px) {
+  .map-page {
+    padding: 10px 8px 14px;
+    overflow: hidden;
+  }
+  .star-svg {
+    transform: translateY(0) scale(1.5);
+  }
+  .node-svg-icon {
+    font-size: 3.2rem;
+  }
+  .node-svg-label {
+    font-size: 24px;
+  }
+  .help-btn-wrapper {
+    display: none;
+  }
+  .mobile-menu-toggle {
+    top: 12px;
+    left: 64px;            /* 语言按钮 left:12px + 宽40px + 间距12px */
+    right: auto;
+    width: 44px;
+    height: 44px;
+  }
+  
+  .app-shell {
+    padding-top: 52px;
+  }
+  .global-progress {
+    margin-top: 0;
+  }
+
+  .sync-banner {
+    margin-left: 0;
+    margin-right: 0;
+  }
+  .board {
+    height: calc(100vh - 82px);
+    border-radius: 20px;
+  }
+  .header {
+    position: relative;
+    top: auto;
+    left: auto;
+    right: auto;
+    margin: 0 0 8px;        /* 下边距分隔 */
+    padding: 10px 12px;
+    border-radius: 14px;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(8px);
+  }
+  .header h1 {
+    font-size: 1.06rem;
+  }
+  .header-right {
+    display: none;
+  }
+  
+
+  .board .header {
+    padding-top: 12px;      /* 标题栏顶部留白 */
+  }
+  .map-area {
+    margin-top: 0;
+    touch-action: none;
+  }
+  .y2-map-shell,
+  .y3-map-shell {
+    transition: transform 0.28s ease;
+    will-change: transform;
+  }
+  .node,
+  .mobile-menu-item,
+  .btn-action,
+  .confirm-btn,
+  .switch-btn,
+  .help-btn,
+  .traveler-tool {
+    min-height: 48px;
+  }
+  .node {
+    --y3-node-size: 60px;
+  }
+  .traveler {
+    transition: left 0.6s cubic-bezier(0.22, 1, 0.36, 1), top 0.6s cubic-bezier(0.22, 1, 0.36, 1), transform 0.25s ease;
+  }
+  .game-modal-content {
+    width: 100%;
+    height: 100vh;
+    border-radius: 0;
+    padding: 50px 12px 12px; /* 顶部留出 50px 安全区，防止被关闭按钮遮挡 */
+  }
+  .modal-header {
+    padding-right: 48px;
+    font-size: 1rem;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+  }
+  .absolute-close-btn {
+    top: 8px;
+    right: 8px;
+    width: 44px;
+    height: 44px;
+    font-size: 1.4rem;
+  }
+  .guide-reopen-btn {
+    min-height: 44px;
+  }
 }
 </style>

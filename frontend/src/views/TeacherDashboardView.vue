@@ -687,4 +687,105 @@ onMounted(async () => {
     padding-right: 0;
   }
 }
+/* --- 手机竖屏优化 (max-width: 767px) --- */
+@media (max-width: 767px) {
+  .teacher-page {
+    padding: 16px 12px;
+  }
+
+  .topbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .topbar-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .topbar-btn {
+    width: 100%;
+    min-height: 48px;
+    font-size: 1rem;
+  }
+
+  .teacher-profile-chip {
+    flex-direction: row;
+    justify-content: flex-start;
+    width: 100%;
+  }
+
+  .summary-grid {
+    grid-template-columns: 1fr 1fr;   /* 两列显示摘要 */
+    gap: 10px;
+  }
+
+  .summary-card strong {
+    font-size: 1.6rem;
+  }
+
+  .dashboard-grid {
+    grid-template-columns: 1fr;       /* 单列，学生列表在上 */
+    gap: 14px;
+  }
+
+  .student-list-card {
+    order: -1;                        /* 优先显示学生列表 */
+    max-height: none;
+    overflow: visible;
+  }
+
+  .student-list-scroll {
+    max-height: 50vh;                 /* 限制高度，避免列表过长 */
+    overflow-y: auto;
+  }
+
+  .search-box {
+    margin-bottom: 10px;
+  }
+
+  .search-input {
+    padding: 14px 16px;
+    font-size: 16px;
+  }
+
+  .student-row {
+    padding: 16px 14px;
+    margin-bottom: 10px;
+  }
+
+  .student-metrics {
+    font-size: 0.8rem;
+    gap: 8px;
+  }
+
+  .detail-card {
+    padding: 16px;
+  }
+
+  .detail-identity {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .detail-stats {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .progress-grid {
+    grid-template-columns: 1fr;      /* 进度卡片单列 */
+  }
+
+  .inventory-grid {
+    grid-template-columns: 1fr;      /* 库存单列 */
+  }
+
+  .tag {
+    font-size: 0.78rem;
+    padding: 4px 8px;
+  }
+}
 </style>

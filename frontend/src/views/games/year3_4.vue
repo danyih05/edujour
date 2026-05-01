@@ -681,21 +681,135 @@ function completeNode() {
   }
 }
 
-@media (max-width: 720px) {
+@media (max-width: 768px) {
+  .star-root {
+    padding: 8px;
+  }
+
+  .close-btn,
+  .guide-btn {
+    position: static;
+    display: inline-flex;
+    margin-bottom: 6px;
+    margin-right: 6px;
+    min-height: 40px;
+    font-size: 0.72rem;
+    padding: 6px 10px;
+  }
+
+  .star-room {
+    padding: 10px;
+    border-radius: 14px;
+  }
+
+  .header {
+    margin-bottom: 8px;
+  }
+  .header h2 {
+    font-size: 1.1rem;
+  }
+  .header p {
+    font-size: 0.68rem;
+    max-width: none;
+  }
+  .hint-text {
+    font-size: 0.75rem;
+  }
+  .status-row {
+    font-size: 0.7rem;
+    padding: 4px 8px;
+    margin-top: 6px;
+  }
+  .order-row {
+    margin-top: 6px;
+    gap: 4px;
+  }
+  .order-tag {
+    font-size: 0.62rem;
+    padding: 2px 6px;
+  }
+
+  /* ✅ 关键修正：保留画布布局，节点仍然通过 left/top 百分比散落 */
   .sky-canvas {
-    height: auto;
-    display: grid;
-    gap: 12px;
-    padding: 16px 0;
+    position: relative;
+    width: 100%;
+    height: 420px;
+    display: block;
+    background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.03) 0%, transparent 60%);
   }
 
   .svg-layer {
-    display: none;
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
   }
 
   .star-node {
-    position: static;
-    transform: none;
+    position: absolute;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .star-core {
+    width: 44px;
+    height: 44px;
+    font-size: 1.1rem;
+  }
+
+  .star-label {
+    margin-top: 8px;
+    width: 120px;
+    padding: 4px 6px;
+  }
+
+  .star-title {
+    font-size: 0.68rem;
+  }
+
+  .star-desc {
+    font-size: 0.58rem;
+  }
+
+  .order-badge {
+    width: 20px;
+    height: 20px;
+    font-size: 0.65rem;
+    top: -8px;
+    right: -8px;
+  }
+
+  /* 反馈弹窗（不变） */
+  .feedback-card {
+    padding: 16px;
+  }
+  .fb-icon {
+    font-size: 2.5rem;
+  }
+  .fb-title {
+    font-size: 1.2rem;
+  }
+  .fb-desc {
+    font-size: 0.85rem;
+  }
+  .btn-reset,
+  .btn-next {
+    min-height: 44px;
+    font-size: 0.9rem;
+  }
+
+  .guide-card {
+    padding: 14px;
+  }
+  .guide-title {
+    font-size: 0.9rem;
+  }
+  .guide-list {
+    font-size: 0.72rem;
   }
 }
 </style>

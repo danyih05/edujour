@@ -1027,33 +1027,101 @@ h1 {
   }
 }
 
-@media (max-width: 720px) {
-  .stamp-grid {
-    grid-template-columns: 1fr;
+@media (max-width: 768px) {
+  .bureau-game {
+    padding: 12px;
   }
 
+  .bureau-room {
+    width: 100%;
+  }
+
+  h1 {
+    font-size: clamp(1.4rem, 6vw, 2.5rem);
+  }
+  .eyebrow {
+    font-size: 0.7rem;
+    padding: 4px 8px;
+  }
+  .intro {
+    font-size: 0.78rem;
+    margin-top: 8px;
+  }
+
+  .progress-line {
+    margin-top: 10px;
+    font-size: 0.75rem;
+  }
+
+  /* 卷轴区 */
+  .parchment {
+    min-height: 200px;
+    padding: 28px 14px 14px;
+  }
+  .fragment-text {
+    font-size: 0.95rem;
+  }
+  .seal-mark {
+    width: 72px;
+    top: 8px;
+    right: 8px;
+  }
+  .seal-label {
+    font-size: 0.8rem;
+  }
+
+  /* 印章按钮 */
+  .stamp-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
   .stamp-btn {
+    min-height: 120px;
+    padding: 10px 8px;
+  }
+  .stamp-code b {
+    font-size: 1.6rem;
+  }
+  .stamp-illustration {
+    width: 36px;
+    height: 36px;
+    font-size: 0.95rem;
+  }
+  .stamp-ribbon {
+    font-size: 0.6rem;
+    padding: 3px 6px;
     min-height: auto;
   }
-
-  .parchment {
-    min-height: 240px;
-    padding-top: 58px;
+  .stamp-btn small {
+    font-size: 0.65rem;
+    margin-top: 8px;
+  }
+  .stamp-tags {
+    gap: 4px;
+    margin-top: 8px;
+  }
+  .stamp-tags span {
+    font-size: 0.6rem;
+    padding: 3px 6px;
   }
 
-  .seal-mark {
-    width: 96px;
-    top: 10px;
-    right: 10px;
-    border-width: 4px;
+  /* 反馈卡片 */
+  .feedback-card {
+    padding: 10px;
+  }
+  .feedback-card strong {
+    font-size: 0.8rem;
+  }
+  .feedback-card p {
+    font-size: 0.72rem;
   }
 
-  .seal-label {
+  .close-btn {
+    top: 8px;
+    right: 8px;
+    width: 36px;
+    height: 36px;
     font-size: 1rem;
-  }
-
-  .paper-pin {
-    width: 52px;
   }
 }
 </style>

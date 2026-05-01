@@ -1150,35 +1150,312 @@ input:focus {
   .preview {
     border-right: none;
     border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+    max-height: 55vh;          /* 新增：限制预览区高度 */
+    overflow-y: auto;           /* 新增：溢出滚动 */
   }
 }
 
-@media (max-width: 700px) {
-  .topbar,
-  .preview,
-  .panel {
-    padding-left: 18px;
-    padding-right: 18px;
-    -webkit-overflow-scrolling: touch;   /* iOS 顺滑滚动 */
-    overflow-y: auto;
+@media (max-width: 768px) {
+  /* ===== 根容器强制撑满，纵向弹性盒 ===== */
+  .forge {
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
   }
 
+  /* ===== 标题区固定高度，不参与滚动 ===== */
   .topbar {
+    flex-shrink: 0;
+    padding: 8px 10px;
+    margin-bottom: 0;
     flex-direction: column;
     align-items: flex-start;
   }
-
-  .grid3,
-  .extra-grid,
-  .character-grid {
-    grid-template-columns: 1fr;
+  .topbar h1 {
+    font-size: 1.1rem;
+  }
+  .topbar h1 i {
+    font-size: 0.95rem;
+    margin-right: 4px;
+  }
+  .topbar p {
+    font-size: 0.68rem;
+    margin-top: 2px;
+    line-height: 1.25;
   }
 
+  .charge-left {
+    top: 8px;
+    right: 8px;
+    padding: 6px 10px;
+    font-size: 0.68rem;
+  }
+
+  /* ===== 主区域：上下两段独立滚动 ===== */
+  .main {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    /* 去掉原有的 grid 相关属性 */
+    grid-template-columns: none;
+  }
+
+  /* -------- 预览区（上方 40% 高度，独立滚动）-------- */
+  .preview {
+    flex: 0 0 40%;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+    padding: 10px 12px;
+    /* 不再需要 max-height，由 flex 比例控制 */
+  }
+  .preview .label {
+    font-size: 0.7rem;
+    margin-bottom: 6px;
+  }
+
+  .stage {
+    min-height: 200px;
+    margin-top: 10px;
+    padding: 0;
+    border-radius: 16px;
+  }
+  .avatar {
+    width: min(200px, 70%);
+  }
+  .equipped-tool {
+    right: -42px;
+    bottom: 22%;
+    width: 88px;
+    height: 88px;
+  }
+  .equipped-tool.tool-prism {
+    right: -48px;
+    bottom: 36%;
+    width: 82px;
+    height: 82px;
+  }
+  .equipped-tool.tool-satchel {
+    right: -44px;
+    bottom: 20%;
+    width: 94px;
+    height: 94px;
+  }
+
+  .card {
+    margin-top: 10px;
+    padding: 10px;
+    border-radius: 14px;
+  }
+  .cardhead {
+    margin-bottom: 6px;
+  }
+  .cardhead h2 {
+    font-size: 0.82rem;
+  }
+  .badge {
+    width: 32px;
+    height: 32px;
+    font-size: 0.8rem;
+  }
+  .row {
+    padding: 8px 10px;
+    gap: 6px;
+    margin-top: 4px;
+    border-radius: 8px;
+  }
+  .key { font-size: 0.72rem; }
+  .value { font-size: 0.74rem; }
+
+  /* -------- 选择区（下方 60% 高度，独立滚动）-------- */
+  .panel {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 4px 10px;
+  }
+  .panel .label {
+    font-size: 0.68rem;
+    margin-bottom: 6px;
+  }
+
+  .box,
+  .group,
+  .progress {
+    padding: 8px;
+    border-radius: 10px;
+  }
+  .box {
+    margin-bottom: 8px;
+  }
+  .box label {
+    font-size: 0.72rem;
+    margin-bottom: 4px;
+  }
+  input {
+    padding: 8px 10px;
+    font-size: 0.82rem;
+    border-radius: 8px;
+  }
+
+  .groups {
+    gap: 8px;
+  }
+  .group h3 {
+    font-size: 0.8rem;
+    margin-bottom: 3px;
+  }
+  .group p {
+    font-size: 0.68rem;
+    margin-bottom: 6px;
+    line-height: 1.3;
+  }
+
+  /* 选项网格 */
+  .grid3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 5px;
+  }
+  .opt {
+    min-height: 56px;
+    padding: 8px 6px;
+    border-radius: 8px;
+  }
+  .opt.compact {
+    min-height: 48px;
+  }
+  .opt i {
+    font-size: 0.8rem;
+    margin-bottom: 2px;
+  }
+  .opt strong {
+    font-size: 0.72rem;
+    margin-bottom: 2px;
+    line-height: 1.15;
+  }
+  .opt span {
+    font-size: 0.64rem;
+    line-height: 1.15;
+  }
+  .tool-option-image {
+    width: 34px;
+    height: 34px;
+    margin-bottom: 4px;
+  }
+
+  /* 角色选择 */
+  .character-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 5px;
+  }
+  .character-card {
+    min-height: 82px;
+    padding: 6px 3px;
+    gap: 4px;
+    border-radius: 10px;
+  }
+  .character-card img {
+    width: 50px;
+    height: 50px;
+  }
+  .character-card strong {
+    font-size: 0.68rem;
+  }
+
+  /* 经历标签 */
+  .extra-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 5px;
+  }
+  .mini-card {
+    padding: 8px;
+    border-radius: 8px;
+  }
+  .mini-card strong {
+    font-size: 0.72rem;
+    margin-bottom: 5px;
+  }
+  .toggle-row {
+    gap: 5px;
+  }
+  .toggle-btn {
+    padding: 6px 8px;
+    font-size: 0.72rem;
+    min-height: 38px;
+    border-radius: 8px;
+  }
+
+  /* 进度条 */
+  .progress {
+    margin-top: 8px;
+  }
+  .progress strong {
+    font-size: 0.74rem;
+  }
+  .progressbar {
+    height: 7px;
+    margin-top: 5px;
+  }
+  .progress p {
+    font-size: 0.68rem;
+    margin-top: 5px;
+  }
+
+  /* 底部按钮 */
+  .foot {
+    margin-top: 10px;
+    gap: 8px;
+  }
+  .primary {
+    padding: 10px 18px;
+    font-size: 0.88rem;
+    min-height: 44px;
+  }
+
+  /* 知识指南面板 */
   .guide-floating {
     position: absolute;
-    top: 20px;
-    right: 24px;
+    top: 8px;
+    right: 8px;
     z-index: 20;
+  }
+
+  /* 弹窗保持不变 */
+  .modal {
+    padding: 12px;
+  }
+  .modalcard {
+    padding: 18px;
+    border-radius: 16px;
+  }
+  .modalcard h2 {
+    font-size: 1.05rem;
+    margin-bottom: 8px;
+  }
+  .modalcard p {
+    font-size: 0.78rem;
+    margin-bottom: 10px;
+  }
+  .reward-badge {
+    font-size: 0.75rem;
+    padding: 5px 12px;
+    margin: 8px 0 10px;
+  }
+  .pill {
+    padding: 6px 10px;
+    font-size: 0.7rem;
+    margin: 0 4px 6px 0;
+  }
+  .actions {
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .secondary,
+  .primary2 {
+    padding: 8px 14px;
+    font-size: 0.82rem;
+    min-height: 42px;
   }
 }
 </style>
