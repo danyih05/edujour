@@ -17,6 +17,38 @@ export const MUSIC_TRACKS = {
       zh: 'Year 2 欢迎音乐',
     },
   },
+  year3_8: {
+    key: 'year3_8',
+    source: '/audio/Three_Hops_and_a_Snap.mp3',
+    label: {
+      en: 'Three Hops and a Snap',
+      zh: 'Year 3-8 音乐',
+    },
+  },
+  year3_6: {
+    key: 'year3_6',
+    source: '/audio/Where_the_Steel_Settles.mp3',
+    label: {
+      en: 'Where the Steel Settles',
+      zh: 'Year 3-6 战斗音乐',
+    },
+  },
+  year3_7: {
+    key: 'year3_7',
+    source: '/audio/Xylophone Sorcery.mp3',
+    label: {
+      en: 'Xylophone Sorcery',
+      zh: 'Year 3-7 音乐',
+    },
+  },
+  fightSuccess: {
+    key: 'fightSuccess',
+    source: '/audio/fightsuccess.mp3',
+    label: {
+      en: 'Fight Success',
+      zh: '战斗胜利音乐',
+    },
+  },
 }
 
 const MUTED_STORAGE_KEY = 'edujour_welcome_music_muted'
