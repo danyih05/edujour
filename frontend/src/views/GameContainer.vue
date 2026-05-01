@@ -7,19 +7,43 @@
         <button class="back-btn" @click="goBack">
           <i class="fas fa-arrow-left"></i> {{ t('components.gameContainer.backToMap') }}
         </button>
-        <span>{{ levelTitle }}</span>
-        <span class="year-chip">{{ yearChip }}</span>
+        <span class="level-heading">{{ levelTitle }}</span>
+        <div class="header-actions">
+          <button
+            v-if="canShowOnboarding && hasAcknowledgedOnboarding"
+            class="guide-reopen-btn"
+            type="button"
+            @click="reopenOnboarding"
+          >
+            <i class="fas fa-circle-question" aria-hidden="true"></i>
+            {{ onboardingButtonText }}
+          </button>
+          <span class="year-chip">{{ yearChip }}</span>
+        </div>
       </div>
 
       <div class="game-stage" :class="{ 'chrome-free-stage': isChromeFreeLevel }">
+        <PrePlayOnboarding
+          v-if="shouldGateOnboarding"
+          :guide="currentOnboarding"
+          :level-title="levelTitle"
+          @start="acknowledgeOnboarding"
+        />
         <GameCompletedView
-          v-if="savedGameResult"
+          v-else-if="savedGameResult"
           :result="savedGameResult"
           :title="levelTitle"
           @retry="retryLevel"
           @back="goBack"
         />
         <component v-else :is="currentGame" :level-id="levelId" @complete="handleChildComplete" @close="goBack" />
+        <PrePlayOnboarding
+          v-if="shouldOverlayOnboarding"
+          class="floating"
+          :guide="currentOnboarding"
+          :level-title="levelTitle"
+          @start="acknowledgeOnboarding"
+        />
       </div>
 
       <div class="game-actions" v-if="!isMissingLevel && !isChromeFreeLevel">
@@ -32,8 +56,9 @@
 </template>
 
 <script setup>
-import { computed, defineAsyncComponent, defineComponent, h, watchEffect } from 'vue'
+import { computed, defineAsyncComponent, defineComponent, h, ref, watch, watchEffect } from 'vue'
 import GameCompletedView from '@/components/GameCompletedView.vue'
+import PrePlayOnboarding from '@/components/PrePlayOnboarding.vue'
 import { useAppI18n } from '@/composables/useAppI18n'
 import { useRoute, useRouter } from 'vue-router'
 import { getLevelDefinition } from '@/config/levels'
@@ -44,6 +69,8 @@ const router = useRouter()
 const store = useGameStore()
 const { currentLanguage, t } = useAppI18n()
 const chromeFreeFiles = new Set(['year3_8.vue'])
+const hasAcknowledgedOnboarding = ref(false)
+const showOnboardingOverlay = ref(false)
 
 store.hydrate()
 
@@ -58,6 +85,7 @@ watchEffect(() => {
 })
 
 const levelDefinition = computed(() => getLevelDefinition(store.year, levelId.value))
+const currentOnboarding = computed(() => levelDefinition.value?.onboarding || null)
 const gameId = computed(() => `${store.year === 'y3' ? 'year3' : 'year2'}_${levelId.value}`)
 const savedGameResult = computed(() => {
   const result = store.getGameResult(gameId.value)
@@ -102,10 +130,23 @@ const levelTitle = computed(() => {
   return t(`${levelDefinition.value.i18nKey}.title`)
 })
 const isChromeFreeLevel = computed(() => Boolean(levelDefinition.value && chromeFreeFiles.has(levelDefinition.value.file)))
+const canShowOnboarding = computed(() => Boolean(currentOnboarding.value && !savedGameResult.value && !isMissingLevel.value))
+const shouldGateOnboarding = computed(() => canShowOnboarding.value && !hasAcknowledgedOnboarding.value)
+const shouldOverlayOnboarding = computed(() => (
+  canShowOnboarding.value && hasAcknowledgedOnboarding.value && showOnboardingOverlay.value
+))
+const onboardingButtonText = computed(() => (
+  currentLanguage.value === 'en' ? 'Controls' : '操作指引'
+))
 
 const yearChip = computed(() => (
   t(`components.gameContainer.yearChip.${store.year}`)
 ))
+
+watch([() => store.year, levelId], () => {
+  hasAcknowledgedOnboarding.value = false
+  showOnboardingOverlay.value = false
+})
 
 function goBack() {
   router.push({ name: 'map' })
@@ -129,6 +170,19 @@ function buildResultPayload(payload = {}) {
 
 function retryLevel() {
   store.clearGameResult(gameId.value)
+  hasAcknowledgedOnboarding.value = false
+  showOnboardingOverlay.value = false
+}
+
+function acknowledgeOnboarding() {
+  hasAcknowledgedOnboarding.value = true
+  showOnboardingOverlay.value = false
+}
+
+function reopenOnboarding() {
+  if (canShowOnboarding.value) {
+    showOnboardingOverlay.value = true
+  }
 }
 
 async function handleChildComplete(payload = {}) {
@@ -205,9 +259,23 @@ async function skipLevel() {
   font-family: Georgia, serif;
 }
 
+.level-heading {
+  flex: 1;
+  min-width: 0;
+}
+
+.header-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
 .back-btn,
 .modal-close-btn,
-.action-btn {
+.action-btn,
+.guide-reopen-btn {
   border: none;
   border-radius: 999px;
   font-weight: 900;
@@ -223,6 +291,22 @@ async function skipLevel() {
 }
 
 .back-btn:hover {
+  transform: translateY(-2px);
+}
+
+.guide-reopen-btn {
+  min-height: 36px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: rgba(44, 90, 110, 0.1);
+  color: #2d5a6e;
+  border: 2px solid rgba(227, 178, 73, 0.35);
+  font-size: 0.86rem;
+}
+
+.guide-reopen-btn:hover {
   transform: translateY(-2px);
 }
 
@@ -254,6 +338,7 @@ async function skipLevel() {
 
 .game-stage {
   flex: 1;
+  position: relative;
   overflow: auto;
   border-radius: 16px;
   background: rgba(15, 23, 42, 0.04);
@@ -299,13 +384,19 @@ async function skipLevel() {
     align-items: stretch;
   }
 
+  .header-actions {
+    justify-content: stretch;
+  }
+
   .game-actions {
     justify-content: stretch;
   }
 
   .action-btn,
-  .back-btn {
+  .back-btn,
+  .guide-reopen-btn {
     width: 100%;
+    justify-content: center;
   }
 
   .modal-close-btn {
