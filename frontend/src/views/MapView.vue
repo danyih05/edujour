@@ -325,6 +325,7 @@
 import { computed, defineAsyncComponent, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { getPortalText, useAppI18n } from '@/composables/useAppI18n'
+import { MUSIC_TRACKS, useWelcomeMusic } from '@/composables/useWelcomeMusic'
 import AvatarBadge from '@/components/AvatarBadge.vue'
 import GameCompletedView from '@/components/GameCompletedView.vue'
 import PrePlayOnboarding from '@/components/PrePlayOnboarding.vue'
@@ -345,6 +346,7 @@ const router = useRouter()
 const authStore = useAuthStore()
 const store = useGameStore()
 const { currentLanguage, t } = useAppI18n()
+const { activateWelcomeMusicTrack } = useWelcomeMusic()
 store.hydrate()
 const chromeFreeFiles = new Set(['year3_8.vue'])
 const copy = computed(() => getPortalText(currentLanguage.value))
@@ -625,6 +627,9 @@ function openLevel(year, node) {
   // 如果点击的是第一个节点且引导正在显示，关闭引导
   if (node.id === 1 && showGuide.value) {
     closeGuide();
+  }
+  if (year === 'y2' && node.id === 1) {
+    activateWelcomeMusicTrack(MUSIC_TRACKS.year2, { play: true, restart: true })
   }
   if (openLevelTimer) clearTimeout(openLevelTimer);
   if (store.year !== year) store.switchYear(year);

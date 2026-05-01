@@ -1,5 +1,6 @@
 <template>
   <RouterView />
+  <WelcomeMusicControl />
   <LanguageToggle />
   <XJTLUBird />
 </template>
@@ -7,6 +8,7 @@
 <script setup>
 import { RouterView } from 'vue-router'
 import LanguageToggle from '@/components/LanguageToggle.vue'
+import WelcomeMusicControl from '@/components/WelcomeMusicControl.vue'
 import XJTLUBird from '@/components/XJTLUBird.vue'
 import { useLanguageStore } from './stores/language'
 import { useAuthStore } from './stores/auth'

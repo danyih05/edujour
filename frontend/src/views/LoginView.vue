@@ -148,9 +148,10 @@
 </template>
 
 <script setup>
-import { computed, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getPortalText, useAppI18n } from '@/composables/useAppI18n'
+import { MUSIC_TRACKS, useWelcomeMusic } from '@/composables/useWelcomeMusic'
 import AvatarBadge from '@/components/AvatarBadge.vue'
 import { useAuthStore } from '@/stores/auth'
 import { useGameStore } from '@/stores/game'
@@ -160,6 +161,7 @@ const route = useRoute()
 const authStore = useAuthStore()
 const gameStore = useGameStore()
 const { currentLanguage } = useAppI18n()
+const { activateWelcomeMusicTrack } = useWelcomeMusic()
 
 const mode = ref('login')
 const errorMessage = ref('')
@@ -308,6 +310,10 @@ function toggleMode() {
   mode.value = mode.value === 'login' ? 'register' : 'login'
   errorMessage.value = ''
 }
+
+onMounted(() => {
+  activateWelcomeMusicTrack(MUSIC_TRACKS.login, { play: true, restart: true })
+})
 
 async function submitForm() {
   errorMessage.value = ''
