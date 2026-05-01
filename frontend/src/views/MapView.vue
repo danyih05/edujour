@@ -206,10 +206,27 @@
     <div v-if="activeLevel" class="modal-overlay">
       <div class="game-modal-content" :class="{ 'chrome-free-modal': isChromeFreeLevel }">
         <button v-if="!isChromeFreeLevel" class="absolute-close-btn" @click="closeGame"><i class="fas fa-times"></i></button>
-        <div v-if="!isChromeFreeLevel" class="modal-header"><span>{{ activeLevelTitle }}</span></div>
+        <div v-if="!isChromeFreeLevel" class="modal-header">
+          <span>{{ activeLevelTitle }}</span>
+          <button
+            v-if="canShowActiveOnboarding && hasAcknowledgedActiveOnboarding"
+            class="guide-reopen-btn"
+            type="button"
+            @click="reopenActiveOnboarding"
+          >
+            <i class="fas fa-circle-question" aria-hidden="true"></i>
+            {{ onboardingButtonText }}
+          </button>
+        </div>
         <div class="game-stage native-stage" :class="{ 'chrome-free-stage': isChromeFreeLevel }">
+          <PrePlayOnboarding
+            v-if="shouldGateActiveOnboarding"
+            :guide="activeOnboarding"
+            :level-title="activeLevelTitle"
+            @start="acknowledgeActiveOnboarding"
+          />
           <GameCompletedView
-            v-if="activeGameResult"
+            v-else-if="activeGameResult"
             :result="activeGameResult"
             :title="activeLevelTitle"
             @retry="retryActiveLevel"
@@ -217,6 +234,13 @@
           />
           <component v-else-if="nativeGameComponent" :is="nativeGameComponent" @complete="handleNativeComplete" @close="closeGame" />
           <div v-else class="missing-native-game">{{ t('map.missingLevel') }}</div>
+          <PrePlayOnboarding
+            v-if="shouldOverlayActiveOnboarding"
+            class="floating"
+            :guide="activeOnboarding"
+            :level-title="activeLevelTitle"
+            @start="acknowledgeActiveOnboarding"
+          />
         </div>
       </div>
     </div>
@@ -269,6 +293,7 @@ import { useRouter } from 'vue-router'
 import { getPortalText, useAppI18n } from '@/composables/useAppI18n'
 import AvatarBadge from '@/components/AvatarBadge.vue'
 import GameCompletedView from '@/components/GameCompletedView.vue'
+import PrePlayOnboarding from '@/components/PrePlayOnboarding.vue'
 import PrizeShop from '@/components/PrizeShop.vue'
 import HealingSandbox from '@/components/HealingSandbox.vue'
 import { LEVEL_DEFINITIONS } from '@/config/levels'
@@ -332,6 +357,8 @@ const statusMessage = ref('')
 const showMobileMenu = ref(false)
 const windowWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 1024)
 const activeLevel = ref(null)
+const hasAcknowledgedActiveOnboarding = ref(false)
+const showActiveOnboardingOverlay = ref(false)
 const mapAreas = reactive({ y2: null, y3: null })
 const nodeRefs = reactive({ y2: {}, y3: {} })
 const traveler = reactive({ y2: { left: '50%', top: '50%', walking: false, reached: false }, y3: { left: '50%', top: '50%', walking: false, reached: false } })
@@ -373,11 +400,25 @@ const nativeGameComponent = computed(() => {
 const year2Complete = computed(() => store.y2.levels.length > 0 && store.y2.levels.every((level) => level.completed))
 const isChromeFreeLevel = computed(() => Boolean(activeLevel.value && chromeFreeFiles.has(activeLevel.value.file)))
 const activeLevelTitle = computed(() => activeLevel.value?.i18nKey ? t(`${activeLevel.value.i18nKey}.title`) : '')
+const activeOnboarding = computed(() => {
+  if (!activeLevel.value) return null
+  return activeLevel.value.onboarding || meta[activeLevel.value.year]?.[activeLevel.value.id]?.onboarding || null
+})
 const activeGameId = computed(() => activeLevel.value ? `${activeLevel.value.year === 'y3' ? 'year3' : 'year2'}_${activeLevel.value.id}` : '')
 const activeGameResult = computed(() => {
   const result = activeGameId.value ? store.getGameResult(activeGameId.value) : null
   return result?.completed ? result : null
 })
+const canShowActiveOnboarding = computed(() => Boolean(activeOnboarding.value && nativeGameComponent.value && !activeGameResult.value))
+const shouldGateActiveOnboarding = computed(() => (
+  canShowActiveOnboarding.value && !hasAcknowledgedActiveOnboarding.value
+))
+const shouldOverlayActiveOnboarding = computed(() => (
+  canShowActiveOnboarding.value && hasAcknowledgedActiveOnboarding.value && showActiveOnboardingOverlay.value
+))
+const onboardingButtonText = computed(() => (
+  currentLanguage.value === 'en' ? 'Controls' : '操作指引'
+))
 let openLevelTimer = null
 const travelerTimers = { y2: null, y3: null }
 const setMapAreaRef = (year) => (element) => { mapAreas[year] = element || null }
@@ -435,10 +476,12 @@ function openLevel(year, node) {
   store.setCurrentNode(year, node.id);
   moveTravelerToNode(year, node.id);
   openLevelTimer = window.setTimeout(() => {
+    hasAcknowledgedActiveOnboarding.value = false
+    showActiveOnboardingOverlay.value = false
     activeLevel.value = { ...node, year };
   }, 420);
 }
-function closeGame() { if (openLevelTimer) { clearTimeout(openLevelTimer); openLevelTimer = null } activeLevel.value = null }
+function closeGame() { if (openLevelTimer) { clearTimeout(openLevelTimer); openLevelTimer = null } activeLevel.value = null; hasAcknowledgedActiveOnboarding.value = false; showActiveOnboardingOverlay.value = false }
 async function redeemPrize(prize) { const label = store.year === 'y2' ? t('common.labels.coins') : t('common.labels.gems'); statusMessage.value = ''; try { await store.purchasePrize(prize); redeemMessage.value = `&#x1F389; ${t('map.redeemSuccess', { name: prize.name, cost: prize.cost, currency: label, balance: store.currentCoins })}` } catch (error) { redeemMessage.value = error.message || t('map.redeemNotEnough') } }
 function buildResultPayload(payload = {}) {
   const fallbackResultData = Object.fromEntries(
@@ -458,6 +501,17 @@ function buildResultPayload(payload = {}) {
 function retryActiveLevel() {
   if (!activeLevel.value) return
   store.clearLevelResult(activeLevel.value.year, activeLevel.value.id)
+  hasAcknowledgedActiveOnboarding.value = false
+  showActiveOnboardingOverlay.value = false
+}
+function acknowledgeActiveOnboarding() {
+  hasAcknowledgedActiveOnboarding.value = true
+  showActiveOnboardingOverlay.value = false
+}
+function reopenActiveOnboarding() {
+  if (canShowActiveOnboarding.value) {
+    showActiveOnboardingOverlay.value = true
+  }
 }
 async function handleNativeComplete(payload = {}) { if (!activeLevel.value) return; const year = activeLevel.value.year; const levelId = activeLevel.value.id; const profile = Object.prototype.hasOwnProperty.call(payload, 'profile') ? payload.profile : undefined; const rewardCoins = Number(payload.rewardCoins) || 0; statusMessage.value = ''; store.saveLevelResult(year, levelId, buildResultPayload(payload)); try { await store.completeNode(year, levelId, { rewardCoins, profile }); closeGame(); syncTraveler(year, store[year].currentNode) } catch (error) { statusMessage.value = error.message || copy.value.map.syncFailed } }
 async function resetGame() { closeGame(); showPrizeShop.value = false; showHealingSandbox.value = false; showResetConfirm.value = false; redeemMessage.value = ''; statusMessage.value = ''; try { await store.resetStore(); syncTraveler('y2', 1) } catch (error) { statusMessage.value = error.message || copy.value.map.syncFailed } }
@@ -1051,8 +1105,10 @@ onBeforeUnmount(() => { window.removeEventListener('keydown', handleEscape); win
 .chrome-free-modal { background: transparent; width: 100vw; max-width: 100vw; height: 100vh; padding: 0; border: none; box-shadow: none; }
 .absolute-close-btn { position: absolute; top: -20px; right: -20px; width: 55px; height: 55px; border-radius: 50%; background: #e74c3c; color: #fff; border: 4px solid #fff; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4); font-size: 1.8rem; display: flex; justify-content: center; align-items: center; cursor: pointer; z-index: 1000; transition: 0.2s; }
 .absolute-close-btn:hover { background: #c0392b; transform: scale(1.15); }
-.modal-header { font-size: 1.5rem; color: #2d5a6e; border-bottom: 2px dashed #e7bc7a; padding-bottom: 12px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; font-weight: 900; font-family: Georgia, serif; }
-.game-stage { flex: 1; overflow: auto; border-radius: 16px; background: rgba(15, 23, 42, 0.04); }
+.modal-header { font-size: 1.5rem; color: #2d5a6e; border-bottom: 2px dashed #e7bc7a; padding-bottom: 12px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; gap: 12px; font-weight: 900; font-family: Georgia, serif; }
+.guide-reopen-btn { min-height: 36px; padding: 0 12px; border: 2px solid rgba(227, 178, 73, 0.35); border-radius: 999px; display: inline-flex; align-items: center; gap: 7px; background: rgba(44, 90, 110, 0.1); color: #2d5a6e; font-size: 0.86rem; font-weight: 900; cursor: pointer; transition: 0.18s; }
+.guide-reopen-btn:hover { transform: translateY(-2px); }
+.game-stage { flex: 1; position: relative; overflow: auto; border-radius: 16px; background: rgba(15, 23, 42, 0.04); }
 .native-stage { padding: 0; }
 .chrome-free-stage { overflow: visible; border-radius: 0; background: transparent; min-height: 100%; }
 .missing-native-game { min-height: 320px; display: grid; place-items: center; padding: 32px; text-align: center; color: #475569; font-weight: 700; }
