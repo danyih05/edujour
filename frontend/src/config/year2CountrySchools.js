@@ -72,43 +72,21 @@ const YEAR2_COUNTRY_SCHOOLS = Object.freeze({
     icon: '🏰',
     canonicalName: 'UK',
     label: { zh: '英国', en: 'UK' },
-    schools: [
-      { id: 'uk-imperial', icon: '👑', name: { zh: '帝国理工学院', en: 'Imperial College London' }, tag: { zh: 'QS 前 10', en: 'QS Top 10' }, recommendedTier: 'reach' },
-      { id: 'uk-ucl', icon: '🏛️', name: { zh: '伦敦大学学院', en: 'UCL' }, tag: { zh: 'QS 前 10', en: 'QS Top 10' }, recommendedTier: 'reach' },
-      { id: 'uk-kcl', icon: '🦁', name: { zh: '伦敦国王学院', en: "King's College London" }, tag: { zh: '主申参考', en: 'Match tier' }, recommendedTier: 'match' },
-      { id: 'uk-southampton', icon: '⚓', name: { zh: '南安普顿大学', en: 'University of Southampton' }, tag: { zh: '主申参考', en: 'Match tier' }, recommendedTier: 'match' },
-      { id: 'uk-cardiff', icon: '🐉', name: { zh: '卡迪夫大学', en: 'Cardiff University' }, tag: { zh: '保底参考', en: 'Safety tier' }, recommendedTier: 'safety' },
-    ],
+    schools: [],
   },
   us: {
     key: 'us',
     icon: '🗽',
     canonicalName: 'US',
     label: { zh: '美国', en: 'US' },
-    schools: [
-      { id: 'us-stanford', icon: '🌉', name: { zh: '斯坦福大学', en: 'Stanford University' }, tag: { zh: '冲刺参考', en: 'Reach tier' }, recommendedTier: 'reach' },
-      { id: 'us-cornell', icon: '🍂', name: { zh: '康奈尔大学', en: 'Cornell University' }, tag: { zh: '冲刺参考', en: 'Reach tier' }, recommendedTier: 'reach' },
-      { id: 'us-northeastern', icon: '🚇', name: { zh: '东北大学', en: 'Northeastern University' }, tag: { zh: '主申参考', en: 'Match tier' }, recommendedTier: 'match' },
-      { id: 'us-bu', icon: '📚', name: { zh: '波士顿大学', en: 'Boston University' }, tag: { zh: '主申参考', en: 'Match tier' }, recommendedTier: 'match' },
-      { id: 'us-asu', icon: '☀️', name: { zh: '亚利桑那州立大学', en: 'Arizona State University' }, tag: { zh: '保底参考', en: 'Safety tier' }, recommendedTier: 'safety' },
-    ],
+    schools: [],
   },
   australia: {
     key: 'australia',
     icon: '🦘',
     canonicalName: 'Australia',
     label: { zh: '澳洲', en: 'Australia' },
-    schools: [
-      { id: 'au-melbourne', icon: '🎓', name: { zh: '墨尔本大学', en: 'University of Melbourne' }, tag: { zh: '冲刺参考', en: 'Reach tier' }, recommendedTier: 'reach' },
-      { id: 'au-anu', icon: '🦉', name: { zh: '澳大利亚国立大学', en: 'Australian National University' }, tag: { zh: '冲刺参考', en: 'Reach tier' }, recommendedTier: 'reach' },
-      { id: 'au-sydney', icon: '🏛️', name: { zh: '悉尼大学', en: 'University of Sydney' }, tag: { zh: '冲刺参考', en: 'Reach tier' }, recommendedTier: 'reach' },
-      { id: 'au-unsw', icon: '🌊', name: { zh: '新南威尔士大学', en: 'University of New South Wales' }, tag: { zh: '主申参考', en: 'Match tier' }, recommendedTier: 'match' },
-      { id: 'au-uq', icon: '🌿', name: { zh: '昆士兰大学', en: 'University of Queensland' }, tag: { zh: '主申参考', en: 'Match tier' }, recommendedTier: 'match' },
-      { id: 'au-monash', icon: '🧪', name: { zh: '莫纳什大学', en: 'Monash University' }, tag: { zh: '主申参考', en: 'Match tier' }, recommendedTier: 'match' },
-      { id: 'au-adelaide', icon: '🍇', name: { zh: '阿德莱德大学', en: 'University of Adelaide' }, tag: { zh: '保底参考', en: 'Safety tier' }, recommendedTier: 'safety' },
-      { id: 'au-uts', icon: '🏙️', name: { zh: '悉尼科技大学', en: 'University of Technology Sydney' }, tag: { zh: '保底参考', en: 'Safety tier' }, recommendedTier: 'safety' },
-      { id: 'au-macquarie', icon: '🧭', name: { zh: '麦考瑞大学', en: 'Macquarie University' }, tag: { zh: '保底参考', en: 'Safety tier' }, recommendedTier: 'safety' },
-    ],
+    schools: [],
   },
   niche: {
     key: 'niche',
@@ -126,87 +104,458 @@ const YEAR2_COUNTRY_SCHOOLS = Object.freeze({
     icon: '🏙️',
     canonicalName: 'Hong Kong',
     label: { zh: '香港', en: 'Hong Kong' },
-    schools: [
-      { id: 'hk-hku', icon: '🌆', name: { zh: '香港大学', en: 'The University of Hong Kong' }, tag: { zh: '冲刺参考', en: 'Reach tier' }, recommendedTier: 'reach' },
-      { id: 'hk-hkust', icon: '🚀', name: { zh: '香港科技大学', en: 'HKUST' }, tag: { zh: '冲刺参考', en: 'Reach tier' }, recommendedTier: 'reach' },
-      { id: 'hk-cuhk', icon: '⛰️', name: { zh: '香港中文大学', en: 'CUHK' }, tag: { zh: '主申参考', en: 'Match tier' }, recommendedTier: 'match' },
-      { id: 'hk-cityu', icon: '🏢', name: { zh: '香港城市大学', en: 'City University of Hong Kong' }, tag: { zh: '主申参考', en: 'Match tier' }, recommendedTier: 'match' },
-      { id: 'hk-hkbu', icon: '📍', name: { zh: '香港浸会大学', en: 'Hong Kong Baptist University' }, tag: { zh: '保底参考', en: 'Safety tier' }, recommendedTier: 'safety' },
-    ],
+    schools: [],
   },
   sg: {
     key: 'sg',
     icon: '🌏',
     canonicalName: 'Singapore',
     label: { zh: '新加坡', en: 'Singapore' },
-    schools: [
-      { id: 'sg-nus', icon: '🦁', name: { zh: '新加坡国立大学', en: 'National University of Singapore' }, tag: { zh: '冲刺参考', en: 'Reach tier' }, recommendedTier: 'reach' },
-      { id: 'sg-ntu', icon: '⚙️', name: { zh: '南洋理工大学', en: 'Nanyang Technological University' }, tag: { zh: '冲刺参考', en: 'Reach tier' }, recommendedTier: 'reach' },
-      { id: 'sg-smu', icon: '💼', name: { zh: '新加坡管理大学', en: 'Singapore Management University' }, tag: { zh: '主申参考', en: 'Match tier' }, recommendedTier: 'match' },
-      { id: 'sg-sutd', icon: '🛠️', name: { zh: '新加坡科技设计大学', en: 'Singapore University of Technology and Design' }, tag: { zh: '主申参考', en: 'Match tier' }, recommendedTier: 'match' },
-      { id: 'sg-jcu', icon: '🌴', name: { zh: '詹姆斯库克大学新加坡校区', en: 'James Cook University Singapore' }, tag: { zh: '保底参考', en: 'Safety tier' }, recommendedTier: 'safety' },
-    ],
+    schools: [],
   },
   eu: {
     key: 'eu',
     icon: '🏛️',
-    canonicalName: 'Continental Europe',
-    label: { zh: '欧洲大陆', en: 'Continental Europe' },
-    schools: [
-      { id: 'eu-eth', icon: '🧠', name: { zh: '苏黎世联邦理工学院', en: 'ETH Zurich' }, tag: { zh: '冲刺参考', en: 'Reach tier' }, recommendedTier: 'reach' },
-      { id: 'eu-delft', icon: '🚲', name: { zh: '代尔夫特理工大学', en: 'TU Delft' }, tag: { zh: '冲刺参考', en: 'Reach tier' }, recommendedTier: 'reach' },
-      { id: 'eu-ku-leuven', icon: '🏫', name: { zh: '鲁汶大学', en: 'KU Leuven' }, tag: { zh: '主申参考', en: 'Match tier' }, recommendedTier: 'match' },
-      { id: 'eu-uva', icon: '🌷', name: { zh: '阿姆斯特丹大学', en: 'University of Amsterdam' }, tag: { zh: '主申参考', en: 'Match tier' }, recommendedTier: 'match' },
-      { id: 'eu-twente', icon: '🧭', name: { zh: '特文特大学', en: 'University of Twente' }, tag: { zh: '保底参考', en: 'Safety tier' }, recommendedTier: 'safety' },
-    ],
+    canonicalName: 'Europe',
+    label: { zh: '欧洲', en: 'Europe' },
+    schools: [],
   },
   global: {
     key: 'global',
     icon: '🧭',
     canonicalName: 'Cross-region',
     label: { zh: '跨地区备选', en: 'Cross-region fallback' },
-    schools: [
-      { id: 'global-imperial', icon: '👑', name: { zh: '帝国理工学院', en: 'Imperial College London' }, tag: { zh: '冲刺参考', en: 'Reach tier' }, recommendedTier: 'reach' },
-      { id: 'global-cornell', icon: '🍂', name: { zh: '康奈尔大学', en: 'Cornell University' }, tag: { zh: '冲刺参考', en: 'Reach tier' }, recommendedTier: 'reach' },
-      { id: 'global-monash', icon: '🧪', name: { zh: '莫纳什大学', en: 'Monash University' }, tag: { zh: '主申参考', en: 'Match tier' }, recommendedTier: 'match' },
-      { id: 'global-cuhk', icon: '⛰️', name: { zh: '香港中文大学', en: 'CUHK' }, tag: { zh: '主申参考', en: 'Match tier' }, recommendedTier: 'match' },
-      { id: 'global-cardiff', icon: '🐉', name: { zh: '卡迪夫大学', en: 'Cardiff University' }, tag: { zh: '保底参考', en: 'Safety tier' }, recommendedTier: 'safety' },
-    ],
+    schools: [],
   },
 })
 
-const EXTRA_SCHOOL_CASES = Object.freeze([
-  { id: 'case-uk-manchester', countryKey: 'uk', icon: '🏭', name: { zh: '曼彻斯特大学', en: 'University of Manchester' }, tag: { zh: '主申参考', en: 'Match tier' }, recommendedTier: 'match', caseInfo: { zh: '适合想要英国大城市资源、工科/商科项目选择较多的学生。', en: 'Useful for students who want a large UK city, broad engineering/business options, and strong employer visibility.' } },
-  { id: 'case-uk-edinburgh', countryKey: 'uk', icon: '🏰', name: { zh: '爱丁堡大学', en: 'University of Edinburgh' }, tag: { zh: '冲刺参考', en: 'Reach tier' }, recommendedTier: 'reach', caseInfo: { zh: '适合学术背景较强、希望兼顾综合排名和研究氛围的申请者。', en: 'A strong reference for applicants with solid academics who value ranking and research culture.' } },
-  { id: 'case-uk-warwick', countryKey: 'uk', icon: '🛡️', name: { zh: '华威大学', en: 'University of Warwick' }, tag: { zh: '主申参考', en: 'Match tier' }, recommendedTier: 'match', caseInfo: { zh: '适合看重商科、数据和就业信号，希望主申层更扎实的学生。', en: 'A practical match case for business, data, and employability-focused applicants.' } },
-  { id: 'case-uk-bristol', countryKey: 'uk', icon: '🌉', name: { zh: '布里斯托大学', en: 'University of Bristol' }, tag: { zh: '主申参考', en: 'Match tier' }, recommendedTier: 'match', caseInfo: { zh: '适合想兼顾英国综合声誉、城市体验和项目选择的申请者。', en: 'Useful for applicants balancing UK reputation, city experience, and program choice.' } },
-  { id: 'case-uk-leeds', countryKey: 'uk', icon: '🌿', name: { zh: '利兹大学', en: 'University of Leeds' }, tag: { zh: '保底参考', en: 'Safety tier' }, recommendedTier: 'safety', caseInfo: { zh: '适合给英国方案增加更稳层级，同时保留大校资源的学生。', en: 'A steadier UK option that still keeps large-university resources in the list.' } },
-  { id: 'case-us-nyu', countryKey: 'us', icon: '🌃', name: { zh: '纽约大学', en: 'New York University' }, tag: { zh: '冲刺参考', en: 'Reach tier' }, recommendedTier: 'reach', caseInfo: { zh: '适合目标明确、想把城市资源和职业叙事结合起来的学生。', en: 'Good for students who can connect city resources, projects, and career storytelling.' } },
-  { id: 'case-us-uci', countryKey: 'us', icon: '🌴', name: { zh: '加州大学欧文分校', en: 'UC Irvine' }, tag: { zh: '主申参考', en: 'Match tier' }, recommendedTier: 'match', caseInfo: { zh: '适合关注美国科技就业环境、希望名单中段更稳的申请者。', en: 'A practical mid-list option for applicants targeting the US tech ecosystem.' } },
-  { id: 'case-us-ucsd', countryKey: 'us', icon: '🔬', name: { zh: '加州大学圣地亚哥分校', en: 'UC San Diego' }, tag: { zh: '冲刺参考', en: 'Reach tier' }, recommendedTier: 'reach', caseInfo: { zh: '适合理工背景较强、希望冲刺美国科研和科技资源的学生。', en: 'A reach case for strong STEM applicants targeting US research and tech resources.' } },
-  { id: 'case-us-wisconsin', countryKey: 'us', icon: '🦡', name: { zh: '威斯康星大学麦迪逊分校', en: 'University of Wisconsin-Madison' }, tag: { zh: '主申参考', en: 'Match tier' }, recommendedTier: 'match', caseInfo: { zh: '适合希望主申层兼具学术声誉和大校资源的申请者。', en: 'A balanced match option with academic reputation and large-university resources.' } },
-  { id: 'case-us-pittsburgh', countryKey: 'us', icon: '🌉', name: { zh: '匹兹堡大学', en: 'University of Pittsburgh' }, tag: { zh: '保底参考', en: 'Safety tier' }, recommendedTier: 'safety', caseInfo: { zh: '适合给美国名单增加更稳选择，降低整体申请风险。', en: 'A steadier US option to reduce overall list risk.' } },
-  { id: 'case-au-sydney', countryKey: 'australia', icon: '🌊', name: { zh: '悉尼大学', en: 'University of Sydney' }, tag: { zh: '冲刺参考', en: 'Reach tier' }, recommendedTier: 'reach', caseInfo: { zh: '适合看重澳洲名校声誉、城市资源和跨专业选择的学生。', en: 'A useful case for applicants prioritizing Australian reputation, city access, and broad program choice.' } },
-  { id: 'case-au-anu', countryKey: 'australia', icon: '⭐', name: { zh: '澳大利亚国立大学', en: 'Australian National University' }, tag: { zh: '冲刺参考', en: 'Reach tier' }, recommendedTier: 'reach', caseInfo: { zh: '适合偏研究导向、希望强调学术潜力和严肃项目匹配的学生。', en: 'Best framed for research-oriented students with a serious academic-fit narrative.' } },
-  { id: 'case-au-adelaide', countryKey: 'australia', icon: '🍇', name: { zh: '阿德莱德大学', en: 'University of Adelaide' }, tag: { zh: '主申参考', en: 'Match tier' }, recommendedTier: 'match', caseInfo: { zh: '适合希望澳洲八大背景，同时让主申层更稳的学生。', en: 'A match case for applicants wanting Group of Eight context with steadier risk.' } },
-  { id: 'case-au-rmit', countryKey: 'australia', icon: '🏙️', name: { zh: '皇家墨尔本理工大学', en: 'RMIT University' }, tag: { zh: '主申参考', en: 'Match tier' }, recommendedTier: 'match', caseInfo: { zh: '适合强调实践、设计、技术应用和城市就业资源的学生。', en: 'Good for practice, design, applied tech, and city-employment narratives.' } },
-  { id: 'case-au-macquarie', countryKey: 'australia', icon: '🧭', name: { zh: '麦考瑞大学', en: 'Macquarie University' }, tag: { zh: '保底参考', en: 'Safety tier' }, recommendedTier: 'safety', caseInfo: { zh: '适合给澳洲方向补充更稳保底层，保持申请节奏可控。', en: 'A calmer Australian safety layer for a more controlled application plan.' } },
-  { id: 'case-hk-polyu', countryKey: 'hk', icon: '🧭', name: { zh: '香港理工大学', en: 'Hong Kong Polytechnic University' }, tag: { zh: '主申参考', en: 'Match tier' }, recommendedTier: 'match', caseInfo: { zh: '适合重视应用导向、就业连接和香港城市资源的申请者。', en: 'A strong applied option for applicants who value employability and Hong Kong industry links.' } },
-  { id: 'case-hk-lingnan', countryKey: 'hk', icon: '📚', name: { zh: '岭南大学', en: 'Lingnan University' }, tag: { zh: '保底参考', en: 'Safety tier' }, recommendedTier: 'safety', caseInfo: { zh: '适合想给香港方向增加更稳保底层的学生。', en: 'Useful when adding a calmer Hong Kong safety layer to the list.' } },
-  { id: 'case-hk-hkmu', countryKey: 'hk', icon: '📖', name: { zh: '香港都会大学', en: 'Hong Kong Metropolitan University' }, tag: { zh: '保底参考', en: 'Safety tier' }, recommendedTier: 'safety', caseInfo: { zh: '适合希望保留香港城市路径，同时需要更稳录取空间的学生。', en: 'A safer Hong Kong city-path option for students needing more admission room.' } },
-  { id: 'case-hk-eduhk', countryKey: 'hk', icon: '🍎', name: { zh: '香港教育大学', en: 'The Education University of Hong Kong' }, tag: { zh: '主申参考', en: 'Match tier' }, recommendedTier: 'match', caseInfo: { zh: '适合教育、语言、社会科学等方向更明确的申请者。', en: 'Useful for applicants with clear education, language, or social-science interests.' } },
-  { id: 'case-hk-hsuhk', countryKey: 'hk', icon: '💼', name: { zh: '香港恒生大学', en: 'The Hang Seng University of Hong Kong' }, tag: { zh: '保底参考', en: 'Safety tier' }, recommendedTier: 'safety', caseInfo: { zh: '适合给香港名单补充更稳层级，尤其关注商科和应用方向。', en: 'A steadier Hong Kong case, especially for business and applied tracks.' } },
-  { id: 'case-sg-suss', countryKey: 'sg', icon: '🧩', name: { zh: '新加坡社科大学', en: 'Singapore University of Social Sciences' }, tag: { zh: '保底参考', en: 'Safety tier' }, recommendedTier: 'safety', caseInfo: { zh: '适合希望保留新加坡路径、同时让名单风险更可控的申请者。', en: 'A steadier Singapore case for applicants who need controlled list risk.' } },
-  { id: 'case-sg-sit', countryKey: 'sg', icon: '🔧', name: { zh: '新加坡理工大学', en: 'Singapore Institute of Technology' }, tag: { zh: '主申参考', en: 'Match tier' }, recommendedTier: 'match', caseInfo: { zh: '适合强调实践能力、项目经历和应用型职业目标的学生。', en: 'Good for practice-oriented applicants with project evidence and applied career goals.' } },
-  { id: 'case-sg-lasalle', countryKey: 'sg', icon: '🎨', name: { zh: '拉萨尔艺术学院', en: 'LASALLE College of the Arts' }, tag: { zh: '主申参考', en: 'Match tier' }, recommendedTier: 'match', caseInfo: { zh: '适合艺术、设计、创意产业方向更清晰的学生。', en: 'A case for applicants with clearer art, design, and creative-industry goals.' } },
-  { id: 'case-sg-nafa', countryKey: 'sg', icon: '🎭', name: { zh: '南洋艺术学院', en: 'Nanyang Academy of Fine Arts' }, tag: { zh: '保底参考', en: 'Safety tier' }, recommendedTier: 'safety', caseInfo: { zh: '适合艺术类申请中需要补充更稳新加坡选择的学生。', en: 'A steadier Singapore choice for art-focused application lists.' } },
-  { id: 'case-sg-curtin', countryKey: 'sg', icon: '🌐', name: { zh: '科廷大学新加坡校区', en: 'Curtin Singapore' }, tag: { zh: '保底参考', en: 'Safety tier' }, recommendedTier: 'safety', caseInfo: { zh: '适合希望保留新加坡学习体验，同时追求更稳申请结果的学生。', en: 'A safer Singapore study-experience option with more controlled risk.' } },
-  { id: 'case-eu-tum', countryKey: 'eu', icon: '⚙️', name: { zh: '慕尼黑工业大学', en: 'Technical University of Munich' }, tag: { zh: '冲刺参考', en: 'Reach tier' }, recommendedTier: 'reach', caseInfo: { zh: '适合理工背景强、能应对欧陆项目要求和语言/材料细节的学生。', en: 'A reach case for strong STEM applicants ready for detailed European requirements.' } },
-  { id: 'case-eu-lund', countryKey: 'eu', icon: '🌲', name: { zh: '隆德大学', en: 'Lund University' }, tag: { zh: '主申参考', en: 'Match tier' }, recommendedTier: 'match', caseInfo: { zh: '适合希望在欧洲大陆方案中加入北欧稳定选择的学生。', en: 'A balanced Nordic reference for applicants building a continental Europe list.' } },
-  { id: 'case-eu-helsinki', countryKey: 'eu', icon: '❄️', name: { zh: '赫尔辛基大学', en: 'University of Helsinki' }, tag: { zh: '主申参考', en: 'Match tier' }, recommendedTier: 'match', caseInfo: { zh: '适合希望欧陆名单兼顾北欧学术氛围和稳定性的学生。', en: 'A Nordic match case for academic atmosphere and list stability.' } },
-  { id: 'case-eu-maastricht', countryKey: 'eu', icon: '🧠', name: { zh: '马斯特里赫特大学', en: 'Maastricht University' }, tag: { zh: '主申参考', en: 'Match tier' }, recommendedTier: 'match', caseInfo: { zh: '适合喜欢问题导向学习、希望欧陆方案更具体的申请者。', en: 'Good for applicants who like problem-based learning and a focused Europe plan.' } },
-  { id: 'case-eu-vienna', countryKey: 'eu', icon: '🎻', name: { zh: '维也纳大学', en: 'University of Vienna' }, tag: { zh: '保底参考', en: 'Safety tier' }, recommendedTier: 'safety', caseInfo: { zh: '适合给欧陆名单加入文化氛围强、风险更稳的选择。', en: 'A calmer Europe option with strong cultural context and lower list risk.' } },
-])
+const SCORE_BAND_ORDER = Object.freeze(['70-100', '60-70', '50-60', '40-50'])
+
+const GPA_BAND_SCORE = Object.freeze({
+  scholar: 82,
+  steady: 75,
+  sprint: 65,
+  comeback: 55,
+})
+
+const YEAR2_SCORE_SCHOOL_BANDS = Object.freeze({
+  uk: {
+    '40-50': ['伯明翰大学', '卡迪夫大学', '布里斯托大学', '曼彻斯特大学', '谢菲尔德大学', '格拉斯哥大学', '爱丁堡大学', '伦敦国王学院', '纽卡斯尔大学', '利物浦大学', '杜伦大学'],
+    '50-60': ['伦敦大学学院', '伦敦大学玛丽女王学院', '伯明翰大学', '纽卡斯尔大学', '谢菲尔德大学', '兰卡斯特大学', '曼彻斯特大学', '华威大学', '利物浦大学', '布里斯托大学', '格拉斯哥大学', '卡迪夫大学', '南安普顿大学', '埃克塞特大学', '巴斯大学', '杜伦大学', '伦敦国王学院', '爱丁堡大学'],
+    '60-70': ['伦敦大学学院', '利物浦大学', '华威大学', '格拉斯哥大学', '杜伦大学', '爱丁堡大学', '布里斯托大学', '南安普顿大学', '谢菲尔德大学', '曼彻斯特大学', '伯明翰大学', '帝国理工学院', '伦敦国王学院', '利兹大学', '纽卡斯尔大学', '伦敦艺术大学', '伦敦大学玛丽女王学院', '诺丁汉大学', '金斯顿大学'],
+    '70-100': ['伦敦大学学院', '帝国理工学院', '布里斯托大学', '曼彻斯特大学', '爱丁堡大学', '华威大学', '利物浦大学', '剑桥大学', '南安普顿大学', '格拉斯哥大学', '杜伦大学', '卡迪夫大学', '伦敦国王学院', '牛津大学', '诺丁汉大学'],
+  },
+  us: {
+    '40-50': ['圣路易斯华盛顿大学', '马里兰大学学院公园分校'],
+    '50-60': ['东北大学', '伊利诺伊大学厄本那-香槟分校', '匹兹堡大学', '哥伦比亚大学', '华盛顿大学', '印第安纳大学伯明顿分校', '加州大学伯克利分校', '雪城大学', '南加州大学', '宾夕法尼亚大学', '佐治亚理工学院', '波士顿大学', '杜克大学', '纽约大学', '佛罗里达大学', '宾州州立大学公园分校'],
+    '60-70': ['俄亥俄州立大学', '宾夕法尼亚大学', '东北大学', '明尼苏达双城大学', '匹兹堡大学', '纽约大学', '华盛顿大学', '哥伦比亚大学', '加州大学圣地亚哥分校', '莱斯大学', '西北大学', '威斯康星大学麦迪逊分校', '约翰霍普金斯大学', '密歇根大学安娜堡分校', '杜克大学', '康奈尔大学', '亚利桑那州立大学', '犹他大学', '宾夕法尼亚州立大学', '北卡罗来纳大学教堂山分校', '加州大学尔湾分校', '加州大学戴维斯分校', '弗吉尼亚大学', '史蒂文斯理工学院', '罗切斯特理工学院', '达特茅斯学院'],
+    '70-100': ['加州大学伯克利分校', '哥伦比亚大学', '宾夕法尼亚大学', '波士顿大学', '华盛顿大学', '乔治敦大学', '加州大学尔湾分校', '卡内基梅隆大学', '东北大学', '纽约大学', '加州大学圣地亚哥分校', '康奈尔大学', '约翰霍普金斯大学', '南加州大学', '西北大学', '圣路易斯华盛顿大学', '匹兹堡大学', '伊利诺伊大学厄本那-香槟分校', '布朗大学', '杜克大学', '罗格斯大学', '普渡大学西拉法叶分校', '莱斯大学', '俄亥俄州立大学', '密歇根大学安娜堡分校', '密歇根州立大学', '斯坦福大学', '耶鲁大学', '圣母大学', '特拉华大学'],
+  },
+  australia: {
+    '40-50': ['悉尼大学', '昆士兰大学', '莫纳什大学', '悉尼科技大学', '澳大利亚国立大学'],
+    '50-60': ['悉尼大学', '昆士兰大学', '新南威尔士大学', '莫纳什大学', '墨尔本大学'],
+    '60-70': ['悉尼大学', '墨尔本大学', '新南威尔士大学', '昆士兰大学', '莫纳什大学', '澳大利亚国立大学'],
+    '70-100': ['墨尔本大学', '悉尼大学', '澳大利亚国立大学', '莫纳什大学'],
+  },
+  eu: {
+    '50-60': ['格罗宁根大学'],
+    '60-70': ['都柏林大学', '捷克技术大学'],
+    '70-100': ['代尔夫特理工大学', '莱顿大学', '苏黎世联邦理工学院', '瑞典皇家理工学院'],
+  },
+  sg: {
+    '40-50': ['新加坡国立大学'],
+    '50-60': ['新加坡管理大学'],
+    '60-70': ['南洋理工大学', '新加坡国立大学'],
+    '70-100': ['南洋理工大学', '新加坡国立大学'],
+  },
+  hk: {
+    '40-50': ['香港理工大学'],
+    '50-60': ['香港浸会大学', '香港理工大学'],
+    '60-70': ['香港中文大学', '香港城市大学', '香港大学', '香港理工大学'],
+    '70-100': ['香港中文大学', '香港中文大学（深圳）', '香港大学'],
+  },
+})
+
+function buildYear2ScoreSchoolData(bandsByCountry) {
+  return Object.fromEntries(Object.entries(bandsByCountry).map(([countryKey, bands]) => {
+    const schoolMap = new Map()
+    Object.entries(bands).forEach(([band, schools]) => {
+      schools.forEach((name) => {
+        if (!schoolMap.has(name)) {
+          schoolMap.set(name, { name, bands: [] })
+        }
+        schoolMap.get(name).bands.push(band)
+      })
+    })
+    return [countryKey, Array.from(schoolMap.values())]
+  }))
+}
+
+const YEAR2_SCORE_SCHOOL_DATA = Object.freeze(buildYear2ScoreSchoolData(YEAR2_SCORE_SCHOOL_BANDS))
+
+const TIER_LABELS = Object.freeze({
+  reach: { zh: '冲刺', en: 'Reach' },
+  match: { zh: '主申', en: 'Match' },
+  safety: { zh: '保底', en: 'Safety' },
+})
+
+const SCORE_CARD_ICONS = Object.freeze(['🍇', '🍒', '🍋', '🍀', '💎', '🎯', '🌟', '🔮'])
+
+const SCHOOL_NAME_ALIASES = Object.freeze({
+  卡耐基梅龙大学: '卡内基梅隆大学',
+  加州大学圣地亚哥: '加州大学圣地亚哥分校',
+  加利福尼亚大学圣地亚哥分校: '加州大学圣地亚哥分校',
+  伊利诺伊大学厄本那香槟分校: '伊利诺伊大学厄本那-香槟分校',
+  '伊利诺伊大学厄巴纳-香槟分校': '伊利诺伊大学厄本那-香槟分校',
+  悉尼新南威尔士大学: '新南威尔士大学',
+  澳洲国立大学: '澳大利亚国立大学',
+  蒙纳士大学: '莫纳什大学',
+  纽卡斯尔大学英国: '纽卡斯尔大学',
+})
+
+function buildSchoolCountryKeys(bandsByCountry) {
+  const countryKeys = {}
+  Object.entries(bandsByCountry).forEach(([countryKey, bands]) => {
+    Object.values(bands).flat().forEach((name) => {
+      countryKeys[normalizeSchoolNameForTier(name)] = countryKey
+    })
+  })
+  return countryKeys
+}
+
+const SCHOOL_COUNTRY_KEYS = Object.freeze(buildSchoolCountryKeys(YEAR2_SCORE_SCHOOL_BANDS))
+
+const SCHOOL_MIN_MATCH_BANDS = Object.freeze({
+  牛津大学: '70-100',
+  剑桥大学: '70-100',
+  帝国理工学院: '70-100',
+  伦敦大学学院: '70-100',
+  伦敦国王学院: '70-100',
+  香港中文大学深圳: '70-100',
+  宾夕法尼亚大学: '70-100',
+  斯坦福大学: '70-100',
+  耶鲁大学: '70-100',
+  哥伦比亚大学: '70-100',
+  康奈尔大学: '70-100',
+  卡内基梅隆大学: '70-100',
+  西北大学: '70-100',
+  杜克大学: '70-100',
+  布朗大学: '70-100',
+  加州大学伯克利分校: '70-100',
+  约翰霍普金斯大学: '70-100',
+  佐治亚理工学院: '70-100',
+  加州大学圣地亚哥分校: '70-100',
+  南加州大学: '70-100',
+  纽约大学: '70-100',
+  '伊利诺伊大学厄本那-香槟分校': '70-100',
+  莱斯大学: '70-100',
+  密歇根大学安娜堡分校: '70-100',
+  华盛顿大学: '70-100',
+  圣路易斯华盛顿大学: '70-100',
+  新加坡国立大学: '70-100',
+  南洋理工大学: '70-100',
+  香港大学: '70-100',
+  香港科技大学: '70-100',
+  香港中文大学: '70-100',
+  苏黎世联邦理工学院: '70-100',
+  代尔夫特理工大学: '70-100',
+  瑞典皇家理工学院: '70-100',
+  莱顿大学: '70-100',
+  墨尔本大学: '70-100',
+  澳大利亚国立大学: '70-100',
+  爱丁堡大学: '60-70',
+  曼彻斯特大学: '60-70',
+  布里斯托大学: '60-70',
+  华威大学: '60-70',
+  格拉斯哥大学: '60-70',
+  杜伦大学: '60-70',
+  南安普顿大学: '60-70',
+  悉尼大学: '60-70',
+  新南威尔士大学: '60-70',
+  莫纳什大学: '60-70',
+  昆士兰大学: '60-70',
+  波士顿大学: '60-70',
+  东北大学: '60-70',
+  威斯康星大学麦迪逊分校: '60-70',
+})
+
+const CHINESE_SCHOOL_EN_NAMES = Object.freeze({
+  伦敦大学学院: 'University College London',
+  帝国理工学院: 'Imperial College London',
+  爱丁堡大学: 'University of Edinburgh',
+  曼彻斯特大学: 'University of Manchester',
+  布里斯托大学: 'University of Bristol',
+  谢菲尔德大学: 'University of Sheffield',
+  华威大学: 'University of Warwick',
+  利物浦大学: 'University of Liverpool',
+  南安普顿大学: 'University of Southampton',
+  格拉斯哥大学: 'University of Glasgow',
+  杜伦大学: 'Durham University',
+  卡迪夫大学: 'Cardiff University',
+  伦敦艺术大学: 'University of the Arts London',
+  提赛德大学: 'Teesside University',
+  剑桥大学: 'University of Cambridge',
+  伦敦国王学院: "King's College London",
+  伦敦大学国王学院: "King's College London",
+  宾夕法尼亚大学: 'University of Pennsylvania',
+  牛津大学: 'University of Oxford',
+  诺丁汉大学: 'University of Nottingham',
+  纽卡斯尔大学: 'Newcastle University',
+  伦敦大学玛丽女王学院: 'Queen Mary University of London',
+  玛丽女王大学: 'Queen Mary University of London',
+  悉尼大学: 'University of Sydney',
+  伯明翰大学: 'University of Birmingham',
+  伦敦大学金史密斯学院: 'Goldsmiths, University of London',
+  利兹大学: 'University of Leeds',
+  金斯顿大学: 'Kingston University',
+  南洋理工大学: 'Nanyang Technological University',
+  东北大学: 'Northeastern University',
+  美国东北大学: 'Northeastern University',
+  昆士兰大学: 'University of Queensland',
+  埃克塞特大学: 'University of Exeter',
+  巴斯大学: 'University of Bath',
+  西交利物浦大学: "Xi'an Jiaotong-Liverpool University",
+  匹兹堡大学: 'University of Pittsburgh',
+  兰卡斯特大学: 'Lancaster University',
+  西北大学: 'Northwestern University',
+  密歇根大学安娜堡分校: 'University of Michigan, Ann Arbor',
+  加州大学伯克利分校: 'University of California, Berkeley',
+  哥伦比亚大学: 'Columbia University',
+  华盛顿大学: 'University of Washington',
+  约翰霍普金斯大学: 'Johns Hopkins University',
+  圣路易斯华盛顿大学: 'Washington University in St. Louis',
+  特拉华大学: 'University of Delaware',
+  乔治敦大学: 'Georgetown University',
+  加州大学尔湾分校: 'University of California, Irvine',
+  卡内基梅隆大学: 'Carnegie Mellon University',
+  卡耐基梅龙大学: 'Carnegie Mellon University',
+  波士顿大学: 'Boston University',
+  纽约大学: 'New York University',
+  加州大学圣地亚哥分校: 'University of California, San Diego',
+  加利福尼亚大学圣地亚哥分校: 'University of California, San Diego',
+  康奈尔大学: 'Cornell University',
+  南加州大学: 'University of Southern California',
+  伊利诺伊大学厄本那香槟分校: 'University of Illinois Urbana-Champaign',
+  '伊利诺伊大学厄本那-香槟分校': 'University of Illinois Urbana-Champaign',
+  '伊利诺伊大学厄巴纳-香槟分校': 'University of Illinois Urbana-Champaign',
+  罗格斯大学: 'Rutgers University',
+  杜克大学: 'Duke University',
+  加州大学圣塔芭芭拉分校: 'University of California, Santa Barbara',
+  圣母大学: 'University of Notre Dame',
+  佐治亚理工学院: 'Georgia Institute of Technology',
+  布朗大学: 'Brown University',
+  密歇根州立大学: 'Michigan State University',
+  加州大学戴维斯分校: 'University of California, Davis',
+  普渡大学西拉法叶分校: 'Purdue University West Lafayette',
+  麦吉尔大学: 'McGill University',
+  麦克马斯特大学: 'McMaster University',
+  加拿大西安大略大学: 'Western University',
+  莱斯大学: 'Rice University',
+  俄亥俄州立大学: 'Ohio State University',
+  西俄克拉荷马州立学院: 'Southwestern Oklahoma State University',
+  斯坦福大学: 'Stanford University',
+  耶鲁大学: 'Yale University',
+  理海大学: 'Lehigh University',
+  威斯康星大学麦迪逊分校: 'University of Wisconsin-Madison',
+  多伦多大学: 'University of Toronto',
+  明尼苏达双城大学: 'University of Minnesota Twin Cities',
+  亚利桑那州立大学: 'Arizona State University',
+  犹他大学: 'University of Utah',
+  宾夕法尼亚州立大学: 'Pennsylvania State University',
+  宾州州立大学公园分校: 'Pennsylvania State University, University Park',
+  北卡罗来纳大学教堂山分校: 'University of North Carolina at Chapel Hill',
+  史蒂文斯理工学院: 'Stevens Institute of Technology',
+  弗吉尼亚大学: 'University of Virginia',
+  罗切斯特理工学院: 'Rochester Institute of Technology',
+  达特茅斯学院: 'Dartmouth College',
+  印第安纳大学伯明顿分校: 'Indiana University Bloomington',
+  温莎大学: 'University of Windsor',
+  佛罗里达大学: 'University of Florida',
+  皇家大学: 'Royal Roads University',
+  雪城大学: 'Syracuse University',
+  马里兰大学学院公园分校: 'University of Maryland, College Park',
+  瑞士酒店管理大学: 'Swiss Hotel Management School',
+  澳大利亚国立大学: 'Australian National University',
+  墨尔本大学: 'University of Melbourne',
+  奥克兰大学: 'University of Auckland',
+  莫纳什大学: 'Monash University',
+  新南威尔士大学: 'University of New South Wales',
+  悉尼科技大学: 'University of Technology Sydney',
+  香港中文大学: 'The Chinese University of Hong Kong',
+  香港大学: 'The University of Hong Kong',
+  昆山杜克大学: 'Duke Kunshan University',
+  '香港中文大学（深圳）': 'The Chinese University of Hong Kong, Shenzhen',
+  香港中文大学深圳: 'The Chinese University of Hong Kong, Shenzhen',
+  香港理工大学: 'The Hong Kong Polytechnic University',
+  香港城市大学: 'City University of Hong Kong',
+  宁波诺丁汉大学: 'University of Nottingham Ningbo China',
+  香港浸会大学: 'Hong Kong Baptist University',
+  新加坡国立大学: 'National University of Singapore',
+  新加坡管理大学: 'Singapore Management University',
+  代尔夫特理工大学: 'Delft University of Technology',
+  瑞典皇家理工学院: 'KTH Royal Institute of Technology',
+  苏黎世联邦理工学院: 'ETH Zurich',
+  莱顿大学: 'Leiden University',
+  捷克技术大学: 'Czech Technical University in Prague',
+  都柏林大学: 'University College Dublin',
+  格罗宁根大学: 'University of Groningen',
+})
+
+export function localizeYear2SchoolName(name, language = 'zh') {
+  if (!name) return ''
+  if (typeof name === 'object') {
+    return name[language] || name.en || name.zh || ''
+  }
+  if (language === 'en') {
+    return CHINESE_SCHOOL_EN_NAMES[name] || name
+  }
+  return name
+}
+
+function getScoreBand(score) {
+  const numericScore = Number(score)
+  if (numericScore >= 70) return '70-100'
+  if (numericScore >= 60) return '60-70'
+  if (numericScore >= 50) return '50-60'
+  return '40-50'
+}
+
+function getProfileScore(profile) {
+  const academicProfile = profile?.academicProfile || {}
+  const rawExplicitScore = academicProfile.gpaScore ?? academicProfile.score ?? profile?.gpaScore
+  const explicitScore = Number(rawExplicitScore)
+  if (rawExplicitScore !== null && rawExplicitScore !== undefined && rawExplicitScore !== '' && Number.isFinite(explicitScore) && explicitScore >= 0) {
+    return explicitScore
+  }
+
+  const bandScore = GPA_BAND_SCORE[academicProfile.gpaBand] || GPA_BAND_SCORE[profile?.gpaBand]
+  if (bandScore) return bandScore
+
+  const gpaText = String(academicProfile.gpa || profile?.gpa || '')
+  const parsedScore = Number(gpaText.match(/\d+(?:\.\d+)?/)?.[0])
+  return Number.isFinite(parsedScore) && parsedScore > 0 ? parsedScore : 82
+}
+
+function normalizeSchoolNameForTier(name) {
+  const normalized = String(name || '')
+    .trim()
+    .replace(/[（）()]/g, '')
+    .replace(/\s+/g, '')
+  return SCHOOL_NAME_ALIASES[normalized] || normalized
+}
+
+function getSchoolCountryKey(name) {
+  return SCHOOL_COUNTRY_KEYS[normalizeSchoolNameForTier(name)] || ''
+}
+
+function isSchoolInSelectedCountry(school, countryKey) {
+  const expectedKey = getSchoolCountryKey(school?.name)
+  return expectedKey === countryKey
+}
+
+function getTierForBands(schoolName, bands, currentBand) {
+  const currentIndex = SCORE_BAND_ORDER.indexOf(currentBand)
+  const bandIndexes = bands.map((band) => SCORE_BAND_ORDER.indexOf(band)).filter((index) => index >= 0)
+  if (!bandIndexes.length || currentIndex < 0) return 'match'
+
+  const minMatchBand = SCHOOL_MIN_MATCH_BANDS[normalizeSchoolNameForTier(schoolName)]
+  const minMatchIndex = SCORE_BAND_ORDER.indexOf(minMatchBand)
+  if (minMatchIndex >= 0) {
+    if (currentIndex < minMatchIndex) return 'safety'
+    if (currentIndex > minMatchIndex) return 'reach'
+    return 'match'
+  }
+
+  if (bandIndexes.includes(currentIndex)) {
+    const appearsInLowerScoreBand = bandIndexes.some((index) => index > currentIndex)
+    const appearsInHigherScoreBand = bandIndexes.some((index) => index < currentIndex)
+    if (appearsInLowerScoreBand && !appearsInHigherScoreBand) return 'safety'
+    return 'match'
+  }
+
+  const highestRequirementIndex = Math.min(...bandIndexes)
+  const lowestRequirementIndex = Math.max(...bandIndexes)
+  if (lowestRequirementIndex < currentIndex) return 'reach'
+  if (highestRequirementIndex > currentIndex) return 'safety'
+  return 'match'
+}
+
+function makeScoreSchoolCard(countryKey, school, recommendedTier, currentBand, index) {
+  const tierLabel = TIER_LABELS[recommendedTier] || TIER_LABELS.match
+  const englishName = CHINESE_SCHOOL_EN_NAMES[school.name] || school.name
+  return {
+    id: `score-${countryKey}-${index}-${school.name}`,
+    countryKey,
+    icon: SCORE_CARD_ICONS[(index - 1) % SCORE_CARD_ICONS.length],
+    isScoreDataCard: true,
+    name: { zh: school.name, en: englishName },
+    tag: { zh: `当前 ${currentBand} · ${tierLabel.zh}`, en: `Current ${currentBand} · ${tierLabel.en}` },
+    recommendedTier,
+    scoreBand: currentBand,
+    sourceBands: school.bands,
+    caseInfo: {
+      zh: `来自 Y2 择校数据样本。该校出现分数段：${school.bands.join(' / ')}；当前分数段：${currentBand}。`,
+      en: `From the Y2 school-choice data sample. School bands: ${school.bands.join(' / ')}; current band: ${currentBand}.`,
+    },
+  }
+}
+
+function getPrioritizedBands(currentBand) {
+  const currentIndex = SCORE_BAND_ORDER.indexOf(currentBand)
+  if (currentIndex < 0) return SCORE_BAND_ORDER
+
+  const moreSelectiveBands = SCORE_BAND_ORDER.slice(0, currentIndex).reverse()
+  const lessSelectiveBands = SCORE_BAND_ORDER.slice(currentIndex + 1)
+  return [currentBand, ...moreSelectiveBands, ...lessSelectiveBands]
+}
+
+function getOrderedScoreSchools(countryKey, countrySchools, currentBand) {
+  const schoolsByName = new Map(countrySchools.map((school) => [school.name, school]))
+  const seenNames = new Set()
+  const orderedSchools = []
+
+  getPrioritizedBands(currentBand).forEach((band) => {
+    const names = YEAR2_SCORE_SCHOOL_BANDS[countryKey]?.[band] || []
+    names.forEach((name) => {
+      const school = schoolsByName.get(name)
+      if (!school || seenNames.has(name)) return
+      seenNames.add(name)
+      orderedSchools.push(school)
+    })
+  })
+
+  countrySchools.forEach((school) => {
+    if (seenNames.has(school.name)) return
+    seenNames.add(school.name)
+    orderedSchools.push(school)
+  })
+
+  return orderedSchools
+}
+
+export function getYear2ProfileScore(profile) {
+  return getProfileScore(profile)
+}
+
+export function getYear2ScoreBand(profile) {
+  return getScoreBand(getProfileScore(profile))
+}
+
+export function getYear2ScoreSchoolCards(countryKey, profile, options = {}) {
+  const normalizedKey = normalizeCountryKey(countryKey)
+  if (normalizedKey === 'niche') return []
+  const schools = YEAR2_SCORE_SCHOOL_DATA[normalizedKey]
+  if (!schools) return []
+  const countrySchools = schools.filter((school) => isSchoolInSelectedCountry(school, normalizedKey))
+  const currentBand = getYear2ScoreBand(profile)
+  const orderedSchools = getOrderedScoreSchools(normalizedKey, countrySchools, currentBand)
+  const visibleSchools = options.remaining ? orderedSchools.slice(10) : orderedSchools.slice(0, 10)
+
+  return visibleSchools.map((school, index) => {
+    const cardIndex = options.remaining ? index + 11 : index + 1
+    return makeScoreSchoolCard(normalizedKey, school, getTierForBands(school.name, school.bands, currentBand), currentBand, cardIndex)
+  })
+}
 
 function normalizeLookupValue(value) {
   return String(value)
@@ -277,8 +626,8 @@ export function getYear2CountrySchoolOptions() {
   return ['uk', 'us', 'australia', 'hk', 'sg', 'eu'].map((key) => YEAR2_COUNTRY_SCHOOLS[key])
 }
 
-export function getYear2SchoolCases() {
-  return EXTRA_SCHOOL_CASES
+export function getYear2SchoolCases(countryKey, profile) {
+  return getYear2ScoreSchoolCards(countryKey, profile, { remaining: true })
 }
 
 export function getTierBuckets(schools) {

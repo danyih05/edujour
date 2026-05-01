@@ -101,6 +101,10 @@ export default {
       matchedCountry: 'Matched Country/Region',
       schools: 'Schools',
       schoolTiers: 'School Tiers',
+      feedback: 'Feedback',
+      message: 'Message',
+      routeResult: 'Route Result',
+      explanation: 'Explanation',
       clearedStages: 'Cleared Stages',
       artifacts: 'Artifacts',
       level: 'Level',
@@ -308,7 +312,7 @@ export default {
         uk: 'Path of Albion (UK)',
         us: 'Path of the New World (USA)',
         australia: 'Path of Australia',
-        eu: 'Path of Continental Europe',
+        eu: 'Path of Europe',
         sg: 'Path of the Lion City (Singapore)',
         hk: 'Path of the Orient (Hong Kong)',
         niche: 'Japan / Korea and other niche regions',
@@ -326,6 +330,7 @@ export default {
       manualRegion: {
         title: 'Unhappy with the match? Manually change region',
         copy: 'Your chosen region will be saved for the next level, and Y2-3 will show schools from that region.',
+        selectLabel: 'Preferred region',
         schools: 'Next-level schools:',
       },
       
@@ -433,9 +438,9 @@ export default {
           analysis: 'Australia suits students who want a steady English-speaking route with strong city life. Keep checking program fit, internship access, and visa planning.',
         },
         eu: {
-          title: 'Route Result: Scholar of Continental Europe',
+          title: 'Route Result: Scholar of Europe',
           icon: '🏛️',
-          desc: '<b>Your selection points to Continental Europe.</b><br><br>You are drawn to cultural depth, research focus, and programs that reward academic preparation. Be prepared for more structured deadlines and program-specific requirements.',
+          desc: '<b>Your selection points to Europe.</b><br><br>You are drawn to cultural depth, research focus, and programs that reward academic preparation. Be prepared for more structured deadlines and program-specific requirements.',
           analysis: 'Europe suits those who want strong academic signal with a meaningful cross-border experience. Continue with targeted program research and language planning.',
         },
         sg: {
@@ -460,18 +465,18 @@ export default {
     },
     y2_3: {
       title: 'Scales of Destiny',
-      subtitle: 'For a GPA 82 STEM / CS applicant with one ordinary internship, place the {country} schools from the previous level into more realistic tiers.',
+      subtitle: 'Using the Year2-1 profile, place the {country} schools from the previous level into more realistic tiers.',
       currentAvatar: 'Current profile: GPA 82/100 | STEM/CS track | 1 ordinary internship',
       matchedRoute: 'Matched destination: {country}',
       fallbackCopy: 'No saved country match was found yet, so the game is showing a cross-region fallback set for now. Once you finish the previous level, this list will switch automatically.',
       regionSelector: {
         title: 'Unhappy with the match? Choose a region',
-        copy: 'Changing the region immediately swaps the school deck below, so you can tier the list around your own target.',
+        copy: 'The country is inherited from Year2-2, so the school deck below stays on that matched route.',
         preview: 'Current schools:',
       },
       schoolSearch: {
         title: 'Want more schools from this region?',
-        copy: 'Only extra schools from the currently selected region appear here. Each region has 5 options, so regions do not get mixed.',
+        copy: 'The deck starts with the first 10 sample schools from this region. Search here to add the remaining sample schools.',
         placeholder: 'Search current-region school / tier',
         emptyOption: 'Choose a current-region school',
         add: 'Add card',

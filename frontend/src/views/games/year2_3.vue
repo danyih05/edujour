@@ -3,9 +3,9 @@
     <section class="balance-room">
       <div class="header">
         <h2><i class="fas fa-balance-scale-right"></i> {{ t('pages.y2_3.title') }}</h2>
-        <p>{{ t('pages.y2_3.subtitle', { country: matchedCountryLabel }) }}</p>
+        <p>{{ t('pages.y2_3.subtitle', { country: matchedCountryLabel, profile: profileSummary }) }}</p>
         <div class="user-profile">
-          <i class="fas fa-user-graduate"></i> {{ t('pages.y2_3.currentAvatar') }}
+          <i class="fas fa-user-graduate"></i> {{ profileSummary }}
         </div>
         <div class="matched-route">
           <span class="matched-route-icon">{{ countryConfig.icon }}</span>
@@ -13,27 +13,14 @@
         </div>
         <p v-if="usingFallbackCountry" class="fallback-copy">{{ t('pages.y2_3.fallbackCopy') }}</p>
 
-        <section class="region-selector" aria-label="Region selector">
+        <section class="region-selector locked-region" aria-label="Matched region">
           <div class="region-selector-head">
             <div>
-              <strong>{{ t('pages.y2_3.regionSelector.title') }}</strong>
+              <strong>{{ t('pages.y2_3.matchedRoute', { country: matchedCountryLabel }) }}</strong>
               <p>{{ t('pages.y2_3.regionSelector.copy') }}</p>
             </div>
           </div>
-          <div class="region-options">
-            <button
-              v-for="option in countryOptions"
-              :key="option.key"
-              type="button"
-              class="region-option"
-              :class="{ active: selectedCountryKey === option.key }"
-              @click="selectCountry(option.key)"
-            >
-              <span>{{ option.icon }}</span>
-              <strong>{{ localize(option.label) }}</strong>
-            </button>
-          </div>
-          <div class="region-school-preview">
+          <div v-if="!isNicheCountry" class="region-school-preview">
             <span class="preview-label">{{ t('pages.y2_3.regionSelector.preview') }}</span>
             <span
               v-for="school in schoolCards"
@@ -45,7 +32,7 @@
           </div>
         </section>
 
-        <section class="school-search-panel" aria-label="School search">
+        <section v-if="!isNicheCountry" class="school-search-panel" aria-label="School search">
           <div class="school-search-head">
             <div>
               <strong>{{ t('pages.y2_3.schoolSearch.title') }}</strong>
@@ -153,7 +140,7 @@
           <span class="fb-score">+{{ score }} <i class="fas fa-coins"></i></span>
         </div>
 
-        <div v-for="item in feedback" :key="item.key || item.title" class="fb-item" :class="item.status">
+        <div v-for="item in renderedFeedback" :key="item.key || item.title" class="fb-item" :class="item.status">
           <div class="fb-icon"><i class="fas" :class="item.icon"></i></div>
           <div class="fb-text">
             <h4>{{ item.title }}</h4>
@@ -175,10 +162,11 @@ import { useGameStore } from '@/stores/game'
 import {
   getPersistedMatchedCountryKey,
   getTierBuckets,
+  getYear2ProfileScore,
+  getYear2ScoreBand,
+  getYear2ScoreSchoolCards,
   getYear2SchoolCases,
   getYear2CountrySchoolConfig,
-  getYear2CountrySchoolOptions,
-  persistMatchedCountryKey,
   resolveMatchedCountryKey,
 } from '@/config/year2CountrySchools'
 
@@ -202,7 +190,9 @@ const SchoolCard = defineComponent({
       onDragstart: (event) => emit('dragstart', event),
       onDragend: () => emit('dragend'),
     }, [
-      h('div', { class: 'school-icon' }, props.card.icon),
+      h('div', { class: ['school-icon', { image: props.card.iconImage, 'score-data': props.card.isScoreDataCard }] }, props.card.iconImage
+        ? [h('img', { src: props.card.iconImage, alt: props.card.name })]
+        : props.card.icon),
       h('div', { class: 'school-name' }, props.card.name),
       h('div', { class: 'school-tag' }, props.card.tag),
     ])
@@ -217,35 +207,62 @@ const tiers = computed(() => ([
 
 const persistedCountryKey = ref(getPersistedMatchedCountryKey())
 const profileMatchedCountryKey = computed(() => resolveMatchedCountryKey(store.travelerProfile))
-const countryOptions = getYear2CountrySchoolOptions()
-const selectedCountryKey = ref(persistedCountryKey.value || profileMatchedCountryKey.value || 'global')
+const inheritedCountryKey = computed(() => persistedCountryKey.value || profileMatchedCountryKey.value || 'global')
+const selectedCountryKey = ref(inheritedCountryKey.value)
 const usingFallbackCountry = computed(() => selectedCountryKey.value === 'global')
 const countryConfig = computed(() => getYear2CountrySchoolConfig(selectedCountryKey.value || 'global'))
 const matchedCountryLabel = computed(() => localize(countryConfig.value.label))
-const baseSchoolCards = computed(() => countryConfig.value.schools.map((school) => ({
+const baseSchoolCards = computed(() => [])
+const scoreSchoolCards = computed(() => getYear2ScoreSchoolCards(selectedCountryKey.value, store.travelerProfile).map((school) => ({
   ...school,
+  rawName: school.name,
+  rawTag: school.tag,
   name: localize(school.name),
   tag: localize(school.tag),
 })))
 const isNicheCountry = computed(() => countryConfig.value.key === 'niche')
 const nicheMessage = computed(() => localize(countryConfig.value.nicheMessage) || t('pages.y2_3.nicheMessage'))
 const addedSchoolIds = ref([])
-const schoolCases = computed(() => getYear2SchoolCases().map((school) => ({
+const schoolCases = computed(() => getYear2SchoolCases(selectedCountryKey.value, store.travelerProfile).map((school) => ({
   ...school,
+  rawName: school.name,
+  rawTag: school.tag,
   name: localize(school.name),
   tag: localize(school.tag),
   countryLabelText: localize(school.countryLabel || getYear2CountrySchoolConfig(school.countryKey).label),
   caseInfo: localize(school.caseInfo),
-})).filter((school) => school.countryKey === selectedCountryKey.value))
+})))
 const addedSchoolCards = computed(() => addedSchoolIds.value
   .map((id) => schoolCases.value.find((school) => school.id === id))
   .filter(Boolean))
 const schoolCards = computed(() => {
-  const baseIds = new Set(baseSchoolCards.value.map((school) => school.id))
+  const baseCards = scoreSchoolCards.value.length ? scoreSchoolCards.value : baseSchoolCards.value
+  const baseIds = new Set(baseCards.map((school) => school.id))
   return [
-    ...baseSchoolCards.value,
+    ...baseCards,
     ...addedSchoolCards.value.filter((school) => !baseIds.has(school.id)),
   ]
+})
+const profileScore = computed(() => getYear2ProfileScore(store.travelerProfile))
+const profileScoreBand = computed(() => getYear2ScoreBand(store.travelerProfile))
+const profileSummary = computed(() => {
+  const profile = store.travelerProfile || {}
+  const academicProfile = profile.academicProfile || {}
+  const experiences = academicProfile.experiences || {}
+  const experienceCount = Object.values(experiences).filter(Boolean).length
+  const languageSummary = academicProfile.languageSummary && !String(academicProfile.languageSummary).includes('Pending')
+    ? ` | ${academicProfile.languageSummary}`
+    : ''
+  const greSummary = academicProfile.greSummary && !String(academicProfile.greSummary).includes('Pending')
+    ? ` | ${academicProfile.greSummary}`
+    : ''
+  const experienceCopy = currentLanguage.value === 'en'
+    ? `${experienceCount} experience tag${experienceCount === 1 ? '' : 's'}`
+    : `${experienceCount} 段经历标签`
+
+  return currentLanguage.value === 'en'
+    ? `Current profile: GPA ${profileScore.value}/100 (${profileScoreBand.value}) | STEM/CS track | ${experienceCopy}${languageSummary}${greSummary}`
+    : `当前画像：GPA ${profileScore.value}/100（${profileScoreBand.value}）｜STEM/CS 方向｜${experienceCopy}${languageSummary}${greSummary}`
 })
 const schoolSearchQuery = ref('')
 const selectedSchoolCaseId = ref('')
@@ -273,26 +290,35 @@ const draggingCardId = ref('')
 const feedback = ref([])
 const score = ref(50)
 
-watch(profileMatchedCountryKey, (nextKey) => {
+watch(inheritedCountryKey, (nextKey) => {
   if (!nextKey) return
-  if (!persistedCountryKey.value || selectedCountryKey.value === 'global') {
-    selectedCountryKey.value = nextKey
-    addedSchoolIds.value = []
-    selectedSchoolCaseId.value = ''
-    schoolSearchQuery.value = ''
-  }
-  persistMatchedCountryKey(nextKey)
+  selectedCountryKey.value = nextKey
+  addedSchoolIds.value = []
+  selectedSchoolCaseId.value = ''
+  schoolSearchQuery.value = ''
 }, { immediate: true })
 
 watch(() => schoolCards.value.map((card) => card.id).join('|'), () => {
+  const currentIds = new Set(schoolCards.value.map((card) => card.id))
+
   Object.keys(locations).forEach((key) => {
-    delete locations[key]
+    if (!currentIds.has(key)) {
+      delete locations[key]
+    }
   })
+
   schoolCards.value.forEach((card) => {
-    locations[card.id] = 'deck'
+    if (!locations[card.id]) {
+      locations[card.id] = 'deck'
+    }
   })
-  selectedCardId.value = ''
-  draggingCardId.value = ''
+
+  if (selectedCardId.value && !currentIds.has(selectedCardId.value)) {
+    selectedCardId.value = ''
+  }
+  if (draggingCardId.value && !currentIds.has(draggingCardId.value)) {
+    draggingCardId.value = ''
+  }
   feedback.value = []
   score.value = 50
 }, { immediate: true })
@@ -351,15 +377,6 @@ function cardsIn(location) {
   return schoolCards.value.filter((card) => locations[card.id] === location)
 }
 
-function selectCountry(countryKey) {
-  selectedCountryKey.value = countryKey
-  persistedCountryKey.value = countryKey
-  persistMatchedCountryKey(countryKey)
-  addedSchoolIds.value = []
-  selectedSchoolCaseId.value = ''
-  schoolSearchQuery.value = ''
-}
-
 function addSelectedSchoolCase() {
   const school = selectedSchoolCase.value
   if (!school || isSelectedCaseInDeck.value) return
@@ -405,8 +422,71 @@ function tierIndex(tierId) {
   return TIER_ORDER.indexOf(tierId)
 }
 
-function addFeedback(key, status, icon, title, text) {
-  feedback.value.push({ key, status, icon, title, text })
+function localizedSchoolName(card) {
+  return localize(card.rawName || card.name)
+}
+
+function resolveFeedbackParams(params = {}) {
+  const resolved = { ...params }
+  if (params.schoolCard) {
+    resolved.school = localizedSchoolName(params.schoolCard)
+  }
+  if (params.countryKey) {
+    resolved.country = localize(getYear2CountrySchoolConfig(params.countryKey).label)
+  } else if (params.country) {
+    resolved.country = params.country
+  } else {
+    resolved.country = matchedCountryLabel.value
+  }
+  if (params.targetTierId) {
+    resolved.targetTier = tierLabel(params.targetTierId)
+  }
+  if (params.currentTierId) {
+    resolved.currentTier = tierLabel(params.currentTierId)
+  }
+  if (params.tierId) {
+    resolved.tier = tierLabel(params.tierId)
+  }
+  delete resolved.schoolCard
+  delete resolved.countryKey
+  delete resolved.targetTierId
+  delete resolved.currentTierId
+  delete resolved.tierId
+  return resolved
+}
+
+function addFeedback(key, status, icon, titleKey, textKey, params = {}) {
+  feedback.value.push({ key, status, icon, titleKey, textKey, params })
+}
+
+const renderedFeedback = computed(() => feedback.value.map((item) => {
+  const params = resolveFeedbackParams(item.params)
+  return {
+    ...item,
+    title: item.titleKey ? t(item.titleKey, params) : item.title,
+    text: item.textKey ? t(item.textKey, params) : item.text,
+  }
+}))
+
+function serializeFeedbackParams(params = {}) {
+  const serialized = { ...params }
+  if (params.schoolCard) {
+    serialized.school = params.schoolCard.rawName || params.schoolCard.name
+  }
+  delete serialized.schoolCard
+  return serialized
+}
+
+function serializeFeedbackItem(item) {
+  const resolvedParams = resolveFeedbackParams(item.params)
+  return {
+    status: item.status,
+    titleKey: item.titleKey,
+    textKey: item.textKey,
+    params: serializeFeedbackParams(item.params),
+    title: item.titleKey ? t(item.titleKey, resolvedParams) : item.title,
+    text: item.textKey ? t(item.textKey, resolvedParams) : item.text,
+  }
 }
 
 function evaluateTiers() {
@@ -445,26 +525,28 @@ function evaluateTiers() {
         `${card.id}-too-safe`,
         'danger',
         targetTier === 'reach' ? 'fa-skull-crossbones' : 'fa-exclamation-triangle',
-        t('pages.y2_3.feedback.tooSafe.title', { school: card.name }),
-        t('pages.y2_3.feedback.tooSafe.text', {
-          school: card.name,
-          country: matchedCountryLabel.value,
-          targetTier: tierLabel(targetTier),
-          currentTier: tierLabel(currentTier),
-        }),
+        'pages.y2_3.feedback.tooSafe.title',
+        'pages.y2_3.feedback.tooSafe.text',
+        {
+          schoolCard: card,
+          countryKey: selectedCountryKey.value,
+          targetTierId: targetTier,
+          currentTierId: currentTier,
+        },
       )
     } else {
       addFeedback(
         `${card.id}-too-high`,
         targetTier === 'safety' ? 'waste' : 'danger',
         targetTier === 'safety' ? 'fa-arrow-down' : 'fa-exclamation-triangle',
-        t('pages.y2_3.feedback.tooHigh.title', { school: card.name }),
-        t('pages.y2_3.feedback.tooHigh.text', {
-          school: card.name,
-          country: matchedCountryLabel.value,
-          targetTier: tierLabel(targetTier),
-          currentTier: tierLabel(currentTier),
-        }),
+        'pages.y2_3.feedback.tooHigh.title',
+        'pages.y2_3.feedback.tooHigh.text',
+        {
+          schoolCard: card,
+          countryKey: selectedCountryKey.value,
+          targetTierId: targetTier,
+          currentTierId: currentTier,
+        },
       )
     }
 
@@ -477,12 +559,13 @@ function evaluateTiers() {
         `${exactMatches.reach[0].id}-perfect-reach`,
         'perfect',
         'fa-check-circle',
-        t('pages.y2_3.feedback.correctReach.title', { school: exactMatches.reach[0].name }),
-        t('pages.y2_3.feedback.correctReach.text', {
-          school: exactMatches.reach[0].name,
-          country: matchedCountryLabel.value,
-          tier: tierLabel('reach'),
-        }),
+        'pages.y2_3.feedback.correctReach.title',
+        'pages.y2_3.feedback.correctReach.text',
+        {
+          schoolCard: exactMatches.reach[0],
+          countryKey: selectedCountryKey.value,
+          tierId: 'reach',
+        },
       )
     }
 
@@ -491,12 +574,13 @@ function evaluateTiers() {
         `${exactMatches.match[0].id}-perfect-match`,
         'perfect',
         'fa-bullseye',
-        t('pages.y2_3.feedback.correctMatch.title', { school: exactMatches.match[0].name }),
-        t('pages.y2_3.feedback.correctMatch.text', {
-          school: exactMatches.match[0].name,
-          country: matchedCountryLabel.value,
-          tier: tierLabel('match'),
-        }),
+        'pages.y2_3.feedback.correctMatch.title',
+        'pages.y2_3.feedback.correctMatch.text',
+        {
+          schoolCard: exactMatches.match[0],
+          countryKey: selectedCountryKey.value,
+          tierId: 'match',
+        },
       )
     }
 
@@ -505,12 +589,13 @@ function evaluateTiers() {
         `${exactMatches.safety[0].id}-perfect-safety`,
         'perfect',
         'fa-shield-alt',
-        t('pages.y2_3.feedback.correctSafety.title', { school: exactMatches.safety[0].name }),
-        t('pages.y2_3.feedback.correctSafety.text', {
-          school: exactMatches.safety[0].name,
-          country: matchedCountryLabel.value,
-          tier: tierLabel('safety'),
-        }),
+        'pages.y2_3.feedback.correctSafety.title',
+        'pages.y2_3.feedback.correctSafety.text',
+        {
+          schoolCard: exactMatches.safety[0],
+          countryKey: selectedCountryKey.value,
+          tierId: 'safety',
+        },
       )
     }
   }
@@ -520,8 +605,9 @@ function evaluateTiers() {
       'fallback',
       'waste',
       'fa-question-circle',
-      t('pages.y2_3.feedback.fallback.title'),
-      t('pages.y2_3.feedback.fallback.text', { country: matchedCountryLabel.value }),
+      'pages.y2_3.feedback.fallback.title',
+      'pages.y2_3.feedback.fallback.text',
+      { countryKey: selectedCountryKey.value },
     )
   }
 
@@ -565,11 +651,7 @@ function completeWithResult() {
       matchedCountry: matchedCountryLabel.value,
       tierBuckets,
       score: score.value,
-      feedback: feedback.value.map((item) => ({
-        status: item.status,
-        title: item.title,
-        text: item.text,
-      })),
+      feedback: feedback.value.map((item) => serializeFeedbackItem(item)),
     },
     language: currentLanguage.value,
   })
@@ -909,11 +991,11 @@ function completeWithResult() {
 
 .tier-zone {
   min-height: 270px;
-  padding: 15px;
+  padding: 14px 12px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  align-items: center;
+  gap: 8px;
+  align-items: stretch;
   transition: 0.2s;
 }
 
@@ -956,12 +1038,11 @@ function completeWithResult() {
 
 .school-card.compact {
   width: 100%;
-  min-height: 78px;
-  padding: 9px;
-  display: grid;
-  grid-template-columns: auto 1fr;
-  grid-template-areas: "icon name" "icon tag";
-  column-gap: 10px;
+  min-height: 54px;
+  padding: 8px 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
   align-items: center;
   text-align: left;
 }
@@ -971,23 +1052,97 @@ function completeWithResult() {
   font-size: 2rem;
 }
 
+.school-icon.score-data {
+  width: 28px;
+  height: 28px;
+  margin: 0 auto 6px;
+  display: grid;
+  place-items: center;
+  font-size: 1.22rem;
+  line-height: 1;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.28));
+}
+
+.school-icon.image {
+  width: 42px;
+  height: 42px;
+  margin: 0 auto 6px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(248, 250, 252, 0.92);
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.32);
+  overflow: hidden;
+}
+
+.school-icon.image img {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+  display: block;
+}
+
+.school-card.compact .school-icon.image {
+  margin: 0;
+  flex: 0 0 auto;
+}
+
+.school-card.compact .school-icon.score-data {
+  margin: 0;
+  width: 24px;
+  height: 24px;
+  font-size: 1rem;
+  flex: 0 0 auto;
+}
+
 .school-name {
   grid-area: name;
   color: #f8fafc;
   font-size: 0.88rem;
   font-weight: 900;
   line-height: 1.2;
+  white-space: normal;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
 }
 
 .school-tag {
   grid-area: tag;
-  margin-top: 6px;
+  margin-top: 3px;
   color: #cbd5e1;
   font-size: 0.72rem;
   background: #334155;
   padding: 2px 7px;
   border-radius: 999px;
   justify-self: start;
+}
+
+.school-card.compact .school-name {
+  font-size: 0.82rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.school-card.compact .school-tag {
+  display: block;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.school-card.compact .school-name,
+.school-card.compact .school-tag {
+  min-width: 0;
+}
+
+.school-card.compact .school-name {
+  margin-bottom: 3px;
+}
+
+.school-card.compact .school-icon + .school-name {
+  flex: 1 1 auto;
 }
 
 .controls {
