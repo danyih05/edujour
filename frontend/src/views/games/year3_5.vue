@@ -386,23 +386,58 @@ onBeforeUnmount(() => {
 .modal-btn.restart {
   background: linear-gradient(135deg, #6c757d, #495057);
 }
-@media (max-width: 860px) {
+@media (max-width: 768px) {
   .wildcat-root {
-    padding: 12px;
+    padding: 8px;
   }
 
   .game-screen {
     height: auto;
-    min-height: 640px;
+    min-height: 560px;
+  }
+
+  .status-bar {
+    padding: 10px 14px;
+    font-size: 0.9rem;
+  }
+
+  .cat-avatar {
+    font-size: 6rem;
   }
 
   .dialogue-box {
     height: auto;
-    min-height: 280px;
+    min-height: 240px;
   }
 
-  .cat-avatar {
-    font-size: 8rem;
+  .speaker-name {
+    font-size: 0.9rem;
+    padding: 4px 12px;
+  }
+
+  .text-content {
+    padding: 12px 16px;
+    font-size: 0.92rem;
+  }
+
+  .choice-btn {
+    padding: 10px;
+    font-size: 0.85rem;
+    min-height: 48px;
+  }
+
+  .modal-card {
+    width: 90%;
+    padding: 18px;
+  }
+  .modal-title {
+    font-size: 1.2rem;
+  }
+  .modal-message {
+    font-size: 0.9rem;
+  }
+  .modal-btn {
+    min-height: 48px;
   }
 }
 </style>

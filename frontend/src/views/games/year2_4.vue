@@ -1221,27 +1221,99 @@ const completionAnalysis = computed(() => {
   to { opacity: 1; transform: translateY(0); }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
+  .archive-game {
+    padding: 12px 10px 32px;
+  }
+
+  .header {
+    margin-bottom: 14px;
+  }
+  .header h2 {
+    font-size: 1.35rem;
+  }
+  .header p {
+    font-size: 0.78rem;
+    margin-bottom: 10px;
+  }
+  .progress-text {
+    font-size: 0.75rem;
+  }
+
+  /* 路线选择按钮 */
+  .track-buttons {
+    gap: 12px;
+  }
+  .btn-track {
+    padding: 14px 22px;
+    font-size: 1rem;
+    min-width: 160px;
+    min-height: 52px;
+  }
+
+  /* 案例卡片 */
   .case-card {
-    padding: 28px 22px;
+    padding: 18px 12px;
   }
-
   .portrait {
-    font-size: 3.2rem;
+    font-size: 2.6rem;
+    margin-bottom: 10px;
   }
-
   .profile-data {
-    padding: 16px;
+    padding: 10px;
+  }
+  .profile-row {
+    gap: 8px;
+    margin-bottom: 6px;
+    font-size: 0.78rem;
+  }
+  .label {
+    min-width: 80px;
+    font-size: 0.75rem;
+  }
+  .value {
+    font-size: 0.78rem;
   }
 
+  /* 选项 */
   .choices {
     grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .btn-choice {
+    padding: 12px;
+    min-height: 52px;
+    font-size: 0.88rem;
   }
 
-  .btn-track {
-    padding: 18px 28px;
-    font-size: 1.2rem;
-    min-width: 200px;
+  /* 反馈区 */
+  .feedback-box {
+    padding: 14px;
+  }
+  .rejection-spoiler {
+    padding: 10px;
+    font-size: 0.82rem;
+  }
+
+  /* 完成画面 */
+  .completion-screen {
+    padding: 20px 14px;
+  }
+  .completion-icon {
+    font-size: 3rem;
+    margin-bottom: 10px;
+  }
+  .completion-screen h3 {
+    font-size: 1.3rem;
+  }
+  .completion-actions {
+    flex-direction: column;
+    gap: 10px;
+  }
+  .btn-retry,
+  .btn-claim {
+    width: 100%;
+    min-height: 48px;
   }
 }
 </style>

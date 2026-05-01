@@ -1431,64 +1431,220 @@ onBeforeUnmount(() => {
   }
 }
 
-@media (max-width: 900px) {
-  .topbar {
-    top: 10px;
+@media (max-width: 768px) {
+  /* ===== 全局背景与容器 ===== */
+  .dark-citadel-root {
+    min-height: 100dvh;
   }
 
+  /* ===== 标题区极致压缩 ===== */
   .title {
-    font-size: 22px;
+    font-size: 1.1rem;
+    letter-spacing: 0.5px;
+  }
+  .subtitle {
+    font-size: 0.65rem;
+    line-height: 1.2;
+    margin-top: 4px;
   }
 
-  .subtitle {
-    font-size: 13px;
+  .topbar {
+    top: 6px;
+    left: 10px;
+    right: 10px;
+    transform: translateX(0);
+    width: auto;
+    gap: 6px;
+    padding: 6px 10px;
+    flex-wrap: nowrap;
+  }
+  .panel {
+    padding: 6px 10px;
+    border-radius: 12px;
+  }
+  .title-box {
+    min-width: 0;
+    flex: 1;
   }
 
   .status {
-    width: 100%;
+    gap: 4px;
   }
-
   .stat {
-    flex: 1 1 calc(50% - 12px);
+    flex: 1;
+    min-width: 0;
+    padding: 4px 6px;
+    border-radius: 8px;
+  }
+  .stat-value {
+    font-size: 1rem;
+    margin-top: 2px;
+  }
+  .stat-label {
+    font-size: 0.6rem;
   }
 
+  /* ===== 场景区域，给门留足够空间 ===== */
+  .scene {
+    height: calc(100dvh - 200px);
+    min-height: 500px;
+  }
+
+  /* 门行调整，避免与上方元素重叠 */
   .door-row {
-    width: 80%;
-    gap: 12px;
+    width: 95%;
+    gap: 6px;
+    bottom: 2%;
   }
-
-  .trial-door,
+  .trial-door {
+    width: 30%;
+    min-width: 0;
+    height: 88px;
+    border-radius: 16px 16px 8px 8px;
+  }
   .final-door {
-    width: 28%;
-    min-width: 92px;
+    width: 26%;
+    height: 96px;
+    bottom: 32%;
+    border-radius: 16px 16px 8px 8px;
+  }
+  .door-label {
+    font-size: 0.55rem;
+    padding: 2px;
+  }
+  .status-tag {
+    font-size: 0.5rem;
+    top: 4px;
+    right: 4px;
+    padding: 2px 5px;
   }
 
-  .final-door {
-    width: 24%;
+  /* 提示文字不遮挡门 */
+  .hint {
+    bottom: 6px;
+    font-size: 0.68rem;
+    padding: 4px 12px;
+    width: calc(100% - 24px);
   }
 
+  /* ===== 战斗模态框 ===== */
+  .modal {
+    padding: 10px;
+  }
   .modal-card {
-    padding: 18px;
+    padding: 12px;
+    width: 100%;
+    max-height: 92vh;
+  }
+  .level-title {
+    font-size: 1.1rem;
+  }
+  .level-desc {
+    font-size: 0.72rem;
   }
 
   .roco-game-screen {
     height: auto;
-    min-height: 620px;
+    min-height: 540px;
+  }
+
+  .sprite {
+    font-size: 60px;
+  }
+
+  .hud {
+    width: 45%;
+    padding: 6px 8px;
+    border-radius: 8px;
+  }
+  .hud-name {
+    font-size: 0.75rem;
+  }
+  .hud-name span.lvl {
+    font-size: 0.8rem;
+  }
+  .hp-bar-bg {
+    height: 8px;
+  }
+  .hp-text {
+    font-size: 0.65rem;
+  }
+  .damage-text {
+    font-size: 24px;
+  }
+
+  .tool-battle-tip {
+    font-size: 0.7rem;
+    padding: 6px 10px;
   }
 
   .ui-bottom {
-    height: auto;
     flex-direction: column;
+    min-height: auto;
   }
-
   .message-box {
-    min-height: 92px;
+    min-height: 60px;
+    font-size: 0.75rem;
+    padding: 6px 10px;
     border-right: none;
-    border-bottom: 4px solid #4a5568;
+    border-bottom: 2px solid #4a5568;
   }
-
   .action-menu {
     width: 100%;
+    padding: 6px;
+    gap: 4px;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+  }
+  .skill-btn {
+    height: 58px;
+    padding: 4px 6px;
+  }
+  .skill-name {
+    font-size: 0.68rem;
+  }
+  .skill-pp {
+    font-size: 0.55rem;
+  }
+  .skill-type {
+    font-size: 0.5rem;
+  }
+
+  /* 战斗介绍/胜利/失败卡片 */
+  .battle-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  /* 工具加成弹窗 */
+  .tool-bonus-card {
+    padding: 16px;
+  }
+  .tool-bonus-card h3 {
+    font-size: 1.1rem;
+  }
+  .tool-bonus-card p {
+    font-size: 0.8rem;
+  }
+  .tool-bonus-effect {
+    font-size: 0.85rem;
+  }
+
+  /* 最终奖励画面 */
+  .final-reward-screen {
+    padding: 8px;
+  }
+  .big-gem {
+    font-size: 80px;
+  }
+
+  /* 滚动提示按钮 */
+  .modal-scroll-cue {
+    right: 18px;
+    bottom: 18px;
+    width: 40px;
+    height: 40px;
+    font-size: 22px;
   }
 }
 </style>

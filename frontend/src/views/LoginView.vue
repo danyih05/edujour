@@ -737,53 +737,108 @@ async function submitForm() {
   font-weight: 700;
 }
 
-@media (max-width: 860px) {
+@media (max-width: 768px) {
   .login-page {
-    background:
-      linear-gradient(125deg, rgba(4, 10, 18, 0.88) 0%, rgba(9, 18, 30, 0.8) 44%, rgba(24, 53, 43, 0.64) 100%),
-      radial-gradient(circle at 14% 18%, rgba(164, 198, 223, 0.14), transparent 22%),
-      radial-gradient(circle at 80% 84%, rgba(156, 188, 135, 0.14), transparent 24%),
-      url('/xjtlu-station-building.jpg') 64% center / cover no-repeat;
-  }
-
-  .login-page::after {
-    clip-path: polygon(0 0, 100% 0, 100% 46%, 26% 78%, 0 70%);
-    opacity: 0.12;
+    min-height: 100dvh;
+    padding: 12px 10px;
   }
 
   .hero-card {
     grid-template-columns: 1fr;
-    padding: 18px;
+    gap: 12px;
+    padding: 12px;
+    border-radius: 20px;
+  }
+
+  /* 表单模块放到上面 */
+  .auth-panel {
+    order: -1;
+    padding: 14px;
+    border-radius: 18px;
+  }
+
+  /* 介绍部分放到下面 */
+  .hero-copy {
+    padding: 10px 0;
+  }
+
+  /* 整体缩小字号和间距 */
+  .hero-copy h1 {
+    font-size: clamp(1.6rem, 7vw, 2rem);
+  }
+
+  .subtitle {
+    font-size: 0.9rem;
+    margin-top: 10px;
+    line-height: 1.6;
+  }
+
+  .hero-showcase {
+    padding-top: 10px;
+    margin-top: 8px;
+  }
+
+  .showcase-grid {
+    grid-template-columns: 1fr;
+  }
+  .showcase-avatar-row,
+  .avatar-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .showcase-card,
+  .showcase-avatar-item {
+    padding: 12px;
+    border-radius: 16px;
   }
 
   .brand-lockup {
-    gap: 14px;
-    margin-bottom: 18px;
+    gap: 12px;
+    margin-bottom: 14px;
   }
 
   .brand-seal {
-    width: 72px;
-    min-width: 72px;
-    border-radius: 22px;
+    width: 64px;
+    min-width: 64px;
+    border-radius: 20px;
   }
 
-  .auth-panel {
-    padding: 18px;
+  .brand-meta span,
+  .eyebrow {
+    font-size: 0.7rem;
   }
 
-  .avatar-grid {
-    grid-template-columns: 1fr;
+  .field {
+    margin-top: 12px;
   }
 
-  .showcase-grid,
-  .showcase-avatar-row {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .field input,
+  .mode-btn,
+  .role-btn,
+  .submit-btn,
+  .switch-link,
+  .avatar-option {
+    min-height: 48px;
   }
-}
 
-@media (max-width: 640px) {
-  .brand-lockup {
-    align-items: flex-start;
+  .field input {
+    padding: 12px 12px;
+    border-radius: 14px;
+  }
+
+  .mode-btn,
+  .role-btn {
+    padding: 10px 12px;
+    font-size: 0.88rem;
+  }
+
+  .submit-btn {
+    padding: 14px 16px;
+  }
+
+  .avatar-option {
+    padding: 12px 10px;
+    border-radius: 18px;
   }
 }
 </style>

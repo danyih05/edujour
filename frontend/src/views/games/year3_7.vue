@@ -667,27 +667,86 @@ onBeforeUnmount(() => {
   background: #10b981;
 }
 
-@media (max-width: 760px) {
+@media (max-width: 768px) {
   .game-container {
-    padding-top: 20px;
+    padding: 14px 10px 24px;
   }
 
   .header {
     flex-direction: column;
     align-items: stretch;
-    margin-bottom: 28px;
+    margin-bottom: 16px;
   }
-
+  .title-box h2 {
+    font-size: 1.25rem;
+  }
+  .title-box p {
+    font-size: 0.75rem;
+  }
   .status-box {
     text-align: left;
   }
-
-  .swamp-center {
-    min-height: 280px;
+  .status-label {
+    font-size: 0.72rem;
+  }
+  .progress-value {
+    font-size: 0.9rem;
+  }
+  .hp {
+    font-size: 0.85rem;
   }
 
+  .swamp-center {
+    min-height: 240px;
+  }
+
+  .mine-orb {
+    width: min(200px, 70vw);
+    height: min(200px, 70vw);
+  }
+  .mine-text {
+    font-size: 0.88rem;
+  }
+  .mine-orb::before {
+    font-size: 1.8rem;
+  }
+
+  /* 法术按钮 → 3列 */
   .spell-panel {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    padding: 10px;
+  }
+  .spell-btn {
+    padding: 10px 6px;
+    gap: 4px;
+  }
+  .spell-icon {
+    font-size: 1.3rem;
+  }
+  .spell-name {
+    font-size: 0.78rem;
+  }
+  .spell-desc {
+    font-size: 0.6rem;
+  }
+  .spell-btn {
+    min-height: 80px;
+  }
+
+  /* Toast 弹窗 */
+  .toast {
+    width: 90%;
+    padding: 16px;
+  }
+  .toast h3 {
+    font-size: 1.2rem;
+  }
+  .toast p {
+    font-size: 0.88rem;
+  }
+  .next-btn {
+    min-height: 48px;
   }
 }
 </style>

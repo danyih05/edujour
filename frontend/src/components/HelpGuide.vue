@@ -75,7 +75,7 @@ const { t } = useAppI18n()
 .help-modal h2 {
   margin-top: 0;
   font-family: Georgia, serif;
-  color: #7c2d12;
+  color: #f3cf9a;
 }
 .help-content section {
   margin-bottom: 20px;

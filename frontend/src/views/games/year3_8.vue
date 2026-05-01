@@ -285,24 +285,71 @@ h2 {
   box-shadow: 0 16px 36px rgba(245, 158, 11, 0.34);
 }
 
-@media (max-width: 760px) {
+@media (max-width: 768px) {
   .astral-coronation-root {
     align-items: flex-start;
-    padding-top: 86px;
+    padding: 60px 12px 24px;
   }
 
-  .rewards {
-    grid-template-columns: 1fr;
+  h2 {
+    font-size: 1.3rem;
+    margin-bottom: 16px;
   }
 
-  .reward-item {
-    font-size: 0.98rem;
+  .certificate {
+    padding: 20px 14px;
+    margin-bottom: 20px;
+  }
+  .cert-header {
+    font-size: 1.2rem;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+  }
+  .cert-body {
+    font-size: 0.88rem;
+    line-height: 1.5;
+  }
+  .cert-name {
+    font-size: 1.3rem;
   }
 
   .wax-seal {
     position: static;
-    margin: 28px auto 0;
+    margin: 18px auto 0;
+    width: 70px;
+    height: 70px;
     transform: rotate(-10deg);
+  }
+  .seal-icon {
+    font-size: 1.2rem;
+  }
+  .seal-bottom {
+    font-size: 0.5rem;
+  }
+
+  .rewards {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .reward-item {
+    padding: 12px;
+    font-size: 0.9rem;
+  }
+  .reward-icon {
+    font-size: 1.2rem;
+  }
+
+  .complete-btn {
+    min-height: 48px;
+    font-size: 0.95rem;
+    padding: 12px 24px;
+  }
+
+  .close-btn {
+    top: 10px;
+    left: 10px;
+    padding: 8px 12px;
+    font-size: 0.8rem;
   }
 }
 </style>

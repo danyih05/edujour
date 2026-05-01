@@ -134,9 +134,28 @@ function toggleOpen() {
 
 @media (max-width: 860px) {
   .knowledge-guide-panel {
+    left: auto;
     right: 12px;
     top: 12px;
-    width: calc(100% - 24px);
+    width: auto;               /* 容器宽度由内容决定，不再拉满全屏 */
+  }
+
+  /* 按钮本身：更小、更窄、圆弧矩形，仍在右上角 */
+  .guide-toggle {
+    padding: 8px 14px;
+    font-size: 0.84rem;
+    border-radius: 40px;
+    white-space: nowrap;       /* 防止按钮文字换行 */
+  }
+
+  /* 展开面板保持原有宽度，不受按钮变窄影响，并确保不超出屏幕 */
+  .guide-content {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 8px;
+    width: 280px;
+    max-width: calc(100vw - 24px);
   }
 }
 </style>

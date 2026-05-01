@@ -1337,23 +1337,113 @@ button {
   }
 }
 
-@media (max-width: 820px) {
+@media (max-width: 768px) {
   .alchemy-page {
-    padding: 16px;
+    padding: 10px;
   }
 
   .alchemy-room {
-    padding: 22px;
+    padding: 14px;
+    border-radius: 16px;
   }
 
+  .header {
+    margin-bottom: 14px;
+  }
+  .header h2 {
+    font-size: 1.3rem;
+  }
+  .header p {
+    font-size: 0.78rem;
+    margin-top: 4px;
+  }
+  .eyebrow {
+    font-size: 0.68rem;
+    padding: 4px 8px;
+  }
+
+  /* 合成区 */
   .cauldron-area {
-    grid-template-columns: 1fr 32px 1fr;
+    grid-template-columns: 1fr 28px 1fr;
+    gap: 8px;
+    margin-bottom: 16px;
+    min-height: auto;
   }
-
+  .slot {
+    width: 100%;
+    height: 90px;
+    padding: 8px;
+  }
+  .slot-art {
+    font-size: 1.5rem;
+  }
   .cauldron-btn {
     grid-column: 1 / -1;
     justify-self: center;
-    margin-top: 6px;
+    width: 100px;
+    height: 100px;
+  }
+  .cauldron-label {
+    font-size: 0.95rem;
+  }
+  .cauldron-copy {
+    font-size: 0.62rem;
+  }
+
+  /* 库存网格 → 3列 */
+  .inventory-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .element-item {
+    min-height: 110px;
+    padding: 10px 6px;
+  }
+  .item-visual {
+    width: 42px;
+    height: 42px;
+    font-size: 1.3rem;
+    margin-bottom: 6px;
+  }
+  .item-name {
+    font-size: 0.72rem;
+  }
+  .item-desc {
+    font-size: 0.6rem;
+    margin-top: 3px;
+  }
+
+  /* 提示区 */
+  .hint-buttons {
+    gap: 6px;
+  }
+  .hint-btn {
+    padding: 8px 10px;
+    font-size: 0.78rem;
+    min-height: 40px;
+  }
+  .hint-card {
+    padding: 10px;
+  }
+  .hint-card strong {
+    font-size: 0.82rem;
+  }
+  .hint-card p {
+    font-size: 0.75rem;
+  }
+
+  /* 解锁弹窗 */
+  .unlock-card,
+  .victory-card {
+    padding: 18px;
+    max-height: 85vh;
+  }
+  .unlock-card h3,
+  .victory-card h3 {
+    font-size: 1.3rem;
+  }
+  .claim-btn {
+    min-height: 48px;
   }
 }
 

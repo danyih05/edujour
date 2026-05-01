@@ -629,20 +629,153 @@ function completeAndClose() {
   font-weight: 700;
 }
 
-@media (max-width: 900px) {
-  .workspace {
-    flex-direction: column;
-  }
-
-  .parchment-cv,
-  .diagnostic-panel {
-    width: 100%;
+@media (max-width: 768px) {
+  .clinic-root {
+    padding: 8px;
   }
 
   .close-btn,
   .guide-btn {
     position: static;
-    margin-bottom: 12px;
+    display: inline-flex;
+    margin-bottom: 6px;
+    margin-right: 6px;
+    min-height: 40px;
+    font-size: 0.72rem;
+    padding: 6px 10px;
+  }
+
+  .header {
+    margin-bottom: 8px;
+  }
+  .header h2 {
+    font-size: 1.1rem;
+  }
+  .header p {
+    font-size: 0.7rem;
+    margin-top: 2px;
+  }
+  .status-pill {
+    font-size: 0.7rem;
+    padding: 4px 8px;
+    margin-top: 6px;
+  }
+
+  /* ✅ 保持左右两栏，比例微调 */
+  .workspace {
+    flex-direction: row;
+    gap: 6px;
+    align-items: flex-start;
+  }
+
+  /* 简历区 → 占 65% */
+  .parchment-cv {
+    width: 65%;
+    padding: 14px 10px;
+  }
+  .cv-filename {
+    font-size: 0.6rem;
+    padding: 2px 6px;
+    top: 4px;
+    left: 4px;
+  }
+  .cv-header h1 {
+    font-size: 1rem;
+  }
+  .cv-header p {
+    font-size: 0.62rem;
+  }
+  .cv-section h3 {
+    font-size: 0.74rem;
+    margin-bottom: 4px;
+  }
+  .cv-item {
+    font-size: 0.66rem;
+    margin-bottom: 6px;
+  }
+  .cv-bullet {
+    margin-left: 12px;
+    font-size: 0.64rem;
+  }
+  .bug-text.fixed::after {
+    font-size: 0.42rem;
+    top: -8px;
+    right: -14px;
+    padding: 1px 2px;
+  }
+  .sub-item {
+    font-size: 0.6rem;
+  }
+
+  /* 诊断面板 → 占 35%，内容全部缩小 */
+  .diagnostic-panel {
+    width: 35%;
+    position: static;
+    padding: 8px;
+    border-radius: 10px;
+  }
+  .panel-title {
+    font-size: 0.74rem;
+    margin-bottom: 6px;
+    padding-bottom: 6px;
+    gap: 4px;
+  }
+  .checklist {
+    gap: 3px;
+    margin-bottom: 8px;
+  }
+  .check-item {
+    padding: 5px 6px;
+    font-size: 0.6rem;
+    gap: 4px;
+    border-radius: 4px;
+  }
+  .check-item i {
+    font-size: 0.8rem;
+  }
+  .feedback-box {
+    padding: 8px;
+    border-left-width: 3px;
+  }
+  .feedback-title {
+    font-size: 0.7rem;
+    margin-bottom: 3px;
+  }
+  .feedback-desc {
+    font-size: 0.62rem;
+    line-height: 1.35;
+  }
+
+  /* 弹窗 */
+  .modal-card {
+    padding: 16px;
+  }
+  .modal-card h2 {
+    font-size: 1rem;
+  }
+  .modal-desc {
+    font-size: 0.78rem;
+  }
+  .modal-emoji {
+    font-size: 2.5rem;
+  }
+  .btn-claim {
+    min-height: 44px;
+    font-size: 0.9rem;
+  }
+
+  .guide-card {
+    padding: 14px;
+  }
+  .guide-title {
+    font-size: 0.9rem;
+  }
+  .guide-intro {
+    font-size: 0.72rem;
+  }
+  .guide-list {
+    font-size: 0.7rem;
+    gap: 6px;
   }
 }
 </style>

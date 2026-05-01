@@ -404,4 +404,48 @@ async function skipLevel() {
     right: 16px;
   }
 }
+
+@media (max-width: 768px) {
+  .game-shell {
+    padding: 0;
+    min-height: 100dvh;
+  }
+  .game-modal-content {
+    width: 100%;
+    min-height: 100dvh;
+    border-radius: 0;
+    padding: 10px;
+    border-width: 0;
+  }
+  .modal-header {
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    font-size: 1rem;
+  }
+  .game-stage {
+    min-height: 45dvh;
+    max-height: 62dvh;
+    overflow: auto;
+  }
+  .game-actions {
+    margin-top: 10px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    max-height: 28dvh;
+    overflow-y: auto;
+  }
+  .action-btn,
+  .back-btn,
+  .guide-reopen-btn,
+  .modal-close-btn {
+    min-height: 48px;
+  }
+  .header-actions {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+}
 </style>
