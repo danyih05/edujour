@@ -277,10 +277,12 @@
 <script setup>
 import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch, watchEffect } from 'vue'
 import { useAppI18n } from '@/composables/useAppI18n'
+import { MUSIC_TRACKS, useWelcomeMusic } from '@/composables/useWelcomeMusic'
 import { useGameStore } from '@/stores/game'
 
 const emit = defineEmits(['complete'])
 const { currentLanguage, t, tm } = useAppI18n()
+const { activateWelcomeMusicTrack } = useWelcomeMusic()
 const gameStore = useGameStore()
 const showNotifyModal = ref(false)
 const notifyMessage = ref('')
@@ -881,6 +883,7 @@ function loseStage() {
 }
 
 function openFinal() {
+  activateWelcomeMusicTrack(MUSIC_TRACKS.fightSuccess, { play: true, restart: true })
   modalMode.value = 'final'
   modalVisible.value = true
   resetModalScroll()

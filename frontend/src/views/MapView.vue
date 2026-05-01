@@ -628,8 +628,14 @@ function openLevel(year, node) {
   if (node.id === 1 && showGuide.value) {
     closeGuide();
   }
-  if (year === 'y2' && node.id === 1) {
-    activateWelcomeMusicTrack(MUSIC_TRACKS.year2, { play: true, restart: true })
+  if (year === 'y3' && node.id === 6) {
+    activateWelcomeMusicTrack(MUSIC_TRACKS.year3_6, { play: true, restart: true })
+  } else if (year === 'y3' && node.id === 7) {
+    activateWelcomeMusicTrack(MUSIC_TRACKS.year3_7, { play: true, restart: true })
+  } else if (year === 'y3' && node.id === 8) {
+    activateWelcomeMusicTrack(MUSIC_TRACKS.year3_8, { play: true, restart: true })
+  } else {
+    activateWelcomeMusicTrack(MUSIC_TRACKS.year2, { play: true, restart: false })
   }
   if (openLevelTimer) clearTimeout(openLevelTimer);
   if (store.year !== year) store.switchYear(year);
