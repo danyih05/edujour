@@ -1168,9 +1168,9 @@ export default {
       },
     },
     y3_5: {
-      documentTitle: 'Y3-5 傲娇野猫导师模拟器',
-      statusLabel: '导师好感度',
-      speakerName: '野猫教授（大法师）',
+      documentTitle: 'Y3-5 推荐信话术大冒险',
+      statusLabel: '推荐信话术训练',
+      speakerName: '汪仔的推荐信训练场',
       alerts: {
         returnToMap: '地图指引：已返回地图界面！（这会触发主系统里下一阶段的解锁代码）',
       },
@@ -1181,103 +1181,17 @@ export default {
         confirm: "返回地图"
       },
       restart: "重新开始",
-      tree: {
-        start: {
-          text: '(你探头看向办公室)<br>😼 喵？又到申请季了，是吗？你找我做什么？快说，我现在非常忙。',
-          emoji: '😼',
-          mood: 'normal',
-          hearts: '❤️❤️🤍🤍🤍',
-          choices: [
-            { text: '老师！我想让您给我写一封推荐信！（开门见山，但有点冒失）', nextId: 'bad_start' },
-            { text: '野猫教授您好，我是您“高级毛线球捕捉学”课程里的 XXX。我这次来，是想向您请教推荐信的事情。', nextId: 'good_start' },
-          ],
-        },
-        bad_start: {
-          text: '😾 喵呜！一上来就发号施令？连自我介绍都没有！我教过那么多学生，我怎么知道你是哪只小老鼠！',
-          emoji: '😾',
-          mood: 'angry',
-          hearts: '❤️🤍🤍🤍🤍',
-          choices: [
-            { text: '啊，真的非常抱歉！我是上学期坐在前排、做过课程期末项目的那个学生……', nextId: 'recover_start' },
-            { text: '老师您别生气嘛，随便帮我写几句就行，不会有事的。', nextId: 'game_over_rude' },
-          ],
-        },
-        game_over_rude: {
-          text: '💢 随便写几句？！我挂在推荐信上的可是自己的学术声誉！出去！顺便把门带上！<br><span style=\'color:#e74c3c\'>[游戏失败：导师被彻底激怒了。这封推荐信已经没了。]</span>',
-          emoji: '🙀',
-          mood: 'angry',
-          hearts: '🖤🖤🖤🖤🖤',
-          choices: [
-            { text: '🔄 读档重来：先去补上最基本的邮件与办公室礼仪。', nextId: 'start' },
-          ],
-        },
-        recover_start: {
-          text: '😼 哼，我大概有点印象了。说吧，你申请什么项目？什么时候截止？',
-          emoji: '😼',
-          mood: 'normal',
-          hearts: '❤️❤️🤍🤍🤍',
-          choices: [
-            { text: '呃……具体学院我还没定下来。您先帮我写一封通用备用版吧。', nextId: 'game_over_vague' },
-            { text: '我想申请 XX 大学的计算机科学项目，截止时间在下个月月底，时间还算充裕。', nextId: 'good_timing' },
-          ],
-        },
-        good_start: {
-          text: '😸 哦，是那个期末拿了 A 的小家伙。*呼噜……* 好吧，你申请什么项目？什么时候需要我写好？',
-          emoji: '😸',
-          mood: 'happy',
-          hearts: '❤️❤️❤️🤍🤍',
-          choices: [
-            { text: '系统明天晚上就要关了！老师快救救我！', nextId: 'game_over_rush' },
-            { text: '是 XX 大学的一个项目，下个月月底截止。我提前一个月来，是想先征求您的意愿。', nextId: 'good_timing' },
-          ],
-        },
-        game_over_rush: {
-          text: '😾 喵呜！！明天截止你今天才来找我？！你以为我是自动打字机吗？！我很忙，不接急单！<br><span style=\'color:#e74c3c\'>[游戏失败：高危操作！永远不要把教授的截止日逼到极限。]</span>',
-          emoji: '😾',
-          mood: 'angry',
-          hearts: '🖤🖤🖤🖤🖤',
-          choices: [
-            { text: '🔄 读档重来：记住，至少要提前一个月联系老师。', nextId: 'start' },
-          ],
-        },
-        game_over_vague: {
-          text: '😾 你连目标都没定，我这封信到底是写给谁看的？不同学院看重的特质完全不一样。等你想清楚了再来！<br><span style=\'color:#e74c3c\'>[游戏失败：缺乏规划。推荐信必须围绕具体项目定制。]</span>',
-          emoji: '😾',
-          mood: 'angry',
-          hearts: '❤️🤍🤍🤍🤍',
-          choices: [
-            { text: '🔄 读档重来：先把学校和项目研究清楚。', nextId: 'start' },
-          ],
-        },
-        good_timing: {
-          text: '😼 提前一个月，至少说明你懂规矩。但我这学期非常忙。你有能让我迅速回忆起你高光表现的材料吗？',
-          emoji: '😼',
-          mood: 'normal',
-          hearts: '❤️❤️❤️🤍🤍',
-          choices: [
-            { text: '呃……成绩单应该算吧？剩下的老师您凭印象自由发挥就好。', nextId: 'game_over_lazy' },
-            { text: '有的！我准备了一份【申请材料包】：包括最新简历、成绩单、目标项目清单，以及您课上那个期末项目的亮点摘要。', nextId: 'perfect_ending' },
-          ],
-        },
-        game_over_lazy: {
-          text: '😾 凭印象自由发挥？那我大概只能写“这个学生上课不打呼噜”。连自己的材料都不整理好，就是在浪费我的时间！<br><span style=\'color:#e74c3c\'>[游戏失败：教授没有义务记住你的光辉时刻。请准备好推荐人材料包。]</span>',
-          emoji: '😾',
-          mood: 'angry',
-          hearts: '🤍🤍🤍🤍🤍',
-          choices: [
-            { text: '🔄 读档重来：先把信息包整理好，再来敲门。', nextId: 'start' },
-          ],
-        },
-        perfect_ending: {
-          text: '😻 *呼噜、呼噜……* 这份材料整理得这么清楚？连亮点摘要都列好了。这样写起来最多十分钟。<br>好吧，交给我。祝你的申请一路顺利！<br><span style=\'color:#2ecc71\'>[通关成功！你成功顺平了傲娇野猫的毛，也掌握了请求推荐信的完美模板！]</span>',
-          emoji: '😻',
-          mood: 'happy',
-          hearts: '❤️❤️❤️❤️❤️',
-          choices: [
-            { text: '🎁 领取通关奖励（+50 金币）并返回地图', nextId: 'exit' },
-          ],
-        },
-      },
+      introTitle: '推荐信请求话术大冒险',
+      intro: '选择一种真实场景：当面开口，或邮件请求。每条路线都来自推荐信话术清单，练完就知道该怎么开口、怎么发材料、怎么提醒和感谢。',
+      chooseRoute: '选择路线',
+      progressLabel: '进度',
+      scoreLabel: '答对',
+      correctPrefix: '正确！',
+      wrongPrefix: '还差一点',
+      explanationLabel: '俏皮解析',
+      nextQuestion: '下一题',
+      finishRoute: '完成路线并领取奖励',
+      emptyQuestion: '暂时没有题目。',
     },
     y3_6: {
       documentTitle: 'Y3-6 暗黑要塞：试炼之战',
