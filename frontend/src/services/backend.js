@@ -61,3 +61,11 @@ export function getTeacherDashboard() {
 export function getTeacherStudentDetail(studentId) {
   return unwrap(api.get(`/teacher/students/${studentId}`))
 }
+
+export function getSandboxMessages(params = { page: 0, size: 200 }) {
+  return unwrap(api.get('/sandbox/messages', { params }))
+}
+
+export function createSandboxMessage(payload) {
+  return unwrap(api.post('/sandbox/messages', payload))
+}
