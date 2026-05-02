@@ -32,6 +32,13 @@ spring:
         format_sql: true  # 可选，格式化 SQL，便于阅读
 
 ---
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.springframework.orm.jpa: DEBUG
+    org.hibernate.engine.jdbc.spi.SqlStatementLogger: DEBUG
+    
 spring:
   config:
     activate:
@@ -45,6 +52,13 @@ spring:
       maximum-pool-size: 5
       minimum-idle: 1
       connection-test-query: SELECT 1
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
 
 app:
   client-origins: ${CLIENT_ORIGINS:*}
