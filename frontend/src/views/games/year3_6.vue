@@ -287,16 +287,35 @@ const gameStore = useGameStore()
 const showNotifyModal = ref(false)
 const notifyMessage = ref('')
 const BASE_STAGES = [
-  { id: 0, gemReward: 1, enemy: { icon: '🐲', hp: 150, atk: 20 } },
-  { id: 1, gemReward: 1, enemy: { icon: '🧟', hp: 200, atk: 30 } },
-  { id: 2, gemReward: 1, enemy: { icon: '🧙‍♀️', hp: 280, atk: 45 } },
+  { id: 0, gemReward: 1, enemy: { icon: '🐲', hp: 150, atk: 40 } },
+  { id: 1, gemReward: 1, enemy: { icon: '🧟', hp: 200, atk: 50 } },
+  { id: 2, gemReward: 1, enemy: { icon: '🧙‍♀️', hp: 250, atk: 60 } },
 ]
 
-const BASE_SKILLS = [
-  { id: 0, pp: 15, maxPp: 15, power: 18, class: 'attack', cssType: 'type-normal' },
-  { id: 1, pp: 1, maxPp: 1, power: 55, class: 'heavy', cssType: 'type-fire' },
-  { id: 2, pp: 5, maxPp: 5, power: 0, class: 'shield', cssType: 'type-magic' },
-  { id: 3, pp: 4, maxPp: 4, power: -80, class: 'heal', cssType: 'type-heal' },
+const STAGE_SKILL_DEFINITIONS = [
+  [
+    { maxPp: 1, power: 40, class: 'attack', cssType: 'type-normal' },
+    { maxPp: 1, power: 70, class: 'heavy', cssType: 'type-fire' },
+    { maxPp: 1, power: 30, class: 'shield', cssType: 'type-magic' },
+    { maxPp: 1, power: 0, class: 'stun', cssType: 'type-magic' },
+    { maxPp: 1, power: 40, class: 'attack', cssType: 'type-normal' },
+  ],
+  [
+    { maxPp: 1, power: 5, class: 'enemyBuff', cssType: 'type-magic' },
+    { maxPp: 1, power: 60, class: 'attack', cssType: 'type-fire' },
+    { maxPp: 1, power: 20, class: 'attack', cssType: 'type-normal' },
+    { maxPp: 1, power: 30, class: 'attack', cssType: 'type-normal' },
+    { maxPp: 1, power: 40, class: 'attack', cssType: 'type-normal' },
+    { maxPp: 1, power: 70, class: 'heavy', cssType: 'type-fire' },
+    { maxPp: 1, power: -50, class: 'heal', cssType: 'type-heal', consumesPotion: true },
+  ],
+  [
+    { maxPp: 1, power: 60, class: 'attack', cssType: 'type-normal' },
+    { maxPp: 1, power: 80, class: 'heavy', cssType: 'type-fire' },
+    { maxPp: 1, power: 0, class: 'freeze', cssType: 'type-magic' },
+    { maxPp: 1, power: 100, class: 'heavy', cssType: 'type-fire' },
+    { maxPp: 1, power: 30, class: 'attack', cssType: 'type-normal' },
+  ],
 ]
 
 const TOOL_BATTLE_BONUSES = {
@@ -317,19 +336,6 @@ const TOOL_BATTLE_BONUSES = {
   },
 }
 
-const STAGE_SKILL_NAMES = {
-  zh: [
-    ['语言刷题', '小分冲刺斩', '成绩有效盾', '考前冰美式'],
-    ['素材打磨', '外教精修斩', '套磁护盾', '改稿冰美式'],
-    ['表格核对', 'DDL 爆破斩', '上传确认盾', '通宵冰美式'],
-  ],
-  en: [
-    ['Drill Rush', 'Subscore Slash', 'Validity Shield', 'Pre-Test Americano'],
-    ['Draft Polish', "Proofreader's Slash", 'Cold Email Shield', 'Revision Americano'],
-    ['Form Check', 'DDL Breaker', 'Upload Shield', 'Overnight Americano'],
-  ],
-}
-
 const gameState = reactive({
   gems: 0,
   cleared: [false, false, false],
@@ -337,11 +343,11 @@ const gameState = reactive({
   potions: 4,
   inBattle: false,
   isAnimating: false,
-  hero: { icon: '👨‍🎓', hp: 120, maxHp: 120, shield: false },
+  hero: { icon: '👨‍🎓', hp: 120, maxHp: 120, shield: false, shieldValue: 0 },
 })
 
 const enemy = reactive({ hp: 0, maxHp: 0, atk: 0 })
-const heroSkillState = reactive(BASE_SKILLS.map((skill) => ({ ...skill })))
+const heroSkillState = reactive([])
 const currentStageId = ref(null)
 const modalVisible = ref(false)
 const modalMode = ref('intro')
@@ -353,6 +359,7 @@ const heroAttack = ref(false)
 const enemyAttack = ref(false)
 const heroHit = ref(false)
 const enemyHit = ref(false)
+const enemyStunned = ref(false)
 const heroDamage = reactive({ key: 0, text: '', color: '#ff4757', visible: false })
 const enemyDamage = reactive({ key: 0, text: '', color: '#ff4757', visible: false })
 const showToolBonusModal = ref(false)
@@ -382,6 +389,7 @@ const dusts = Array.from({ length: 10 }, (_, index) => ({
 
 const localizedStageContent = computed(() => tm('pages.y3_6.stages') || [])
 const localizedSkillContent = computed(() => tm('pages.y3_6.skills') || [])
+const localizedStageSkillContent = computed(() => tm('pages.y3_6.stageSkills') || [])
 const selectedToolKey = computed(() => gameStore.travelerLook.toolKey || '')
 const activeToolBonus = computed(() => TOOL_BATTLE_BONUSES[selectedToolKey.value] || null)
 const isZh = computed(() => currentLanguage.value === 'zh')
@@ -479,7 +487,7 @@ const toolBonusModalContent = computed(() => {
 const getSkillBonusText = (skill) => {
   const bonus = activeToolBonus.value
   if (!bonus) return ''
-  if (skill.id === 0 && bonus.damageBonus) {
+  if ((skill.class === 'attack' || skill.class === 'heavy') && bonus.damageBonus) {
     return isZh.value ? `+${bonus.damageBonus} 伤害` : `+${bonus.damageBonus} damage`
   }
   if (skill.class === 'heal' && bonus.healBonus) {
@@ -512,11 +520,13 @@ const currentStage = computed(() => (
 ))
 
 const displaySkills = computed(() => heroSkillState.map((skill, index) => {
-  const localized = localizedSkillContent.value[index] || {}
-  const stageNames = STAGE_SKILL_NAMES[isZh.value ? 'zh' : 'en']?.[currentStageId.value] || []
+  const stageSkills = currentStageId.value === null
+    ? []
+    : localizedStageSkillContent.value[currentStageId.value] || []
+  const localized = stageSkills[index] || localizedSkillContent.value[index] || {}
   return {
     ...skill,
-    name: stageNames[index] || localized.name || '',
+    name: localized.name || '',
     cssLabel: localized.cssLabel || '',
     log: localized.log || '',
     bonusText: getSkillBonusText(skill),
@@ -585,9 +595,27 @@ function getDoorTag(idx) {
   return localizedStages.value[idx]?.month || ''
 }
 
+function createStageSkills(stageId) {
+  const definitions = STAGE_SKILL_DEFINITIONS[stageId] || []
+  return definitions.map((skill, index) => ({
+    id: index,
+    pp: skill.consumesPotion ? gameState.potions : skill.maxPp,
+    ...skill,
+  }))
+}
+
+function setStageSkillState(stageId) {
+  heroSkillState.splice(0, heroSkillState.length, ...createStageSkills(stageId))
+  syncPotionSkill()
+}
+
 function syncPotionSkill() {
-  heroSkillState[3].pp = gameState.potions
-  heroSkillState[3].maxPp = gameState.potions
+  heroSkillState.forEach((skill) => {
+    if (skill.consumesPotion) {
+      skill.pp = gameState.potions
+      skill.maxPp = gameState.potions
+    }
+  })
 }
 
 function cancelTypeWriter() {
@@ -638,6 +666,7 @@ function scrollModal() {
 function openStage(idx) {
   if (idx > 0 && !gameState.cleared[idx - 1]) return
   currentStageId.value = idx
+  setStageSkillState(idx)
   modalMode.value = 'intro'
   modalVisible.value = true
   resetModalScroll()
@@ -659,12 +688,15 @@ function renderRocoBattleUI() {
 function initBattle() {
   if (!currentStage.value) return
 
-  const lvlBonus = (gameState.level - 1) * 30
+  setStageSkillState(currentStage.value.id)
+  const lvlBonus = (gameState.level - 1) * 50
   gameState.hero.maxHp = 120 + lvlBonus
   gameState.hero.hp = gameState.hero.maxHp
   gameState.hero.shield = false
+  gameState.hero.shieldValue = 0
+  enemyStunned.value = false
   heroSkillState.forEach((skill) => {
-    if (skill.id !== 3) skill.pp = skill.maxPp
+    if (!skill.consumesPotion) skill.pp = skill.maxPp
   })
   syncPotionSkill()
 
@@ -767,8 +799,8 @@ function useSkill(skillIdx) {
   holdCommandMenu()
 
   skillState.pp -= 1
-  if (skillIdx === 3) {
-    gameState.potions -= 1
+  if (skillState.consumesPotion) {
+    gameState.potions = Math.max(0, gameState.potions - 1)
     syncPotionSkill()
   }
 
@@ -776,8 +808,8 @@ function useSkill(skillIdx) {
     if (skillState.class === 'attack' || skillState.class === 'heavy') {
       heroAttack.value = true
       setManagedTimeout(() => {
-        const toolDamageBonus = skillState.id === 0 ? activeToolBonus.value?.damageBonus || 0 : 0
-        const damage = skillState.power + Math.floor(Math.random() * 15) + (gameState.level - 1) * 10 + toolDamageBonus
+        const toolDamageBonus = activeToolBonus.value?.damageBonus || 0
+        const damage = skillState.power + toolDamageBonus
         enemy.hp = Math.max(0, enemy.hp - damage)
         enemyHit.value = true
         popDamage('enemy', `-${damage}`, '#ff4757')
@@ -790,12 +822,25 @@ function useSkill(skillIdx) {
       }, 200)
     } else if (skillState.class === 'heal') {
       const toolHealBonus = activeToolBonus.value?.healBonus || 0
-      const heal = Math.abs(skillState.power) + (gameState.level * 15) + toolHealBonus
+      const heal = Math.abs(skillState.power) + toolHealBonus
       gameState.hero.hp = Math.min(gameState.hero.maxHp, gameState.hero.hp + heal)
       popDamage('hero', `+${heal}`, '#48bb78')
       setManagedTimeout(() => checkWinOrNext(), 800)
     } else if (skillState.class === 'shield') {
       gameState.hero.shield = true
+      gameState.hero.shieldValue = Math.abs(skillState.power)
+      popDamage('hero', `DEF +${gameState.hero.shieldValue}`, '#4299e1')
+      setManagedTimeout(() => checkWinOrNext(), 800)
+    } else if (skillState.class === 'stun') {
+      enemyStunned.value = true
+      popDamage('enemy', isZh.value ? '眩晕' : 'STUN', '#f6e05e')
+      setManagedTimeout(() => checkWinOrNext(), 800)
+    } else if (skillState.class === 'enemyBuff') {
+      enemy.atk += skillState.power
+      popDamage('enemy', `ATK +${skillState.power}`, '#f6ad55')
+      setManagedTimeout(() => checkWinOrNext(), 800)
+    } else if (skillState.class === 'freeze') {
+      popDamage('hero', isZh.value ? '冰冻' : 'FROZEN', '#90cdf4')
       setManagedTimeout(() => checkWinOrNext(), 800)
     } else {
       setManagedTimeout(() => checkWinOrNext(), 400)
@@ -809,6 +854,11 @@ function checkWinOrNext() {
     typeWriter({ key: 'pages.y3_6.battle.enemyCrushed', params: { enemy: enemyName.value } }, () => {
       setManagedTimeout(() => winStage(), 1200)
     })
+  } else if (enemyStunned.value) {
+    enemyStunned.value = false
+    typeWriter({ key: 'pages.y3_6.battle.enemyStunned', params: { enemy: enemyName.value } }, () => {
+      showCommandMenu()
+    })
   } else {
     enemyTurn()
   }
@@ -819,10 +869,15 @@ function enemyTurn() {
     enemyAttack.value = true
 
     setManagedTimeout(() => {
-      let damage = enemy.atk + Math.floor(Math.random() * 20)
+      let damage = enemy.atk
       if (gameState.hero.shield) {
-        damage = Math.floor(damage * (activeToolBonus.value?.shieldMultiplier || 0.3))
+        if (activeToolBonus.value?.shieldMultiplier) {
+          damage = Math.floor(damage * activeToolBonus.value.shieldMultiplier)
+        } else {
+          damage = Math.max(0, damage - gameState.hero.shieldValue)
+        }
         gameState.hero.shield = false
+        gameState.hero.shieldValue = 0
         typeWriter({ key: 'pages.y3_6.battle.shieldAbsorbed' }, null, false)
       }
 
@@ -921,12 +976,9 @@ function resetGameAndRestart() {
   gameState.hero.hp = 120
   gameState.hero.maxHp = 120
   gameState.hero.shield = false
-  syncPotionSkill()
-  
-  // 重置技能 PP（除了药水技能会通过 syncPotionSkill 同步，其他手动重置）
-  heroSkillState.forEach((skill, idx) => {
-    if (idx !== 3) skill.pp = skill.maxPp
-  })
+  gameState.hero.shieldValue = 0
+  enemyStunned.value = false
+  heroSkillState.splice(0, heroSkillState.length)
   
   // 关闭模态框
   modalVisible.value = false
@@ -1378,7 +1430,7 @@ onBeforeUnmount(() => {
 }
 
 .ui-bottom {
-  min-height: 170px; flex: 0 0 170px; background: linear-gradient(to bottom, #2d3748, #1a202c);
+  min-height: 210px; flex: 0 0 auto; background: linear-gradient(to bottom, #2d3748, #1a202c);
   border-top: 4px solid #f6e05e; display: flex; align-items: stretch;
 }
 .message-box {
@@ -1386,12 +1438,12 @@ onBeforeUnmount(() => {
   color: #fff; border-right: 4px solid #4a5568; display: flex; align-items: center; text-shadow: 0 2px 4px rgba(0,0,0,0.5); font-family: "Georgia", serif;
 }
 .action-menu {
-  width: 500px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(68px, 1fr));
-  padding: 10px; gap: 10px; display: none; align-content: center;
+  width: min(620px, 58%); display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); grid-auto-rows: minmax(62px, auto);
+  padding: 10px; gap: 10px; display: none; align-content: center; max-height: 224px; overflow-y: auto;
 }
 .skill-btn {
   background: linear-gradient(to bottom, #fffaf0, #e2e8f0); border: 3px solid #a0aec0;
-  min-height: 0; height: 68px; padding: 5px 8px; border-radius: 10px; cursor: pointer; display: flex; flex-direction: column;
+  min-height: 62px; height: auto; padding: 5px 8px; border-radius: 10px; cursor: pointer; display: flex; flex-direction: column;
   justify-content: center; align-items: center; gap: 2px; overflow: hidden; transition: 0.15s;
 }
 .skill-btn:hover { background: #fefcbf; border-color: #d69e2e; transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
