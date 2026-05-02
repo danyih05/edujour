@@ -20,7 +20,7 @@
               <p>{{ t('pages.y2_3.regionSelector.copy') }}</p>
             </div>
           </div>
-          <div v-if="!isNicheCountry" class="region-school-preview">
+          <div v-if="!isAdviceOnlyCountry" class="region-school-preview">
             <span class="preview-label">{{ t('pages.y2_3.regionSelector.preview') }}</span>
             <span
               v-for="school in schoolCards"
@@ -32,7 +32,7 @@
           </div>
         </section>
 
-        <section v-if="!isNicheCountry" class="school-search-panel" aria-label="School search">
+        <section v-if="showSchoolSearch" class="school-search-panel" aria-label="School search">
           <div class="school-search-head">
             <div>
               <strong>{{ t('pages.y2_3.schoolSearch.title') }}</strong>
@@ -59,7 +59,6 @@
           </div>
           <div v-if="selectedSchoolCase" class="school-case-card">
             <div class="school-case-main">
-              <span class="school-case-icon">{{ selectedSchoolCase.icon }}</span>
               <div>
                 <strong>{{ selectedSchoolCase.name }}</strong>
                 <p>{{ selectedSchoolCase.caseInfo }}</p>
@@ -83,10 +82,10 @@
         :items="guideItems"
       />
 
-      <section v-if="isNicheCountry" class="niche-info-panel">
+      <section v-if="isAdviceOnlyCountry" class="niche-info-panel">
         <div class="niche-icon">{{ countryConfig.icon }}</div>
         <h3>{{ matchedCountryLabel }}</h3>
-        <p>{{ nicheMessage }}</p>
+        <p>{{ specialRegionMessage }}</p>
         <button type="button" class="btn-complete" @click="completeWithResult">{{ t('pages.y2_3.seal') }}</button>
       </section>
 
@@ -103,7 +102,7 @@
         />
       </div>
 
-      <div v-if="!isNicheCountry" class="tiers">
+      <div v-if="!isAdviceOnlyCountry" class="tiers">
         <section
           v-for="tier in tiers"
           :key="tier.id"
@@ -128,13 +127,13 @@
         </section>
       </div>
 
-      <div v-if="!isNicheCountry" class="controls">
+      <div v-if="!isAdviceOnlyCountry" class="controls">
         <button type="button" class="btn-predict" @click="evaluateTiers">
           <i class="fas fa-crystal-ball"></i> {{ t('pages.y2_3.predict') }}
         </button>
       </div>
 
-      <section v-if="!isNicheCountry && feedback.length" class="feedback-panel">
+      <section v-if="!isAdviceOnlyCountry && feedback.length" class="feedback-panel">
         <div class="fb-title">
           <span><i class="fas fa-scroll"></i> {{ t('pages.y2_3.feedbackTitle') }}</span>
           <span class="fb-score">+{{ score }} <i class="fas fa-coins"></i></span>
@@ -190,11 +189,10 @@ const SchoolCard = defineComponent({
       onDragstart: (event) => emit('dragstart', event),
       onDragend: () => emit('dragend'),
     }, [
-      h('div', { class: ['school-icon', { image: props.card.iconImage, 'score-data': props.card.isScoreDataCard }] }, props.card.iconImage
-        ? [h('img', { src: props.card.iconImage, alt: props.card.name })]
-        : props.card.icon),
-      h('div', { class: 'school-name' }, props.card.name),
-      h('div', { class: 'school-tag' }, props.card.tag),
+      h('div', { class: 'school-card-copy' }, [
+        h('div', { class: 'school-name' }, props.card.name),
+        h('div', { class: 'school-tag' }, props.card.tag),
+      ]),
     ])
   },
 })
@@ -207,23 +205,35 @@ const tiers = computed(() => ([
 
 const persistedCountryKey = ref(getPersistedMatchedCountryKey())
 const profileMatchedCountryKey = computed(() => resolveMatchedCountryKey(store.travelerProfile))
-const inheritedCountryKey = computed(() => persistedCountryKey.value || profileMatchedCountryKey.value || 'global')
+const inheritedCountryKey = computed(() => profileMatchedCountryKey.value || persistedCountryKey.value || 'global')
 const selectedCountryKey = ref(inheritedCountryKey.value)
 const usingFallbackCountry = computed(() => selectedCountryKey.value === 'global')
 const countryConfig = computed(() => getYear2CountrySchoolConfig(selectedCountryKey.value || 'global'))
 const matchedCountryLabel = computed(() => localize(countryConfig.value.label))
-const baseSchoolCards = computed(() => [])
-const scoreSchoolCards = computed(() => getYear2ScoreSchoolCards(selectedCountryKey.value, store.travelerProfile).map((school) => ({
+const baseSchoolCards = computed(() => (countryConfig.value.schools || []).map((school, index) => ({
+  ...school,
+  id: school.id || `configured-${countryConfig.value.key}-${index + 1}`,
+  rawName: school.name,
+  rawTag: school.tag,
+  name: localize(school.name),
+  tag: localize(school.tag),
+  countryKey: school.countryKey || countryConfig.value.key,
+  countryLabel: school.countryLabel || countryConfig.value.label,
+})))
+const scoreSchoolCards = computed(() => (baseSchoolCards.value.length ? [] : getYear2ScoreSchoolCards(selectedCountryKey.value, store.travelerProfile).map((school) => ({
   ...school,
   rawName: school.name,
   rawTag: school.tag,
   name: localize(school.name),
   tag: localize(school.tag),
-})))
-const isNicheCountry = computed(() => countryConfig.value.key === 'niche')
-const nicheMessage = computed(() => localize(countryConfig.value.nicheMessage) || t('pages.y2_3.nicheMessage'))
+}))))
+const isAdviceOnlyCountry = computed(() => Boolean(countryConfig.value.adviceMessage || countryConfig.value.nicheMessage))
+const specialRegionMessage = computed(() => (
+  localize(countryConfig.value.adviceMessage || countryConfig.value.nicheMessage) ||
+  (countryConfig.value.key === 'jointProgram' ? t('pages.y2_3.jointProgramMessage') : t('pages.y2_3.nicheMessage'))
+))
 const addedSchoolIds = ref([])
-const schoolCases = computed(() => getYear2SchoolCases(selectedCountryKey.value, store.travelerProfile).map((school) => ({
+const schoolCases = computed(() => (baseSchoolCards.value.length ? [] : getYear2SchoolCases(selectedCountryKey.value, store.travelerProfile).map((school) => ({
   ...school,
   rawName: school.name,
   rawTag: school.tag,
@@ -231,7 +241,7 @@ const schoolCases = computed(() => getYear2SchoolCases(selectedCountryKey.value,
   tag: localize(school.tag),
   countryLabelText: localize(school.countryLabel || getYear2CountrySchoolConfig(school.countryKey).label),
   caseInfo: localize(school.caseInfo),
-})))
+}))))
 const addedSchoolCards = computed(() => addedSchoolIds.value
   .map((id) => schoolCases.value.find((school) => school.id === id))
   .filter(Boolean))
@@ -283,6 +293,7 @@ const selectedSchoolCase = computed(() => (
 const isSelectedCaseInDeck = computed(() => (
   Boolean(selectedSchoolCase.value && schoolCards.value.some((school) => school.id === selectedSchoolCase.value.id))
 ))
+const showSchoolSearch = computed(() => !isAdviceOnlyCountry.value && schoolCases.value.length > 0)
 
 const locations = reactive({})
 const selectedCardId = ref('')
@@ -324,11 +335,11 @@ watch(() => schoolCards.value.map((card) => card.id).join('|'), () => {
 }, { immediate: true })
 
 const guideItems = computed(() => {
-  if (isNicheCountry.value) {
+  if (isAdviceOnlyCountry.value) {
     return [
       {
         title: matchedCountryLabel.value,
-        text: nicheMessage.value,
+        text: specialRegionMessage.value,
       },
     ]
   }
@@ -490,7 +501,7 @@ function serializeFeedbackItem(item) {
 }
 
 function evaluateTiers() {
-  if (isNicheCountry.value) return
+  if (isAdviceOnlyCountry.value) return
 
   if (cardsIn('deck').length) {
     window.alert(t('pages.y2_3.alertCompleteDeck'))
@@ -622,7 +633,7 @@ function evaluateTiers() {
 }
 
 function completeWithResult() {
-  if (isNicheCountry.value) {
+  if (isAdviceOnlyCountry.value) {
     emit('complete', {
       completed: true,
       passed: true,
@@ -630,7 +641,7 @@ function completeWithResult() {
       resultData: {
         matchedCountry: matchedCountryLabel.value,
         selectedCountry: countryConfig.value.key,
-        message: nicheMessage.value,
+        message: specialRegionMessage.value,
       },
       language: currentLanguage.value,
     })
@@ -897,10 +908,6 @@ function completeWithResult() {
   gap: 10px;
 }
 
-.school-case-icon {
-  font-size: 2rem;
-}
-
 .school-case-main strong {
   color: #f8fafc;
   font-size: 0.98rem;
@@ -1047,52 +1054,18 @@ function completeWithResult() {
   text-align: left;
 }
 
-.school-icon {
-  grid-area: icon;
-  font-size: 2rem;
+.school-card-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  width: 100%;
 }
 
-.school-icon.score-data {
-  width: 28px;
-  height: 28px;
-  margin: 0 auto 6px;
-  display: grid;
-  place-items: center;
-  font-size: 1.22rem;
-  line-height: 1;
-  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.28));
-}
-
-.school-icon.image {
-  width: 42px;
-  height: 42px;
-  margin: 0 auto 6px;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  background: rgba(248, 250, 252, 0.92);
-  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.32);
-  overflow: hidden;
-}
-
-.school-icon.image img {
-  width: 34px;
-  height: 34px;
-  object-fit: contain;
-  display: block;
-}
-
-.school-card.compact .school-icon.image {
-  margin: 0;
-  flex: 0 0 auto;
-}
-
-.school-card.compact .school-icon.score-data {
-  margin: 0;
-  width: 24px;
-  height: 24px;
-  font-size: 1rem;
-  flex: 0 0 auto;
+.school-card.compact .school-card-copy {
+  align-items: flex-start;
+  flex: 1 1 auto;
 }
 
 .school-name {
@@ -1139,10 +1112,6 @@ function completeWithResult() {
 
 .school-card.compact .school-name {
   margin-bottom: 3px;
-}
-
-.school-card.compact .school-icon + .school-name {
-  flex: 1 1 auto;
 }
 
 .controls {
@@ -1323,10 +1292,6 @@ function completeWithResult() {
     font-size: 0.62rem;
     padding: 2px 5px;
   }
-  .school-icon {
-    font-size: 1.5rem;
-  }
-
   /* 选校层级 → 单列 */
   .tiers {
     grid-template-columns: 1fr;

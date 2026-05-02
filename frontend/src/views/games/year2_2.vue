@@ -126,46 +126,58 @@ import {
 const emit = defineEmits(['complete', 'close'])
 const { currentLanguage, t, tm, localize } = useAppI18n()
 
+const RESULT_PRIORITY = ['uk', 'eu', 'us', 'sg', 'australia', 'hk', 'jointProgram', 'niche']
+const RESULT_ICONS = {
+  uk: '🏰',
+  eu: '🏛️',
+  us: '🗽',
+  sg: '🌏',
+  australia: '🦘',
+  hk: '🏙️',
+  jointProgram: '🏫',
+  niche: '🧭',
+}
+
 const questionWeights = [
   {
-    a: { hk: 2, sg: 2, us: 1, australia: 2, niche: 1, uk: 0, eu: 0 },
-    b: { uk: 2, eu: 2, us: 1, australia: 0, niche: 0, hk: 0, sg: 0 },
+    a: { uk: 2, eu: 0, us: 1, sg: 2, australia: 1, hk: 2, jointProgram: 0, niche: 1 },
+    b: { uk: 0, eu: 2, us: 1, sg: 0, australia: 1, hk: 0, jointProgram: 2, niche: 1 },
   },
   {
-    a: { hk: 2, sg: 1, eu: 1, australia: 2, niche: 1, uk: 0, us: 0 },
-    b: { us: 2, uk: 1, eu: 1, australia: 0, niche: 0, hk: 0, sg: 0 },
+    a: { uk: 1, eu: 0, us: 2, sg: 2, australia: 1, hk: 2, jointProgram: 0, niche: 1 },
+    b: { uk: 1, eu: 2, us: 0, sg: 0, australia: 1, hk: 0, jointProgram: 2, niche: 2 },
   },
   {
-    a: { hk: 2, sg: 2, niche: 3, australia: 1, uk: 0, us: 1, eu: 0 },
-    b: { uk: 2, eu: 2, australia: 1, us: 0, niche: 0, hk: 0, sg: 0 },
+    a: { uk: 2, eu: 0, us: 2, sg: 2, australia: 2, hk: 1, jointProgram: 1, niche: 0 },
+    b: { uk: 0, eu: 2, us: 0, sg: 0, australia: 0, hk: 1, jointProgram: 1, niche: 2 },
   },
   {
-    a: { sg: 2, hk: 1, australia: 2, eu: 1, niche: 0, uk: 0, us: 0 },
-    b: { us: 2, uk: 1, eu: 1, australia: 0, niche: 1, hk: 0, sg: 0 },
+    a: { uk: 2, eu: 0, us: 1, sg: 2, australia: 1, hk: 2, jointProgram: 1, niche: 1 },
+    b: { uk: 0, eu: 2, us: 1, sg: 0, australia: 1, hk: 0, jointProgram: 1, niche: 2 },
   },
   {
-    a: { hk: 2, sg: 2, australia: 2, niche: 2, us: 0, uk: 0, eu: 0 },
-    b: { uk: 2, eu: 2, australia: 0, niche: 0, us: 0, hk: 0, sg: 0 },
+    a: { uk: 1, eu: 1, us: 0, sg: 1, australia: 0, hk: 2, jointProgram: 2, niche: 2 },
+    b: { uk: 1, eu: 1, us: 2, sg: 1, australia: 2, hk: 0, jointProgram: 0, niche: 0 },
   },
   {
-    a: { sg: 2, hk: 1, australia: 2, niche: 2, eu: 1, uk: 0, us: 0 },
-    b: { us: 2, uk: 1, eu: 1, australia: 0, niche: 0, hk: 0, sg: 0 },
+    a: { uk: 0, eu: 1, us: 2, sg: 2, australia: 2, hk: 1, jointProgram: 0, niche: 0 },
+    b: { uk: 2, eu: 1, us: 0, sg: 0, australia: 0, hk: 1, jointProgram: 2, niche: 2 },
   },
   {
-    a: { hk: 2, sg: 1, australia: 1, niche: 3, us: 1, uk: 0, eu: 0 },
-    b: { uk: 2, eu: 1, australia: 0, niche: 0, us: 0, hk: 0, sg: 0 },
+    a: { uk: 1, eu: 0, us: 2, sg: 2, australia: 1, hk: 2, jointProgram: 0, niche: 1 },
+    b: { uk: 1, eu: 2, us: 0, sg: 0, australia: 1, hk: 0, jointProgram: 2, niche: 2 },
   },
   {
-    a: { uk: 2, eu: 2, australia: 1, niche: 0, hk: 0, sg: 0, us: 0 },
-    b: { us: 2, sg: 2, australia: 2, niche: 0, hk: 0, uk: 0, eu: 0 },
+    a: { uk: 2, eu: 1, us: 0, sg: 2, australia: 2, hk: 1, jointProgram: 2, niche: 1 },
+    b: { uk: 0, eu: 1, us: 2, sg: 0, australia: 0, hk: 1, jointProgram: 0, niche: 2 },
   },
   {
-    a: { hk: 2, sg: 2, australia: 2, niche: 3, uk: 0, us: 0, eu: 0 },
-    b: { us: 2, eu: 2, australia: 0, niche: 0, hk: 0, sg: 0, uk: 0 },
+    a: { uk: 2, eu: 0, us: 2, sg: 1, australia: 1, hk: 2, jointProgram: 2, niche: 1 },
+    b: { uk: 0, eu: 2, us: 0, sg: 1, australia: 1, hk: 0, jointProgram: 0, niche: 2 },
   },
   {
-    a: { uk: 2, eu: 2, australia: 0, niche: 0, sg: 0, hk: 0, us: 0 },
-    b: { us: 2, hk: 2, australia: 2, niche: 3, sg: 0, uk: 0, eu: 0 },
+    a: { uk: 0, eu: 0, us: 0, sg: 0, australia: 0, hk: 0, jointProgram: 2, niche: 0 },
+    b: { uk: 1, eu: 1, us: 1, sg: 1, australia: 1, hk: 1, jointProgram: 0, niche: 1 },
   },
 ]
 
@@ -193,9 +205,9 @@ const highlightedRoutes = ref([])
 // 记录每一次作答：{ questionIndex: number, choiceId: 'a'|'b' }
 const answersHistory = ref([])
 
-// 基于回答历史动态计算五条路线的当前得分
+// 基于回答历史动态计算八个地区的当前得分
 const scores = computed(() => {
-  const totals = { uk: 0, hk: 0, sg: 0, us: 0, eu: 0, australia: 0, niche: 0 }
+  const totals = Object.fromEntries(RESULT_PRIORITY.map((key) => [key, 0]))
   answersHistory.value.forEach((h) => {
     const q = questions.value[h.questionIndex]
     if (!q) return
@@ -212,11 +224,12 @@ const scores = computed(() => {
 const question = computed(() => questions.value[currentQ.value] || null)
 const routes = computed(() => [
   { id: 'uk', icon: '🏰', label: t('pages.y2_2.routes.uk'), keywords: [t('pages.y2_2.routeKeywords.uk.0'), t('pages.y2_2.routeKeywords.uk.1')] },
-  { id: 'us', icon: '🗽', label: t('pages.y2_2.routes.us'), keywords: [t('pages.y2_2.routeKeywords.us.0'), t('pages.y2_2.routeKeywords.us.1')] },
-  { id: 'australia', icon: '🦘', label: t('pages.y2_2.routes.australia'), keywords: [t('pages.y2_2.routeKeywords.australia.0'), t('pages.y2_2.routeKeywords.australia.1')] },
   { id: 'eu', icon: '🏛️', label: t('pages.y2_2.routes.eu'), keywords: [t('pages.y2_2.routeKeywords.eu.0'), t('pages.y2_2.routeKeywords.eu.1')] },
+  { id: 'us', icon: '🗽', label: t('pages.y2_2.routes.us'), keywords: [t('pages.y2_2.routeKeywords.us.0'), t('pages.y2_2.routeKeywords.us.1')] },
   { id: 'sg', icon: '🌏', label: t('pages.y2_2.routes.sg'), keywords: [t('pages.y2_2.routeKeywords.sg.0'), t('pages.y2_2.routeKeywords.sg.1')] },
+  { id: 'australia', icon: '🦘', label: t('pages.y2_2.routes.australia'), keywords: [t('pages.y2_2.routeKeywords.australia.0'), t('pages.y2_2.routeKeywords.australia.1')] },
   { id: 'hk', icon: '🏙️', label: t('pages.y2_2.routes.hk'), keywords: [t('pages.y2_2.routeKeywords.hk.0'), t('pages.y2_2.routeKeywords.hk.1')] },
+  { id: 'jointProgram', icon: '🏫', label: t('pages.y2_2.routes.jointProgram'), keywords: [t('pages.y2_2.routeKeywords.jointProgram.0'), t('pages.y2_2.routeKeywords.jointProgram.1')] },
   { id: 'niche', icon: '🧭', label: t('pages.y2_2.routes.niche'), keywords: [t('pages.y2_2.routeKeywords.niche.0'), t('pages.y2_2.routeKeywords.niche.1')] },
 ])
 const guideItems = computed(() => tm('pages.y2_2.guide.items') || [])
@@ -226,7 +239,7 @@ const result = computed(() => {
   const localizedResult = tm(`pages.y2_2.results.${resultKey}`) || {}
   return {
     title: localizedResult.title || '',
-    icon: localizedResult.icon || (resultKey === 'uk' ? '🏰' : resultKey === 'hk' ? '🏙️' : resultKey === 'us' ? '🗽' : resultKey === 'sg' ? '🌏' : resultKey === 'australia' ? '🦘' : resultKey === 'niche' ? '🧭' : '🏛️'),
+    icon: localizedResult.icon || RESULT_ICONS[resultKey] || '🧭',
     desc: localizedResult.desc || '',
     analysis: localizedResult.analysis || '',
   }
@@ -236,9 +249,16 @@ const winnerCountryConfig = computed(() => getYear2CountrySchoolConfig(winner.va
 const selectedCountryConfig = computed(() => getYear2CountrySchoolConfig(selectedResultKey.value))
 
 function portalClass(type) {
-  const value = scores[type] || 0
+  const value = scores.value[type] || 0
   const strength = value ? Math.min(Math.floor(value / 2) + 1, 3) : 0
   return strength ? `active-${strength}` : ''
+}
+
+function pickWinner(scoreMap) {
+  return RESULT_PRIORITY.reduce((bestKey, currentKey) => {
+    if (!bestKey) return currentKey
+    return (scoreMap[currentKey] || 0) > (scoreMap[bestKey] || 0) ? currentKey : bestKey
+  }, '')
 }
 
 function answerQuestion(choiceId) {
@@ -265,9 +285,8 @@ function answerQuestion(choiceId) {
 
   // 所有题目都已作答 → 显示结果
   if (answersHistory.value.length === questions.value.length) {
-    const final = scores.value  // 利用刚刚更新的 computed
-    const sorted = Object.entries(final).sort((a, b) => b[1] - a[1])
-    winner.value = sorted[0]?.[0] || 'uk'
+    const final = scores.value
+    winner.value = pickWinner(final) || 'uk'
     selectedResultKey.value = winner.value
     showResult.value = true
     nextTick(() => {
@@ -316,15 +335,20 @@ function routeRegionLabel(route) {
 function completeWithReward() {
   const matchedCountryKey = selectedCountryConfig.value.key || winnerCountryConfig.value.key
   persistMatchedCountryKey(matchedCountryKey)
+  const countryScores = { ...scores.value }
 
   emit('complete', {
     rewardCoins: 30,
     resultType: 'result',
     resultData: {
       recommendedCountry: result.value.title,
-      matchedCountry: winnerCountryConfig.value.canonicalName,
+      recommendedCountryKey: matchedCountryKey,
+      matchedCountry: selectedCountryConfig.value.canonicalName || winnerCountryConfig.value.canonicalName,
+      matchedCountryZh: selectedCountryConfig.value.label?.zh || winnerCountryConfig.value.label?.zh,
+      matchedCountryEn: selectedCountryConfig.value.label?.en || winnerCountryConfig.value.label?.en,
       winner: matchedCountryKey,
-      scores: { ...scores.value },
+      scores: countryScores,
+      countryScores,
       answers: answersHistory.value.map((answer) => ({ ...answer })),
       explanation: result.value.analysis || result.value.desc,
     },
@@ -332,6 +356,9 @@ function completeWithReward() {
     profile: {
       matchedCountryKey,
       matchedCountry: selectedCountryConfig.value.canonicalName || winnerCountryConfig.value.canonicalName,
+      matchedCountryZh: selectedCountryConfig.value.label?.zh || winnerCountryConfig.value.label?.zh,
+      matchedCountryEn: selectedCountryConfig.value.label?.en || winnerCountryConfig.value.label?.en,
+      countryScores,
     },
   })
 }
@@ -816,6 +843,7 @@ function completeWithReward() {
 .tarot-australia { background: linear-gradient(135deg, #22543d, #0b131a); border: 4px solid #86efac; color: #dcfce7; }
 .tarot-eu { background: linear-gradient(135deg, #334155, #0b131a); border: 4px solid #c6e6ff; color: #eef6ff; }
 .tarot-sg { background: linear-gradient(135deg, #064e3b, #0b131a); border: 4px solid #99ffcc; color: #dcfce7; }
+.tarot-jointProgram { background: linear-gradient(135deg, #4b5563, #0b131a); border: 4px solid #fcd34d; color: #fff7d6; }
 .tarot-niche { background: linear-gradient(135deg, #4c1d95, #0b131a); border: 4px solid #c4b5fd; color: #f5f3ff; }
 
 .tarot-title {

@@ -26,16 +26,30 @@ const COUNTRY_ALIAS_MAP = Object.freeze({
   '澳大利亞': 'australia',
   '澳洲': 'australia',
 
+  jointprogram: 'jointProgram',
+  'joint program': 'jointProgram',
+  'sino-foreign cooperative universities': 'jointProgram',
+  'sino foreign cooperative universities': 'jointProgram',
+  'sino-foreign cooperative university': 'jointProgram',
+  '中外合作': 'jointProgram',
+  '中外合作大学': 'jointProgram',
+  '中外合作大學': 'jointProgram',
+
   niche: 'niche',
   'niche regions': 'niche',
+  'niche countries': 'niche',
   'japan korea': 'niche',
   'japan / korea and other niche regions': 'niche',
   'japan korea and other niche regions': 'niche',
+  'japan / korea and other niche countries': 'niche',
+  'japan korea and other niche countries': 'niche',
   'japan and korea': 'niche',
   'japan': 'niche',
   'korea': 'niche',
   '日韩': 'niche',
   '日韓': 'niche',
+  '日韩等小众国家': 'niche',
+  '日韓等小眾國家': 'niche',
   '日韩等小众地区': 'niche',
   '日韓等小眾地區': 'niche',
   '小众地区': 'niche',
@@ -56,6 +70,9 @@ const COUNTRY_ALIAS_MAP = Object.freeze({
 
   eu: 'eu',
   europe: 'eu',
+  'other europe': 'eu',
+  '其他欧洲': 'eu',
+  '其他歐洲': 'eu',
   'continental europe': 'eu',
   'european union': 'eu',
   '欧陆': 'eu',
@@ -70,32 +87,57 @@ const YEAR2_COUNTRY_SCHOOLS = Object.freeze({
   uk: {
     key: 'uk',
     icon: '🏰',
-    canonicalName: 'UK',
-    label: { zh: '英国', en: 'UK' },
+    canonicalName: 'United Kingdom',
+    label: { zh: '英国', en: 'United Kingdom' },
     schools: [],
   },
   us: {
     key: 'us',
     icon: '🗽',
-    canonicalName: 'US',
-    label: { zh: '美国', en: 'US' },
+    canonicalName: 'United States',
+    label: { zh: '美国', en: 'United States' },
     schools: [],
   },
   australia: {
     key: 'australia',
     icon: '🦘',
     canonicalName: 'Australia',
-    label: { zh: '澳洲', en: 'Australia' },
+    label: { zh: '澳大利亚', en: 'Australia' },
+    schools: [
+      { id: 'au-melbourne', icon: '🎓', name: { zh: '墨尔本大学', en: 'University of Melbourne' }, tag: { zh: '冲刺参考', en: 'Reach tier' }, recommendedTier: 'reach' },
+      { id: 'au-anu', icon: '🏛️', name: { zh: '澳大利亚国立大学', en: 'Australian National University' }, tag: { zh: '冲刺参考', en: 'Reach tier' }, recommendedTier: 'reach' },
+      { id: 'au-sydney', icon: '🌉', name: { zh: '悉尼大学', en: 'University of Sydney' }, tag: { zh: '冲刺参考', en: 'Reach tier' }, recommendedTier: 'reach' },
+      { id: 'au-unsw', icon: '⚙️', name: { zh: '新南威尔士大学', en: 'University of New South Wales' }, tag: { zh: '匹配参考', en: 'Target tier' }, recommendedTier: 'match' },
+      { id: 'au-uq', icon: '🌿', name: { zh: '昆士兰大学', en: 'University of Queensland' }, tag: { zh: '匹配参考', en: 'Target tier' }, recommendedTier: 'match' },
+      { id: 'au-monash', icon: '🧪', name: { zh: '莫纳什大学', en: 'Monash University' }, tag: { zh: '匹配参考', en: 'Target tier' }, recommendedTier: 'match' },
+      { id: 'au-adelaide', icon: '🛟', name: { zh: '阿德莱德大学', en: 'University of Adelaide' }, tag: { zh: '保底参考', en: 'Safety tier' }, recommendedTier: 'safety' },
+      { id: 'au-uts', icon: '🏙️', name: { zh: '悉尼科技大学', en: 'University of Technology Sydney' }, tag: { zh: '保底参考', en: 'Safety tier' }, recommendedTier: 'safety' },
+      { id: 'au-macquarie', icon: '📚', name: { zh: '麦考瑞大学', en: 'Macquarie University' }, tag: { zh: '保底参考', en: 'Safety tier' }, recommendedTier: 'safety' },
+    ],
+  },
+  jointProgram: {
+    key: 'jointProgram',
+    icon: '🏫',
+    canonicalName: 'Sino-foreign Cooperative Universities',
+    label: { zh: '中外合作', en: 'Sino-foreign Cooperative Universities' },
+    adviceMessage: {
+      zh: '中外合作大学路径，请联系 DA 获取更适合你的升学建议。',
+      en: 'For Sino-foreign cooperative university pathways, please contact your DA for more tailored study planning advice.',
+    },
     schools: [],
   },
   niche: {
     key: 'niche',
     icon: '🧭',
-    canonicalName: 'Niche regions',
-    label: { zh: '日韩等小众地区', en: 'Japan / Korea and other niche regions' },
+    canonicalName: 'Japan / Korea and other niche countries',
+    label: { zh: '日韩等小众国家', en: 'Japan / Korea and other niche countries' },
+    adviceMessage: {
+      zh: '日韩等小众国家，请与老师面谈，获取更适合你的升学建议。',
+      en: 'For Japan, Korea, and other niche countries, please speak with your teacher for more tailored study planning advice.',
+    },
     nicheMessage: {
-      zh: '小众地区，请联系 DA 获得更多升学信息。',
-      en: 'Niche regions. Please contact your DA for more study abroad information.',
+      zh: '日韩等小众国家，请与老师面谈，获取更适合你的升学建议。',
+      en: 'For Japan, Korea, and other niche countries, please speak with your teacher for more tailored study planning advice.',
     },
     schools: [],
   },
@@ -116,8 +158,8 @@ const YEAR2_COUNTRY_SCHOOLS = Object.freeze({
   eu: {
     key: 'eu',
     icon: '🏛️',
-    canonicalName: 'Europe',
-    label: { zh: '欧洲', en: 'Europe' },
+    canonicalName: 'Other Europe',
+    label: { zh: '其他欧洲', en: 'Other Europe' },
     schools: [],
   },
   global: {
@@ -380,7 +422,9 @@ const CHINESE_SCHOOL_EN_NAMES = Object.freeze({
   奥克兰大学: 'University of Auckland',
   莫纳什大学: 'Monash University',
   新南威尔士大学: 'University of New South Wales',
+  阿德莱德大学: 'University of Adelaide',
   悉尼科技大学: 'University of Technology Sydney',
+  麦考瑞大学: 'Macquarie University',
   香港中文大学: 'The Chinese University of Hong Kong',
   香港大学: 'The University of Hong Kong',
   昆山杜克大学: 'Duke Kunshan University',
@@ -543,7 +587,7 @@ export function getYear2ScoreBand(profile) {
 
 export function getYear2ScoreSchoolCards(countryKey, profile, options = {}) {
   const normalizedKey = normalizeCountryKey(countryKey)
-  if (normalizedKey === 'niche') return []
+  if (normalizedKey === 'niche' || normalizedKey === 'jointProgram') return []
   const schools = YEAR2_SCORE_SCHOOL_DATA[normalizedKey]
   if (!schools) return []
   const countrySchools = schools.filter((school) => isSchoolInSelectedCountry(school, normalizedKey))
@@ -623,7 +667,7 @@ export function getYear2CountrySchoolConfig(countryKey) {
 }
 
 export function getYear2CountrySchoolOptions() {
-  return ['uk', 'us', 'australia', 'hk', 'sg', 'eu'].map((key) => YEAR2_COUNTRY_SCHOOLS[key])
+  return ['uk', 'eu', 'us', 'sg', 'australia', 'hk', 'jointProgram', 'niche'].map((key) => YEAR2_COUNTRY_SCHOOLS[key])
 }
 
 export function getYear2SchoolCases(countryKey, profile) {

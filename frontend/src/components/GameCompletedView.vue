@@ -66,17 +66,18 @@ defineEmits(['retry', 'back'])
 const { currentLanguage, t, tm } = useAppI18n()
 
 const countryLabels = {
-  uk: { zh: '英国', en: 'UK' },
-  us: { zh: '美国', en: 'US' },
-  australia: { zh: '澳洲', en: 'Australia' },
-  eu: { zh: '欧洲', en: 'Europe' },
-  europe: { zh: '欧洲', en: 'Europe' },
-  'continental europe': { zh: '欧洲', en: 'Europe' },
-  '欧洲大陆': { zh: '欧洲', en: 'Europe' },
-  '欧陆': { zh: '欧洲', en: 'Europe' },
+  uk: { zh: '英国', en: 'United Kingdom' },
+  us: { zh: '美国', en: 'United States' },
+  australia: { zh: '澳大利亚', en: 'Australia' },
+  eu: { zh: '其他欧洲', en: 'Other Europe' },
+  europe: { zh: '其他欧洲', en: 'Other Europe' },
+  'continental europe': { zh: '其他欧洲', en: 'Other Europe' },
+  '欧洲大陆': { zh: '其他欧洲', en: 'Other Europe' },
+  '欧陆': { zh: '其他欧洲', en: 'Other Europe' },
   sg: { zh: '新加坡', en: 'Singapore' },
-  hk: { zh: '中国香港', en: 'Hong Kong' },
-  niche: { zh: '日韩等小众地区', en: 'Japan / Korea and other niche regions' },
+  hk: { zh: '香港', en: 'Hong Kong' },
+  jointProgram: { zh: '中外合作', en: 'Sino-foreign Cooperative Universities' },
+  niche: { zh: '日韩等小众国家', en: 'Japan / Korea and other niche countries' },
 }
 
 const routeTitleMap = {
@@ -88,20 +89,29 @@ const routeTitleMap = {
   'Route Result: Strategist of the Lion City': 'sg',
   'Route Result: Navigator of the Orient': 'hk',
   'Route Result: Niche Region Explorer': 'niche',
+  'Route Result: United Kingdom': 'uk',
+  'Route Result: Other Europe': 'eu',
+  'Route Result: United States': 'us',
+  'Route Result: Australia': 'australia',
+  'Route Result: Singapore': 'sg',
+  'Route Result: Hong Kong': 'hk',
+  'Route Result: Sino-foreign Cooperative Universities': 'jointProgram',
+  'Route Result: Japan / Korea and other niche countries': 'niche',
 }
 
 const displayCountryLabels = {
-  uk: { zh: '英国', en: 'UK' },
-  us: { zh: '美国', en: 'US' },
-  australia: { zh: '澳洲', en: 'Australia' },
-  eu: { zh: '欧洲', en: 'Europe' },
-  europe: { zh: '欧洲', en: 'Europe' },
-  'continental europe': { zh: '欧洲', en: 'Europe' },
-  '欧洲大陆': { zh: '欧洲', en: 'Europe' },
-  '欧陆': { zh: '欧洲', en: 'Europe' },
+  uk: { zh: '英国', en: 'United Kingdom' },
+  us: { zh: '美国', en: 'United States' },
+  australia: { zh: '澳大利亚', en: 'Australia' },
+  eu: { zh: '其他欧洲', en: 'Other Europe' },
+  europe: { zh: '其他欧洲', en: 'Other Europe' },
+  'continental europe': { zh: '其他欧洲', en: 'Other Europe' },
+  '欧洲大陆': { zh: '其他欧洲', en: 'Other Europe' },
+  '欧陆': { zh: '其他欧洲', en: 'Other Europe' },
   sg: { zh: '新加坡', en: 'Singapore' },
-  hk: { zh: '中国香港', en: 'Hong Kong' },
-  niche: { zh: '日韩等小众地区', en: 'Japan / Korea and other niche regions' },
+  hk: { zh: '香港', en: 'Hong Kong' },
+  jointProgram: { zh: '中外合作', en: 'Sino-foreign Cooperative Universities' },
+  niche: { zh: '日韩等小众国家', en: 'Japan / Korea and other niche countries' },
 }
 
 const schoolNameMap = {
@@ -109,6 +119,9 @@ const schoolNameMap = {
   'Australian National University': '澳大利亚国立大学',
   'University of Queensland': '昆士兰大学',
   'University of Melbourne': '墨尔本大学',
+  'University of Adelaide': '阿德莱德大学',
+  'University of Technology Sydney': '悉尼科技大学',
+  'Macquarie University': '麦考瑞大学',
   'University of Auckland': '奥克兰大学',
   'Monash University': '莫纳什大学',
   'University of Leeds': '利兹大学',
@@ -164,6 +177,7 @@ const labelMap = computed(() => ({
   feedback: currentLanguage.value === 'en' ? 'Feedback' : '反馈',
   message: currentLanguage.value === 'en' ? 'Message' : '提示',
   scores: currentLanguage.value === 'en' ? 'Scores' : '分数',
+  countryScores: currentLanguage.value === 'en' ? 'Region Scores' : '地区分数',
   answers: currentLanguage.value === 'en' ? 'Answers' : '作答记录',
   explanation: currentLanguage.value === 'en' ? 'Explanation' : '说明',
 }))
@@ -171,17 +185,17 @@ const labelMap = computed(() => ({
 function localizeCountryKey(value) {
   const rawValue = String(value || '')
   if (currentLanguage.value === 'en' && (rawValue.includes('日韩') || rawValue.includes('小众'))) {
-    return 'Japan / Korea and other niche regions'
+    return 'Japan / Korea and other niche countries'
   }
   const key = normalizeCountryKey(value) || String(value || '').toLowerCase()
   return displayCountryLabels[key]?.[currentLanguage.value] || countryLabels[key]?.[currentLanguage.value] || normalizeLegacyRegionText(value)
 }
 
 function normalizeLegacyRegionText(value) {
-  const replacement = currentLanguage.value === 'en' ? 'Europe' : '欧洲'
+  const replacement = currentLanguage.value === 'en' ? 'Other Europe' : '其他欧洲'
   return String(value || '')
     .replace(/continental europe/gi, replacement)
-    .replace(/欧洲大陆|欧陆/g, replacement)
+    .replace(/欧洲大陆|欧陆|其他欧洲/g, replacement)
 }
 
 function stripHtml(value) {
@@ -206,6 +220,7 @@ function localizeResultValue(key, value, data) {
 
   if (key === 'recommendedCountry' && routeResult?.title) return stripHtml(routeResult.title)
   if (key === 'matchedCountry' || key === 'winner' || key === 'selectedCountry') return localizeCountryKey(value)
+  if (key === 'scores' || key === 'countryScores') return stringifyCountryScores(value)
   if (key === 'explanation' && routeResult?.analysis) return stripHtml(routeResult.analysis)
   if (key === 'answers') return stringifyAnswers(value)
   if (key === 'tierBuckets') return stringifyTierBuckets(value)
@@ -216,8 +231,17 @@ function localizeResultValue(key, value, data) {
 
 function localizeMessage(value) {
   const rawValue = String(value || '')
-  if (currentLanguage.value === 'en' && rawValue.includes('小众地区') && rawValue.includes('DA')) {
-    return 'Niche regions. Please contact your DA for more study abroad information.'
+  if (currentLanguage.value === 'zh' && rawValue.includes('Sino-foreign cooperative university pathways')) {
+    return '中外合作大学路径，请联系 DA 获取更适合你的升学建议。'
+  }
+  if (currentLanguage.value === 'zh' && rawValue.includes('Japan, Korea, and other niche countries')) {
+    return '日韩等小众国家，请与老师面谈，获取更适合你的升学建议。'
+  }
+  if (currentLanguage.value === 'en' && rawValue.includes('中外合作')) {
+    return 'For Sino-foreign cooperative university pathways, please contact your DA for more tailored study planning advice.'
+  }
+  if (currentLanguage.value === 'en' && (rawValue.includes('日韩等小众国家') || rawValue.includes('小众国家'))) {
+    return 'For Japan, Korea, and other niche countries, please speak with your teacher for more tailored study planning advice.'
   }
   return stringifyValue(value)
 }
@@ -299,6 +323,15 @@ function stringifyTierBuckets(value) {
       return `${localizeTierName(tier)}: ${schools.map((school) => localizeSchoolName(school)).join(' / ')}`
     })
     .filter(Boolean)
+    .join('; ')
+}
+
+function stringifyCountryScores(value) {
+  if (!value || typeof value !== 'object') return stringifyValue(value)
+  const keyOrder = ['uk', 'eu', 'us', 'sg', 'australia', 'hk', 'jointProgram', 'niche']
+  return keyOrder
+    .filter((key) => value[key] !== null && value[key] !== undefined && value[key] !== '')
+    .map((key) => `${localizeCountryKey(key)}: ${value[key]}`)
     .join('; ')
 }
 
@@ -453,7 +486,9 @@ function stringifyValue(value) {
 
 const resultItems = computed(() => {
   const data = props.result?.resultData || {}
+  const hiddenKeys = new Set(['recommendedCountryKey', 'matchedCountryZh', 'matchedCountryEn', 'countryScores'])
   return Object.entries(data)
+    .filter(([key]) => !hiddenKeys.has(key))
     .filter(([, value]) => value !== null && value !== undefined && value !== '')
     .slice(0, 10)
     .map(([key, value]) => ({
