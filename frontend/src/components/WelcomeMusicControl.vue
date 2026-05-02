@@ -1,8 +1,16 @@
 <template>
   <aside
+    ref="controlRef"
     class="welcome-music-control"
-    :class="{ playing: isPlaying, muted: isMuted, blocked: isBlocked }"
+    :class="{ playing: isPlaying, muted: isMuted, blocked: isBlocked, dragging: isDragging }"
+    :style="controlStyle"
     :aria-label="copy.panelLabel"
+    @click.capture="handleControlClickCapture"
+    @pointerdown="handleControlPointerDown"
+    @pointermove="handleControlPointerMove"
+    @pointerup="handleControlPointerEnd"
+    @pointercancel="handleControlPointerEnd"
+    @dragstart.prevent
   >
     <div class="music-status">
       <span class="music-light" aria-hidden="true"></span>
@@ -36,9 +44,12 @@
 </template>
 
 <script setup>
-import { computed, onMounted } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useAppI18n } from '@/composables/useAppI18n'
 import { useWelcomeMusic } from '@/composables/useWelcomeMusic'
+
+const CONTROL_POSITION_STORAGE_KEY = 'edujour_music_control_position'
+const DRAG_THRESHOLD = 6
 
 const { currentLanguage } = useAppI18n()
 const {
@@ -53,6 +64,32 @@ const {
   playWelcomeMusic,
   toggleWelcomeMusicMuted,
 } = useWelcomeMusic()
+
+const initialViewportWidth = typeof window === 'undefined' ? 1280 : window.innerWidth
+const initialViewportHeight = typeof window === 'undefined' ? 720 : window.innerHeight
+const initialControlMargin = initialViewportWidth <= 768 ? 12 : 18
+const initialControlHeight = initialViewportWidth <= 768 ? 52 : 60
+const controlRef = ref(null)
+const controlPosition = ref({
+  x: initialControlMargin,
+  y: Math.max(initialControlMargin, initialViewportHeight - initialControlMargin - initialControlHeight),
+})
+const viewportSize = ref({
+  width: initialViewportWidth,
+  height: initialViewportHeight,
+})
+const isDragging = ref(false)
+const suppressNextClick = ref(false)
+const hasCustomControlPosition = ref(false)
+
+const activeDrag = {
+  pointerId: null,
+  startX: 0,
+  startY: 0,
+  originX: 0,
+  originY: 0,
+  moved: false,
+}
 
 const copy = computed(() => (
   currentLanguage.value === 'en'
@@ -107,6 +144,152 @@ const statusText = computed(() => {
 
 const muteLabel = computed(() => (isMuted.value ? copy.value.unmute : copy.value.mute))
 const muteAriaLabel = computed(() => (isMuted.value ? copy.value.unmuteAria : copy.value.muteAria))
+const controlStyle = computed(() => ({
+  left: `${controlPosition.value.x}px`,
+  top: `${controlPosition.value.y}px`,
+}))
+
+function clampNumber(value, min, max) {
+  const safeMax = max < min ? min : max
+  return Math.min(Math.max(value, min), safeMax)
+}
+
+function getControlMetrics() {
+  const isMobile = viewportSize.value.width <= 768
+  const fallbackWidth = isMobile ? 102 : 310
+  const fallbackHeight = isMobile ? 52 : 60
+
+  return {
+    margin: isMobile ? 12 : 18,
+    width: controlRef.value?.offsetWidth || fallbackWidth,
+    height: controlRef.value?.offsetHeight || fallbackHeight,
+  }
+}
+
+function buildDefaultControlPosition() {
+  const { margin, height } = getControlMetrics()
+
+  return {
+    x: margin,
+    y: Math.max(margin, viewportSize.value.height - margin - height),
+  }
+}
+
+function clampControlPosition(position) {
+  const { margin, width, height } = getControlMetrics()
+
+  return {
+    x: clampNumber(position.x, margin, viewportSize.value.width - margin - width),
+    y: clampNumber(position.y, margin, viewportSize.value.height - margin - height),
+  }
+}
+
+function loadControlPosition() {
+  try {
+    const raw = localStorage.getItem(CONTROL_POSITION_STORAGE_KEY)
+
+    if (!raw) {
+      return buildDefaultControlPosition()
+    }
+
+    const parsed = JSON.parse(raw)
+    if (typeof parsed?.x !== 'number' || typeof parsed?.y !== 'number') {
+      return buildDefaultControlPosition()
+    }
+
+    hasCustomControlPosition.value = true
+    return clampControlPosition(parsed)
+  } catch (error) {
+    return buildDefaultControlPosition()
+  }
+}
+
+function persistControlPosition() {
+  try {
+    localStorage.setItem(CONTROL_POSITION_STORAGE_KEY, JSON.stringify(controlPosition.value))
+  } catch (error) {
+    console.warn('Failed to persist music control position.', error)
+  }
+}
+
+function refreshViewportSize() {
+  viewportSize.value = {
+    width: window.innerWidth,
+    height: window.innerHeight,
+  }
+
+  controlPosition.value = hasCustomControlPosition.value
+    ? clampControlPosition(controlPosition.value)
+    : buildDefaultControlPosition()
+}
+
+function handleControlPointerDown(event) {
+  if (event.button !== undefined && event.button !== 0) {
+    return
+  }
+
+  activeDrag.pointerId = event.pointerId
+  activeDrag.startX = event.clientX
+  activeDrag.startY = event.clientY
+  activeDrag.originX = controlPosition.value.x
+  activeDrag.originY = controlPosition.value.y
+  activeDrag.moved = false
+  suppressNextClick.value = false
+
+  event.currentTarget?.setPointerCapture?.(event.pointerId)
+}
+
+function handleControlPointerMove(event) {
+  if (activeDrag.pointerId !== event.pointerId) {
+    return
+  }
+
+  const deltaX = event.clientX - activeDrag.startX
+  const deltaY = event.clientY - activeDrag.startY
+
+  if (!activeDrag.moved && Math.hypot(deltaX, deltaY) < DRAG_THRESHOLD) {
+    return
+  }
+
+  event.preventDefault()
+  activeDrag.moved = true
+  isDragging.value = true
+  controlPosition.value = clampControlPosition({
+    x: activeDrag.originX + deltaX,
+    y: activeDrag.originY + deltaY,
+  })
+}
+
+function handleControlPointerEnd(event) {
+  if (activeDrag.pointerId !== event.pointerId) {
+    return
+  }
+
+  if (event.currentTarget?.hasPointerCapture?.(event.pointerId)) {
+    event.currentTarget.releasePointerCapture(event.pointerId)
+  }
+
+  suppressNextClick.value = activeDrag.moved
+  isDragging.value = false
+
+  if (activeDrag.moved) {
+    hasCustomControlPosition.value = true
+    persistControlPosition()
+  }
+
+  activeDrag.pointerId = null
+  activeDrag.moved = false
+}
+
+function handleControlClickCapture(event) {
+  if (!suppressNextClick.value) {
+    return
+  }
+
+  event.preventDefault()
+  event.stopPropagation()
+  suppressNextClick.value = false
+}
 
 function playAgain() {
   void playWelcomeMusic({ restart: true, unmute: true })
@@ -122,14 +305,24 @@ onMounted(() => {
   if (loadError.value) {
     console.info(`Put your MP3 at frontend/public${audioSource.value}.`)
   }
+
+  nextTick(() => {
+    controlPosition.value = loadControlPosition()
+  })
+
+  window.addEventListener('resize', refreshViewportSize)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', refreshViewportSize)
 })
 </script>
 
 <style scoped>
 .welcome-music-control {
   position: fixed;
+  left: 18px;
   top: 18px;
-  right: 18px;
   z-index: 1250;
   width: min(310px, calc(100vw - 36px));
   padding: 10px;
@@ -143,6 +336,18 @@ onMounted(() => {
   box-shadow: 0 14px 28px rgba(0, 0, 0, 0.22);
   backdrop-filter: blur(8px);
   color: #f8fafc;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  will-change: left, top;
+}
+
+.welcome-music-control.dragging {
+  cursor: grabbing;
+}
+
+.welcome-music-control.dragging .music-action {
+  cursor: grabbing;
 }
 
 .music-status {
@@ -244,8 +449,6 @@ onMounted(() => {
 
 @media (max-width: 768px) {
   .welcome-music-control {
-    top: 12px;
-    right: 12px;
     width: auto;
     max-width: calc(100vw - 128px);
     padding: 4px;
@@ -258,10 +461,10 @@ onMounted(() => {
   }
 
   .music-action {
-    width: 40px;
-    min-width: 40px;
-    height: 40px;
-    min-height: 40px;
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+    min-height: 44px;
     padding: 0;
   }
 
