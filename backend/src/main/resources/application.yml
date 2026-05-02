@@ -23,6 +23,13 @@ spring:
       maximum-pool-size: 5
       minimum-idle: 1
       connection-test-query: SELECT 1
+  jpa:
+    hibernate:
+      ddl-auto: update   # 关键：让 Hibernate 自动建表/更新表结构
+    show-sql: true        # 可选，开发时方便查看建表 SQL
+    properties:
+      hibernate:
+        format_sql: true  # 可选，格式化 SQL，便于阅读
 
 ---
 spring:

@@ -49,15 +49,54 @@
             <span>{{ choice.text }}</span>
           </button>
         </div>
+        <!-- 回溯导航按钮 -->
+        <div v-if="questions.length > 0 && !showResult" class="nav-buttons">
+          <button
+            type="button"
+            class="btn-nav"
+            :disabled="currentQ === 0"
+            @click="goToPrevQuestion"
+          >
+            ← {{ t('common.labels.previous') || '上一题' }}
+          </button>
+          <button
+            type="button"
+            class="btn-nav"
+            :disabled="currentQ === questions.length - 1"
+            @click="goToNextQuestion"
+          >
+            {{ t('common.labels.next') || '下一题' }} →
+          </button>
+        </div>
       </section>
     </div>
 
     <div v-if="showResult" class="result-overlay">
-      <div class="tarot-card" :class="`tarot-${winner}`">
+      <div class="tarot-card" :class="`tarot-${selectedResultKey}`">
         <div class="tarot-title">{{ result.title }}</div>
         <div class="tarot-icon">{{ result.icon }}</div>
         <div class="tarot-desc" v-html="result.desc"></div>
         <div v-if="result.analysis" class="result-analysis" v-html="result.analysis"></div>
+        <div class="manual-region-panel">
+          <div class="manual-region-title">{{ t('pages.y2_2.manualRegion.title') }}</div>
+          <p>{{ t('pages.y2_2.manualRegion.copy') }}</p>
+          <label class="manual-region-select-label" for="manual-region-select">
+            {{ t('pages.y2_2.manualRegion.selectLabel') }}
+          </label>
+          <select
+            id="manual-region-select"
+            v-model="selectedResultKey"
+            class="manual-region-select"
+          >
+            <option
+              v-for="route in routes"
+              :key="route.id"
+              :value="route.id"
+            >
+              {{ routeRegionLabel(route) }}
+            </option>
+          </select>
+        </div>
         <div class="reward-badge">
           🎉 +30 {{ t('common.labels.coins') }}
         </div>
@@ -79,51 +118,54 @@
 import { computed, nextTick, reactive, ref } from 'vue'
 import { useAppI18n } from '@/composables/useAppI18n'
 import KnowledgeGuidePanel from '@/components/KnowledgeGuidePanel.vue'
-import { getYear2CountrySchoolConfig, persistMatchedCountryKey } from '@/config/year2CountrySchools'
+import {
+  getYear2CountrySchoolConfig,
+  persistMatchedCountryKey,
+} from '@/config/year2CountrySchools'
 
 const emit = defineEmits(['complete', 'close'])
-const { t, tm } = useAppI18n()
+const { currentLanguage, t, tm, localize } = useAppI18n()
 
 const questionWeights = [
   {
-    a: { hk: 2, sg: 2, us: 1, uk: 0, eu: 0 },
-    b: { uk: 2, eu: 2, us: 1, hk: 0, sg: 0 },
+    a: { hk: 2, sg: 2, us: 1, australia: 2, niche: 1, uk: 0, eu: 0 },
+    b: { uk: 2, eu: 2, us: 1, australia: 0, niche: 0, hk: 0, sg: 0 },
   },
   {
-    a: { hk: 2, sg: 1, eu: 1, uk: 0, us: 0 },
-    b: { us: 2, uk: 1, eu: 1, hk: 0, sg: 0 },
+    a: { hk: 2, sg: 1, eu: 1, australia: 2, niche: 1, uk: 0, us: 0 },
+    b: { us: 2, uk: 1, eu: 1, australia: 0, niche: 0, hk: 0, sg: 0 },
   },
   {
-    a: { hk: 2, sg: 2, uk: 0, us: 1, eu: 0 },
-    b: { uk: 2, eu: 2, us: 0, hk: 0, sg: 0 },
+    a: { hk: 2, sg: 2, niche: 3, australia: 1, uk: 0, us: 1, eu: 0 },
+    b: { uk: 2, eu: 2, australia: 1, us: 0, niche: 0, hk: 0, sg: 0 },
   },
   {
-    a: { sg: 2, hk: 1, eu: 1, uk: 0, us: 0 },
-    b: { us: 2, uk: 1, eu: 1, hk: 0, sg: 0 },
+    a: { sg: 2, hk: 1, australia: 2, eu: 1, niche: 0, uk: 0, us: 0 },
+    b: { us: 2, uk: 1, eu: 1, australia: 0, niche: 1, hk: 0, sg: 0 },
   },
   {
-    a: { hk: 2, sg: 2, us: 0, uk: 0, eu: 0 },
-    b: { uk: 2, eu: 2, us: 0, hk: 0, sg: 0 },
+    a: { hk: 2, sg: 2, australia: 2, niche: 2, us: 0, uk: 0, eu: 0 },
+    b: { uk: 2, eu: 2, australia: 0, niche: 0, us: 0, hk: 0, sg: 0 },
   },
   {
-    a: { sg: 2, hk: 1, eu: 1, uk: 0, us: 0 },
-    b: { us: 2, uk: 1, eu: 1, hk: 0, sg: 0 },
+    a: { sg: 2, hk: 1, australia: 2, niche: 2, eu: 1, uk: 0, us: 0 },
+    b: { us: 2, uk: 1, eu: 1, australia: 0, niche: 0, hk: 0, sg: 0 },
   },
   {
-    a: { hk: 2, sg: 1, us: 1, uk: 0, eu: 0 },
-    b: { uk: 2, eu: 1, us: 0, hk: 0, sg: 0 },
+    a: { hk: 2, sg: 1, australia: 1, niche: 3, us: 1, uk: 0, eu: 0 },
+    b: { uk: 2, eu: 1, australia: 0, niche: 0, us: 0, hk: 0, sg: 0 },
   },
   {
-    a: { uk: 2, eu: 2, hk: 0, sg: 0, us: 0 },
-    b: { us: 2, sg: 2, hk: 0, uk: 0, eu: 0 },
+    a: { uk: 2, eu: 2, australia: 1, niche: 0, hk: 0, sg: 0, us: 0 },
+    b: { us: 2, sg: 2, australia: 2, niche: 0, hk: 0, uk: 0, eu: 0 },
   },
   {
-    a: { hk: 2, sg: 2, uk: 0, us: 0, eu: 0 },
-    b: { us: 2, eu: 2, hk: 0, sg: 0, uk: 0 },
+    a: { hk: 2, sg: 2, australia: 2, niche: 3, uk: 0, us: 0, eu: 0 },
+    b: { us: 2, eu: 2, australia: 0, niche: 0, hk: 0, sg: 0, uk: 0 },
   },
   {
-    a: { uk: 2, eu: 2, sg: 0, hk: 0, us: 0 },
-    b: { us: 2, hk: 2, sg: 0, uk: 0, eu: 0 },
+    a: { uk: 2, eu: 2, australia: 0, niche: 0, sg: 0, hk: 0, us: 0 },
+    b: { us: 2, hk: 2, australia: 2, niche: 3, sg: 0, uk: 0, eu: 0 },
   },
 ]
 
@@ -143,33 +185,55 @@ const questions = computed(() => {
 
 const currentQ = ref(0)
 const selectedChoice = ref(null)
-const scores = reactive({ uk: 0, hk: 0, sg: 0, us: 0, eu: 0 })
 const showResult = ref(false)
 const winner = ref('uk')
+const selectedResultKey = ref('uk')
 const highlightedRoutes = ref([])
+
+// 记录每一次作答：{ questionIndex: number, choiceId: 'a'|'b' }
+const answersHistory = ref([])
+
+// 基于回答历史动态计算五条路线的当前得分
+const scores = computed(() => {
+  const totals = { uk: 0, hk: 0, sg: 0, us: 0, eu: 0, australia: 0, niche: 0 }
+  answersHistory.value.forEach((h) => {
+    const q = questions.value[h.questionIndex]
+    if (!q) return
+    const choice = q.choices.find((c) => c.id === h.choiceId)
+    if (!choice) return
+    Object.entries(choice.weights).forEach(([key, val]) => {
+      totals[key] = (totals[key] || 0) + val
+    })
+  })
+  return totals
+})
+
 
 const question = computed(() => questions.value[currentQ.value] || null)
 const routes = computed(() => [
   { id: 'uk', icon: '🏰', label: t('pages.y2_2.routes.uk'), keywords: [t('pages.y2_2.routeKeywords.uk.0'), t('pages.y2_2.routeKeywords.uk.1')] },
   { id: 'us', icon: '🗽', label: t('pages.y2_2.routes.us'), keywords: [t('pages.y2_2.routeKeywords.us.0'), t('pages.y2_2.routeKeywords.us.1')] },
+  { id: 'australia', icon: '🦘', label: t('pages.y2_2.routes.australia'), keywords: [t('pages.y2_2.routeKeywords.australia.0'), t('pages.y2_2.routeKeywords.australia.1')] },
   { id: 'eu', icon: '🏛️', label: t('pages.y2_2.routes.eu'), keywords: [t('pages.y2_2.routeKeywords.eu.0'), t('pages.y2_2.routeKeywords.eu.1')] },
   { id: 'sg', icon: '🌏', label: t('pages.y2_2.routes.sg'), keywords: [t('pages.y2_2.routeKeywords.sg.0'), t('pages.y2_2.routeKeywords.sg.1')] },
   { id: 'hk', icon: '🏙️', label: t('pages.y2_2.routes.hk'), keywords: [t('pages.y2_2.routeKeywords.hk.0'), t('pages.y2_2.routeKeywords.hk.1')] },
+  { id: 'niche', icon: '🧭', label: t('pages.y2_2.routes.niche'), keywords: [t('pages.y2_2.routeKeywords.niche.0'), t('pages.y2_2.routeKeywords.niche.1')] },
 ])
-
 const guideItems = computed(() => tm('pages.y2_2.guide.items') || [])
 
 const result = computed(() => {
-  const localizedResult = tm(`pages.y2_2.results.${winner.value}`) || {}
+  const resultKey = selectedResultKey.value || winner.value
+  const localizedResult = tm(`pages.y2_2.results.${resultKey}`) || {}
   return {
     title: localizedResult.title || '',
-    icon: localizedResult.icon || (winner.value === 'uk' ? '🏰' : winner.value === 'hk' ? '🏙️' : winner.value === 'us' ? '🗽' : winner.value === 'sg' ? '🌏' : '🏛️'),
+    icon: localizedResult.icon || (resultKey === 'uk' ? '🏰' : resultKey === 'hk' ? '🏙️' : resultKey === 'us' ? '🗽' : resultKey === 'sg' ? '🌏' : resultKey === 'australia' ? '🦘' : resultKey === 'niche' ? '🧭' : '🏛️'),
     desc: localizedResult.desc || '',
     analysis: localizedResult.analysis || '',
   }
 })
 
 const winnerCountryConfig = computed(() => getYear2CountrySchoolConfig(winner.value))
+const selectedCountryConfig = computed(() => getYear2CountrySchoolConfig(selectedResultKey.value))
 
 function portalClass(type) {
   const value = scores[type] || 0
@@ -179,60 +243,95 @@ function portalClass(type) {
 
 function answerQuestion(choiceId) {
   if (!question.value) return
+  const qIndex = currentQ.value
+
+  // 如果当前题目已经答过，则替换并删除之后的所有作答
+  const existingIdx = answersHistory.value.findIndex((h) => h.questionIndex === qIndex)
+  if (existingIdx >= 0) {
+    answersHistory.value.splice(existingIdx, answersHistory.value.length - existingIdx, {
+      questionIndex: qIndex,
+      choiceId,
+    })
+  } else {
+    answersHistory.value.push({ questionIndex: qIndex, choiceId })
+  }
+
   selectedChoice.value = choiceId
-  const choice = question.value.choices.find((item) => item.id === choiceId)
-  if (!choice) return
 
-  Object.entries(choice.weights).forEach(([route, value]) => {
-    scores[route] += value
-  })
+  // 高亮刚刚获得分数的路线
+  const choice = question.value.choices.find((c) => c.id === choiceId)
+  highlightedRoutes.value = Object.keys(choice.weights).filter((r) => choice.weights[r] > 0)
+  setTimeout(() => { highlightedRoutes.value = [] }, 1000)
 
-  // Highlight routes that gained points
-  highlightedRoutes.value = Object.keys(choice.weights).filter(route => choice.weights[route] > 0)
-
-  // Clear highlight after a short delay
-  setTimeout(() => {
-    highlightedRoutes.value = []
-  }, 1000)
-
-  currentQ.value += 1
-  selectedChoice.value = null
-
-  if (currentQ.value >= questions.value.length) {
-    const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1])
+  // 所有题目都已作答 → 显示结果
+  if (answersHistory.value.length === questions.value.length) {
+    const final = scores.value  // 利用刚刚更新的 computed
+    const sorted = Object.entries(final).sort((a, b) => b[1] - a[1])
     winner.value = sorted[0]?.[0] || 'uk'
+    selectedResultKey.value = winner.value
     showResult.value = true
     nextTick(() => {
-    // 稍微延迟，等待弹窗 DOM 完全挂载后滚动
-    setTimeout(() => {
-      const el = document.querySelector('.result-overlay')
-      if (el) el.scrollIntoView({ behavior: 'smooth' })
-    }, 100)
-  })
+      setTimeout(() => {
+        const el = document.querySelector('.result-overlay')
+        if (el) el.scrollIntoView({ behavior: 'smooth' })
+      }, 100)
+    })
+    return
   }
+
+  // 自动前进到下一题
+  currentQ.value = qIndex + 1
+  const next = answersHistory.value.find((h) => h.questionIndex === currentQ.value)
+  selectedChoice.value = next ? next.choiceId : null
+}
+
+function goToPrevQuestion() {
+  if (currentQ.value <= 0) return
+  currentQ.value--
+  const prev = answersHistory.value.find((h) => h.questionIndex === currentQ.value)
+  selectedChoice.value = prev ? prev.choiceId : null
+}
+
+function goToNextQuestion() {
+  if (currentQ.value >= questions.value.length - 1) return
+  currentQ.value++
+  const next = answersHistory.value.find((h) => h.questionIndex === currentQ.value)
+  selectedChoice.value = next ? next.choiceId : null
 }
 
 function resetGame() {
   currentQ.value = 0
   selectedChoice.value = null
-  scores.uk = 0
-  scores.hk = 0
-  scores.sg = 0
-  scores.us = 0
-  scores.eu = 0
+  answersHistory.value = []
   showResult.value = false
   winner.value = 'uk'
+  selectedResultKey.value = 'uk'
+}
+
+function routeRegionLabel(route) {
+  const label = String(route?.label || '')
+  return label.match(/[（(]([^）)]+)[）)]/)?.[1] || label
 }
 
 function completeWithReward() {
-  const matchedCountryKey = winnerCountryConfig.value.key
+  const matchedCountryKey = selectedCountryConfig.value.key || winnerCountryConfig.value.key
   persistMatchedCountryKey(matchedCountryKey)
 
   emit('complete', {
     rewardCoins: 30,
+    resultType: 'result',
+    resultData: {
+      recommendedCountry: result.value.title,
+      matchedCountry: winnerCountryConfig.value.canonicalName,
+      winner: matchedCountryKey,
+      scores: { ...scores.value },
+      answers: answersHistory.value.map((answer) => ({ ...answer })),
+      explanation: result.value.analysis || result.value.desc,
+    },
+    language: currentLanguage.value,
     profile: {
       matchedCountryKey,
-      matchedCountry: winnerCountryConfig.value.canonicalName,
+      matchedCountry: selectedCountryConfig.value.canonicalName || winnerCountryConfig.value.canonicalName,
     },
   })
 }
@@ -293,6 +392,41 @@ function completeWithReward() {
 .btn-claim:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+/* ---- 回溯导航按钮 ---- */
+.nav-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.btn-nav {
+  padding: 8px 18px;
+  border: 2px solid rgba(249, 217, 118, 0.55);
+  border-radius: 999px;
+  background: rgba(11, 19, 26, 0.7);
+  color: #f9d976;
+  font-weight: 700;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: 0.25s ease;
+  backdrop-filter: blur(4px);
+}
+
+.btn-nav:hover:not(:disabled) {
+  background: rgba(249, 217, 118, 0.15);
+  border-color: #f9d976;
+  transform: translateY(-1px);
+  box-shadow: 0 0 14px rgba(249, 217, 118, 0.25);
+}
+
+.btn-nav:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  border-color: rgba(255, 255, 255, 0.15);
+  color: #8a99b0;
 }
 
 .crossroads-game {
@@ -678,6 +812,11 @@ function completeWithReward() {
 
 .tarot-uk { background: linear-gradient(135deg, #1a3673, #0b131a); border: 4px solid #82b1ff; color: #e0ebff; }
 .tarot-hk { background: linear-gradient(135deg, #5c4716, #0b131a); border: 4px solid #ffe066; color: #fff3cc; }
+.tarot-us { background: linear-gradient(135deg, #12395f, #0b131a); border: 4px solid #7ed0ff; color: #e0f5ff; }
+.tarot-australia { background: linear-gradient(135deg, #22543d, #0b131a); border: 4px solid #86efac; color: #dcfce7; }
+.tarot-eu { background: linear-gradient(135deg, #334155, #0b131a); border: 4px solid #c6e6ff; color: #eef6ff; }
+.tarot-sg { background: linear-gradient(135deg, #064e3b, #0b131a); border: 4px solid #99ffcc; color: #dcfce7; }
+.tarot-niche { background: linear-gradient(135deg, #4c1d95, #0b131a); border: 4px solid #c4b5fd; color: #f5f3ff; }
 
 .tarot-title {
   width: 100%;
@@ -708,6 +847,58 @@ function completeWithReward() {
   line-height: 1.7;
 }
 
+.manual-region-panel {
+  width: 100%;
+  margin-top: 16px;
+  padding: 16px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.1);
+  text-align: left;
+}
+
+.manual-region-title {
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+.manual-region-panel p {
+  margin: 6px 0 12px;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 0.86rem;
+  line-height: 1.45;
+}
+
+.manual-region-select-label {
+  display: block;
+  margin-bottom: 7px;
+  color: #f9d976;
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.manual-region-select {
+  width: 100%;
+  min-height: 42px;
+  padding: 0 12px;
+  border: 1px solid rgba(249, 217, 118, 0.46);
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.34);
+  color: #fff;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.manual-region-select:focus {
+  outline: 3px solid rgba(249, 217, 118, 0.18);
+  border-color: #f9d976;
+}
+
+.manual-region-select option {
+  background: #111827;
+  color: #fff;
+}
+
 .btn-claim {
   margin-top: 28px;
   padding: 12px 34px;
@@ -718,14 +909,100 @@ function completeWithReward() {
   font-weight: 900;
   cursor: pointer;
 }
-@media (max-width: 860px) {
+@media (max-width: 768px) {
+  .crossroads-game {
+    padding: 16px 12px 32px;
+  }
+
+  .header {
+    margin-bottom: 12px;
+  }
+  .header h2 {
+    font-size: 1.3rem;
+  }
+  .header p {
+    font-size: 0.82rem;
+    margin-top: 4px;
+  }
+
   .crossroads-layout {
     grid-template-columns: 1fr;
+    gap: 12px;
   }
-  
-  .region-list,
+
+  /* 左侧地区列表压缩 */
+  .region-column {
+    padding: 12px;
+    min-height: auto;
+  }
+  .region-header h3 {
+    font-size: 0.9rem;
+  }
+  .region-header p {
+    font-size: 0.78rem;
+    display: none;  /* 介绍文字暂时隐藏 */
+  }
+  .region-list {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+  .route-card {
+    padding: 8px;
+    min-height: auto;
+    gap: 2px;
+  }
+  .route-icon { font-size: 1.5rem; }
+  .route-label { font-size: 0.75rem; }
+  .route-keywords { font-size: 0.65rem; }
+
+  /* 右侧问答区放大 */
   .question-panel {
-    -webkit-overflow-scrolling: touch;
+    padding: 14px;
+    max-height: none;
+  }
+  .question-count {
+    padding: 6px 10px;
+    font-size: 0.8rem;
+  }
+  .question-text {
+    font-size: 0.92rem;
+  }
+  .choices {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .btn-choice {
+    padding: 12px 14px;
+    min-height: 60px;
+  }
+  .nav-buttons {
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .btn-nav {
+    padding: 10px 14px;
+    font-size: 0.82rem;
+    min-height: 44px;
+  }
+
+  /* 结果卡片适配 */
+  .result-overlay {
+    padding: 10px;
+  }
+  .tarot-card {
+    width: 100%;
+    padding: 20px 14px;
+    min-height: auto;
+  }
+  .tarot-title {
+    font-size: 1.1rem;
+  }
+  .tarot-icon {
+    font-size: 3rem;
+    margin: 12px 0;
+  }
+  .manual-region-options {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 @keyframes card-reveal {

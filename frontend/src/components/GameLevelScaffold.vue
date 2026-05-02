@@ -170,4 +170,24 @@ const statusText = computed(() => localize(props.statusText) || props.statusText
     flex-direction: column;
   }
 }
+
+@media (max-width: 768px) {
+  .level-shell {
+    padding: 10px;
+    gap: 12px;
+  }
+  .hero {
+    padding: 14px;
+    border-radius: 16px;
+  }
+  .hero h1 {
+    font-size: clamp(1.3rem, 5.8vw, 1.7rem);
+  }
+  .subtitle {
+    line-height: 1.55;
+  }
+  .status-card {
+    min-width: 0;
+  }
+}
 </style>

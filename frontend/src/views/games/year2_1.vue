@@ -20,14 +20,11 @@
         </div>
         <p class="label">{{ t('pages.y2_1.preview') }}</p>
         <div class="stage">
-          <div class="avatar" :style="avatarStyle">
-            <div class="halo"></div>
-            <div class="sigil"><i class="fas" :class="selectedRoleIcon"></i></div>
-            <div class="tool-hand" v-if="selectedTool"><i class="fas" :class="selectedTool.icon"></i></div>
-            <div class="hair"></div>
-            <div class="face"></div>
-            <div class="outfit"></div>
-            <div class="shadow"></div>
+          <div class="avatar">
+            <img class="avatar-image" :src="selectedCharacter?.image || defaultCharacter.image" :alt="selectedCharacter?.name || ui.characterFallback">
+            <div v-if="selectedTool" class="equipped-tool" :class="`tool-${selectedTool.id}`">
+              <img :src="selectedTool.image" :alt="selectedTool.name">
+            </div>
           </div>
         </div>
 
@@ -39,8 +36,7 @@
           <div class="row"><span class="key">{{ t('pages.y2_1.fields.codename') }}</span><span class="value">{{ displayName }}</span></div>
           <div class="row"><span class="key">{{ ui.roleCard }}</span><span class="value">{{ roleCard.label }}</span></div>
           <div class="row"><span class="key">{{ ui.gpaLabel }}</span><span class="value">{{ selectedGpa?.range || ui.awaitingChoice }}</span></div>
-          <div class="row"><span class="key">{{ t('pages.y2_1.fields.hair') }}</span><span class="value">{{ selectedHair?.name || t('pages.y2_1.awaitingChoice') }}</span></div>
-          <div class="row"><span class="key">{{ t('pages.y2_1.fields.outfit') }}</span><span class="value">{{ selectedOutfit?.name || t('pages.y2_1.awaitingChoice') }}</span></div>
+          <div class="row"><span class="key">{{ ui.characterLabel }}</span><span class="value">{{ selectedCharacter?.name || ui.awaitingChoice }}</span></div>
           <div class="row"><span class="key">{{ t('pages.y2_1.fields.tool') }}</span><span class="value">{{ selectedTool?.name || t('pages.y2_1.awaitingChoice') }}</span></div>
           <div class="row"><span class="key">{{ ui.experienceTitle }}</span><span class="value">{{ experienceSummary }}</span></div>
           <div class="row"><span class="key">{{ ui.languageTitle }}</span><span class="value">{{ languageSummary }}</span></div>
@@ -77,37 +73,19 @@
           </div>
 
           <div class="group">
-            <h3>{{ t('pages.y2_1.hairTitle') }}</h3>
-            <p>{{ t('pages.y2_1.hairDesc') }}</p>
-            <div class="grid3">
+            <h3>{{ ui.characterTitle }}</h3>
+            <p>{{ ui.characterDesc }}</p>
+            <div class="character-grid">
               <button
-                v-for="hair in hairs"
-                :key="hair.id"
+                v-for="character in characters"
+                :key="character.id"
                 type="button"
-                class="swatch"
-                :class="{ sel: state.hairId === hair.id }"
-                @click="state.hairId = hair.id"
+                class="character-card"
+                :class="{ sel: state.characterId === character.id }"
+                @click="state.characterId = character.id"
               >
-                <span class="dot" :style="{ background: hair.color }"></span>
-                <strong>{{ hair.name }}</strong>
-              </button>
-            </div>
-          </div>
-
-          <div class="group">
-            <h3>{{ t('pages.y2_1.outfitTitle') }}</h3>
-            <p>{{ t('pages.y2_1.outfitDesc') }}</p>
-            <div class="grid3">
-              <button
-                v-for="outfit in outfits"
-                :key="outfit.id"
-                type="button"
-                class="swatch"
-                :class="{ sel: state.outfitId === outfit.id }"
-                @click="state.outfitId = outfit.id"
-              >
-                <span class="dot" :style="{ background: outfit.color }"></span>
-                <strong>{{ outfit.name }}</strong>
+                <img :src="character.image" :alt="character.name">
+                <strong>{{ character.name }}</strong>
               </button>
             </div>
           </div>
@@ -124,7 +102,7 @@
                 :class="{ sel: state.toolId === tool.id }"
                 @click="state.toolId = tool.id"
               >
-                <i class="fas" :class="tool.icon"></i>
+                <img class="tool-option-image" :src="tool.image" :alt="tool.name">
                 <strong>{{ tool.name }}</strong>
                 <span>{{ tool.copy }}</span>
               </button>
@@ -256,6 +234,12 @@
 import { computed, reactive, ref } from 'vue'
 import { useAppI18n } from '@/composables/useAppI18n'
 import KnowledgeGuidePanel from '@/components/KnowledgeGuidePanel.vue'
+import mapMonkey from '@/assets/avatars/map-monkey.png'
+import mapPuppy from '@/assets/avatars/map-puppy.png'
+import mapRobot from '@/assets/avatars/map-robot.png'
+import toolPrism from '@/assets/avatars/tool-prism.png'
+import toolQuill from '@/assets/avatars/tool-quill.png'
+import toolSatchel from '@/assets/avatars/tool-satchel.png'
 
 const emit = defineEmits(['complete', 'close'])
 const { currentLanguage, t } = useAppI18n()
@@ -265,6 +249,10 @@ const ZH_COPY = {
   gpaDesc: '系统会根据 GPA 档位自动生成当前角色卡类型。',
   gpaLabel: '当前均分 / GPA',
   roleCard: '当前角色卡',
+  characterTitle: '3. 选择地图角色',
+  characterDesc: '选择后左侧预览会立即切换；确认后它会出现在地图上。',
+  characterLabel: '地图角色',
+  characterFallback: '地图角色',
   experienceTitle: '经历标签',
   experienceDesc: '补充当前是否已经有实习、科研、比赛和项目。',
   languageTitle: '雅思 / 托福',
@@ -288,6 +276,10 @@ const EN_COPY = {
   gpaDesc: 'The system will auto-generate the current role-card type from your GPA band.',
   gpaLabel: 'Current GPA',
   roleCard: 'Current Role Card',
+  characterTitle: '3. Choose Map Character',
+  characterDesc: 'The preview updates as you click. After sealing, this character appears on the map.',
+  characterLabel: 'Map Character',
+  characterFallback: 'Map character',
   experienceTitle: 'Experience Tags',
   experienceDesc: 'Add whether you already have internships, research, competitions, and projects.',
   languageTitle: 'IELTS / TOEFL',
@@ -313,22 +305,16 @@ const gpaDefs = [
   { id: 'comeback', icon: 'fa-fire', range: { zh: 'GPA < 60', en: 'GPA < 60' } },
 ]
 
-const hairDefs = [
-  { id: 'walnut', color: '#3a2a25' },
-  { id: 'midnight', color: '#1f2937' },
-  { id: 'ember', color: '#8a3f1f' },
-]
-
-const outfitDefs = [
-  { id: 'amber', color: '#ffd46d' },
-  { id: 'azure', color: '#7dc6ff' },
-  { id: 'rose', color: '#ff9f9f' },
+const characterDefs = [
+  { id: 'robot', image: mapRobot, name: { zh: '机器人', en: 'Robot' } },
+  { id: 'puppy', image: mapPuppy, name: { zh: '小狗', en: 'Puppy' } },
+  { id: 'monkey', image: mapMonkey, name: { zh: '猴子', en: 'Monkey' } },
 ]
 
 const toolDefs = [
-  { id: 'quill', icon: 'fa-pen-nib' },
-  { id: 'prism', icon: 'fa-gem' },
-  { id: 'satchel', icon: 'fa-bag-shopping' },
+  { id: 'quill', icon: 'fa-pen-nib', image: toolQuill },
+  { id: 'prism', icon: 'fa-gem', image: toolPrism },
+  { id: 'satchel', icon: 'fa-bag-shopping', image: toolSatchel },
 ]
 
 const experienceFieldDefs = [
@@ -377,8 +363,7 @@ const greDefs = [
 const state = reactive({
   name: '',
   gpaId: '',
-  hairId: '',
-  outfitId: '',
+  characterId: '',
   toolId: '',
   experiences: {
     internship: '',
@@ -392,14 +377,13 @@ const state = reactive({
   greScore: '',
 })
 
-const totalSteps = 8   // 一共 8 个必填步骤
+const totalSteps = 7
 
 const completedSteps = computed(() => {
   let steps = 0
   if (state.name) steps += 1
   if (selectedGpa.value) steps += 1
-  if (selectedHair.value) steps += 1
-  if (selectedOutfit.value) steps += 1
+  if (selectedCharacter.value) steps += 1
   if (selectedTool.value) steps += 1
   if (experienceAnswered.value) steps += 1
   if (languageAnswered.value) steps += 1
@@ -433,14 +417,9 @@ const gpaOptions = computed(() => gpaDefs.map((gpa) => ({
   range: gpa.range[currentLanguage.value === 'en' ? 'en' : 'zh'],
 })))
 
-const hairs = computed(() => hairDefs.map((hair) => ({
-  ...hair,
-  name: t(`pages.y2_1.hairs.${hair.id}`),
-})))
-
-const outfits = computed(() => outfitDefs.map((outfit) => ({
-  ...outfit,
-  name: t(`pages.y2_1.outfits.${outfit.id}`),
+const characters = computed(() => characterDefs.map((character) => ({
+  ...character,
+  name: character.name[currentLanguage.value === 'en' ? 'en' : 'zh'],
 })))
 
 const tools = computed(() => toolDefs.map((tool) => ({
@@ -467,9 +446,9 @@ const greOptions = computed(() => greDefs.map((option) => ({
 })))
 
 const selectedGpa = computed(() => gpaOptions.value.find((item) => item.id === state.gpaId) ?? null)
-const selectedHair = computed(() => hairs.value.find((item) => item.id === state.hairId) ?? null)
-const selectedOutfit = computed(() => outfits.value.find((item) => item.id === state.outfitId) ?? null)
+const selectedCharacter = computed(() => characters.value.find((item) => item.id === state.characterId) ?? null)
 const selectedTool = computed(() => tools.value.find((item) => item.id === state.toolId) ?? null)
+const defaultCharacter = computed(() => characters.value[0])
 
 const guideItems = computed(() => [
   { title: t('pages.y2_1.guide.item1.title'), text: t('pages.y2_1.guide.item1.text') },
@@ -534,11 +513,6 @@ const greSummary = computed(() => {
   return `GRE ${state.greScore.trim()}`
 })
 
-const avatarStyle = computed(() => ({
-  '--hair': selectedHair.value?.color || '#3a2a25',
-  '--outfit': selectedOutfit.value?.color || '#ffd46d',
-}))
-
 const forgedProfile = computed(() => ({
   name: displayName.value,
   archetype: roleCard.value.label,
@@ -564,12 +538,12 @@ const forgedProfile = computed(() => ({
     label: roleCard.value.label,
   },
   mapAvatar: {
-    hairColor: selectedHair.value?.color || '#3a2a25',
-    outfitColor: selectedOutfit.value?.color || '#ffd46d',
+    characterKey: selectedCharacter.value?.id || defaultCharacter.value?.id || 'robot',
+    toolKey: selectedTool.value?.id || '',
   },
   avatar: {
-    hairColor: selectedHair.value?.color || '#3a2a25',
-    outfitColor: selectedOutfit.value?.color || '#ffd46d',
+    characterKey: selectedCharacter.value?.id || defaultCharacter.value?.id || 'robot',
+    toolKey: selectedTool.value?.id || '',
   },
   sigilIcon: roleCard.value.icon,
 }))
@@ -714,129 +688,54 @@ function returnToMap() {
 }
 
 .avatar {
-  --hair: #3a2a25;
-  --outfit: #ffd46d;
   position: relative;
-  width: 180px;
-  height: 210px;
-}
-
-.halo {
-  position: absolute;
-  left: 50%;
-  top: 0;
-  transform: translateX(-50%);
-  width: 112px;
-  height: 112px;
-  border-radius: 50%;
-  border: 2px solid rgba(248, 214, 162, 0.5);
-  box-shadow: 0 0 30px rgba(248, 214, 162, 0.16);
-}
-
-.sigil {
-  position: absolute;
-  left: 50%;
-  top: 44px;
-  transform: translateX(-50%);
-  color: #fde68a;
-  font-size: 1.45rem;
-  filter: drop-shadow(0 0 8px rgba(250, 204, 21, 0.5));
-}
-
-.tool-hand {
-  position: absolute;
-  right: -20px;
-  top: 120px;
-  width: 40px;
-  height: 40px;
+  width: min(260px, 78%);
+  aspect-ratio: 2 / 3;
   display: grid;
   place-items: center;
-  color: #1f2937;
-  font-size: 1.2rem;
-  transform: rotate(15deg);
 }
 
-.shadow {
-  position: absolute;
-  left: 50%;
-  bottom: 12px;
-  transform: translateX(-50%);
-  width: 90px;
-  height: 18px;
-  border-radius: 50%;
-  background: rgba(0, 0, 0, 0.35);
-  filter: blur(4px);
+.avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  filter: drop-shadow(0 22px 24px rgba(0, 0, 0, 0.36));
 }
 
-.hair {
+.equipped-tool {
   position: absolute;
-  left: 50%;
-  top: 34px;
-  transform: translateX(-50%);
-  width: 74px;
-  height: 34px;
-  background: var(--hair, #3a2a25);
-  border: 4px solid #273640;
-  border-bottom: none;
-  border-radius: 24px 24px 12px 12px;
+  right: -56px;
+  bottom: 24%;
+  width: 132px;
+  height: 132px;
+  display: grid;
+  place-items: center;
+  transform: rotate(7deg);
   z-index: 3;
 }
 
-.face {
-  position: absolute;
-  left: 50%;
-  top: 42px;
-  transform: translateX(-50%);
-  width: 66px;
-  height: 64px;
-  background: #ffe8c7;
-  border: 4px solid #273640;
-  border-radius: 50% 50% 46% 46%;
-  z-index: 2;
+.equipped-tool img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  filter: drop-shadow(0 12px 18px rgba(0, 0, 0, 0.38));
 }
 
-.face::before,
-.face::after {
-  content: '';
-  position: absolute;
-  top: 22px;
-  width: 8px;
-  height: 10px;
-  border-radius: 50%;
-  background: #273640;
+.equipped-tool.tool-prism {
+  right: -62px;
+  bottom: 38%;
+  width: 126px;
+  height: 126px;
 }
 
-.face::before {
-  left: 16px;
-}
-
-.face::after {
-  right: 16px;
-}
-
-.outfit {
-  position: absolute;
-  left: 50%;
-  top: 112px;
-  transform: translateX(-50%);
-  width: 74px;
-  height: 60px;
-  background: var(--outfit, #ffd46d);
-  border: 4px solid #273640;
-  border-radius: 18px 18px 12px 12px;
-}
-
-.outfit::before {
-  content: '';
-  position: absolute;
-  left: 50%;
-  top: -8px;
-  transform: translateX(-50%);
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: #f8fafc;
-  border: 3px solid #273640;
+.equipped-tool.tool-satchel {
+  right: -58px;
+  bottom: 22%;
+  width: 140px;
+  height: 140px;
+  transform: rotate(-6deg);
 }
 
 .card {
@@ -960,6 +859,49 @@ input:focus {
   gap: 10px;
 }
 
+.character-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.character-card {
+  min-height: 150px;
+  padding: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  border-radius: 16px;
+  color: #e2e8f0;
+  background: linear-gradient(145deg, rgba(30, 41, 59, 0.96), rgba(15, 23, 42, 0.96));
+  cursor: pointer;
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 10px;
+  transition: 0.18s;
+}
+
+.character-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(248, 214, 162, 0.42);
+}
+
+.character-card.sel {
+  border-color: #f8d6a2;
+  box-shadow: 0 0 0 1px rgba(248, 214, 162, 0.25);
+}
+
+.character-card img {
+  width: 92px;
+  height: 92px;
+  object-fit: contain;
+  display: block;
+  filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.28));
+}
+
+.character-card strong {
+  color: #f8fafc;
+}
+
 .opt,
 .swatch,
 .toggle-btn,
@@ -1001,15 +943,13 @@ input:focus {
   min-height: 82px;
 }
 
-.opt i {
-  display: inline-grid;
-  place-items: center;
-  width: 34px;
-  height: 34px;
+.tool-option-image {
+  width: 62px;
+  height: 62px;
   margin-bottom: 10px;
-  border-radius: 12px;
-  color: #f8d6a2;
-  background: rgba(248, 214, 162, 0.08);
+  object-fit: contain;
+  display: block;
+  filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.32));
 }
 
 .opt strong {
@@ -1210,34 +1150,312 @@ input:focus {
   .preview {
     border-right: none;
     border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+    max-height: 55vh;          /* 新增：限制预览区高度 */
+    overflow-y: auto;           /* 新增：溢出滚动 */
   }
 }
 
-@media (max-width: 700px) {
-  .topbar,
-  .preview,
-  .panel {
-    padding-left: 18px;
-    padding-right: 18px;
-    -webkit-overflow-scrolling: touch;   /* iOS 顺滑滚动 */
-    overflow-y: auto;
+@media (max-width: 768px) {
+  /* ===== 根容器强制撑满，纵向弹性盒 ===== */
+  .forge {
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
   }
 
+  /* ===== 标题区固定高度，不参与滚动 ===== */
   .topbar {
+    flex-shrink: 0;
+    padding: 8px 10px;
+    margin-bottom: 0;
     flex-direction: column;
     align-items: flex-start;
   }
-
-  .grid3,
-  .extra-grid {
-    grid-template-columns: 1fr;
+  .topbar h1 {
+    font-size: 1.1rem;
+  }
+  .topbar h1 i {
+    font-size: 0.95rem;
+    margin-right: 4px;
+  }
+  .topbar p {
+    font-size: 0.68rem;
+    margin-top: 2px;
+    line-height: 1.25;
   }
 
+  .charge-left {
+    top: 8px;
+    right: 8px;
+    padding: 6px 10px;
+    font-size: 0.68rem;
+  }
+
+  /* ===== 主区域：上下两段独立滚动 ===== */
+  .main {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    /* 去掉原有的 grid 相关属性 */
+    grid-template-columns: none;
+  }
+
+  /* -------- 预览区（上方 40% 高度，独立滚动）-------- */
+  .preview {
+    flex: 0 0 40%;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+    padding: 10px 12px;
+    /* 不再需要 max-height，由 flex 比例控制 */
+  }
+  .preview .label {
+    font-size: 0.7rem;
+    margin-bottom: 6px;
+  }
+
+  .stage {
+    min-height: 200px;
+    margin-top: 10px;
+    padding: 0;
+    border-radius: 16px;
+  }
+  .avatar {
+    width: min(200px, 70%);
+  }
+  .equipped-tool {
+    right: -42px;
+    bottom: 22%;
+    width: 88px;
+    height: 88px;
+  }
+  .equipped-tool.tool-prism {
+    right: -48px;
+    bottom: 36%;
+    width: 82px;
+    height: 82px;
+  }
+  .equipped-tool.tool-satchel {
+    right: -44px;
+    bottom: 20%;
+    width: 94px;
+    height: 94px;
+  }
+
+  .card {
+    margin-top: 10px;
+    padding: 10px;
+    border-radius: 14px;
+  }
+  .cardhead {
+    margin-bottom: 6px;
+  }
+  .cardhead h2 {
+    font-size: 0.82rem;
+  }
+  .badge {
+    width: 32px;
+    height: 32px;
+    font-size: 0.8rem;
+  }
+  .row {
+    padding: 8px 10px;
+    gap: 6px;
+    margin-top: 4px;
+    border-radius: 8px;
+  }
+  .key { font-size: 0.72rem; }
+  .value { font-size: 0.74rem; }
+
+  /* -------- 选择区（下方 60% 高度，独立滚动）-------- */
+  .panel {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 4px 10px;
+  }
+  .panel .label {
+    font-size: 0.68rem;
+    margin-bottom: 6px;
+  }
+
+  .box,
+  .group,
+  .progress {
+    padding: 8px;
+    border-radius: 10px;
+  }
+  .box {
+    margin-bottom: 8px;
+  }
+  .box label {
+    font-size: 0.72rem;
+    margin-bottom: 4px;
+  }
+  input {
+    padding: 8px 10px;
+    font-size: 0.82rem;
+    border-radius: 8px;
+  }
+
+  .groups {
+    gap: 8px;
+  }
+  .group h3 {
+    font-size: 0.8rem;
+    margin-bottom: 3px;
+  }
+  .group p {
+    font-size: 0.68rem;
+    margin-bottom: 6px;
+    line-height: 1.3;
+  }
+
+  /* 选项网格 */
+  .grid3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 5px;
+  }
+  .opt {
+    min-height: 56px;
+    padding: 8px 6px;
+    border-radius: 8px;
+  }
+  .opt.compact {
+    min-height: 48px;
+  }
+  .opt i {
+    font-size: 0.8rem;
+    margin-bottom: 2px;
+  }
+  .opt strong {
+    font-size: 0.72rem;
+    margin-bottom: 2px;
+    line-height: 1.15;
+  }
+  .opt span {
+    font-size: 0.64rem;
+    line-height: 1.15;
+  }
+  .tool-option-image {
+    width: 34px;
+    height: 34px;
+    margin-bottom: 4px;
+  }
+
+  /* 角色选择 */
+  .character-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 5px;
+  }
+  .character-card {
+    min-height: 82px;
+    padding: 6px 3px;
+    gap: 4px;
+    border-radius: 10px;
+  }
+  .character-card img {
+    width: 50px;
+    height: 50px;
+  }
+  .character-card strong {
+    font-size: 0.68rem;
+  }
+
+  /* 经历标签 */
+  .extra-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 5px;
+  }
+  .mini-card {
+    padding: 8px;
+    border-radius: 8px;
+  }
+  .mini-card strong {
+    font-size: 0.72rem;
+    margin-bottom: 5px;
+  }
+  .toggle-row {
+    gap: 5px;
+  }
+  .toggle-btn {
+    padding: 6px 8px;
+    font-size: 0.72rem;
+    min-height: 38px;
+    border-radius: 8px;
+  }
+
+  /* 进度条 */
+  .progress {
+    margin-top: 8px;
+  }
+  .progress strong {
+    font-size: 0.74rem;
+  }
+  .progressbar {
+    height: 7px;
+    margin-top: 5px;
+  }
+  .progress p {
+    font-size: 0.68rem;
+    margin-top: 5px;
+  }
+
+  /* 底部按钮 */
+  .foot {
+    margin-top: 10px;
+    gap: 8px;
+  }
+  .primary {
+    padding: 10px 18px;
+    font-size: 0.88rem;
+    min-height: 44px;
+  }
+
+  /* 知识指南面板 */
   .guide-floating {
     position: absolute;
-    top: 20px;
-    right: 24px;
+    top: 8px;
+    right: 8px;
     z-index: 20;
+  }
+
+  /* 弹窗保持不变 */
+  .modal {
+    padding: 12px;
+  }
+  .modalcard {
+    padding: 18px;
+    border-radius: 16px;
+  }
+  .modalcard h2 {
+    font-size: 1.05rem;
+    margin-bottom: 8px;
+  }
+  .modalcard p {
+    font-size: 0.78rem;
+    margin-bottom: 10px;
+  }
+  .reward-badge {
+    font-size: 0.75rem;
+    padding: 5px 12px;
+    margin: 8px 0 10px;
+  }
+  .pill {
+    padding: 6px 10px;
+    font-size: 0.7rem;
+    margin: 0 4px 6px 0;
+  }
+  .actions {
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .secondary,
+  .primary2 {
+    padding: 8px 14px;
+    font-size: 0.82rem;
+    min-height: 42px;
   }
 }
 </style>

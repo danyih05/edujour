@@ -38,6 +38,9 @@
           <button class="mobile-menu-item" @click="showMobileMenu = false; showHealingSandbox = true">
             <i class="fas fa-leaf"></i> {{ t('map.sanctuary') }}
           </button>
+          <button class="mobile-menu-item" @click="showMobileMenu = false; showHelpModal = true">
+            <i class="fas fa-question-circle"></i> {{ t('help.title') }}
+          </button>
         </div>
         <div class="mobile-menu-section">
           <div class="mobile-menu-coins">
@@ -88,8 +91,18 @@
           </div>
         </div>
 
-        <div :ref="setMapAreaRef('y2')" class="map-area">
-          <div class="y2-map-shell">
+        <div
+          :ref="setMapAreaRef('y2')"
+          class="map-area"
+          @touchstart="handleMapTouchStart('y2', $event)"
+          @touchmove="handleMapTouchMove('y2', $event)"
+          @touchend="handleMapTouchEnd('y2', $event)"
+          @touchcancel="handleMapTouchEnd('y2', $event)"
+        >
+          <div
+            class="y2-map-shell"
+            :style="{ transform: mapTransformStyle.y2, transformOrigin: '0 0' }"
+          >
             <div class="orb y2-orb top-left"></div>
             <div class="orb y2-orb bottom-right"></div>
             <svg class="y2-magic-svg" viewBox="0 0 1050 650" preserveAspectRatio="xMidYMid meet">
@@ -121,16 +134,26 @@
                 </g>
               </g>
             </svg>
+            
           </div>
 
           <div class="traveler" :class="{ walking: traveler.y2.walking, reached: traveler.y2.reached }" :style="[travelerStyle, { left: traveler.y2.left, top: traveler.y2.top }]">
-            <div class="traveler-shadow"></div>
-            <div class="traveler-body">
-              <div class="traveler-hair"></div>
-              <div class="traveler-face"><span class="eye left"></span><span class="eye right"></span><span class="blush left"></span><span class="blush right"></span><span class="mouth"></span></div>
-              <div class="traveler-arm left"></div><div class="traveler-arm right"></div><div class="traveler-leg left"></div><div class="traveler-leg right"></div>
+              <div class="traveler-shadow"></div>
+              <img class="traveler-image" :src="travelerImage" alt="">
+              <button
+                v-if="travelerTool"
+                type="button"
+                class="traveler-tool"
+                :class="`tool-${travelerTool.key}`"
+                @click.stop="toggleToolBubble"
+              >
+                <img :src="travelerTool.image" alt="">
+              </button>
+              <div v-if="showToolBubble && travelerTool" class="tool-skill-bubble">
+                <strong>{{ travelerToolSkill.title }}</strong>
+                <span>{{ travelerToolSkill.body }}</span>
+              </div>
             </div>
-          </div>
         </div>
       </section>
 
@@ -144,8 +167,18 @@
           </div>
         </div>
 
-        <div :ref="setMapAreaRef('y3')" class="map-area">
-          <div class="y3-map-shell">
+        <div
+          :ref="setMapAreaRef('y3')"
+          class="map-area"
+          @touchstart="handleMapTouchStart('y3', $event)"
+          @touchmove="handleMapTouchMove('y3', $event)"
+          @touchend="handleMapTouchEnd('y3', $event)"
+          @touchcancel="handleMapTouchEnd('y3', $event)"
+        >
+          <div
+            class="y3-map-shell"
+            :style="{ transform: mapTransformStyle.y3, transformOrigin: '0 0' }"
+          >
             <div class="orb y3-orb top-left"></div>
             <div class="orb y3-orb bottom-right"></div>
             <div class="orb y3-orb center"></div>
@@ -155,31 +188,50 @@
                   <stop offset="0%" stop-color="#818cf8"></stop><stop offset="25%" stop-color="#fb7185"></stop><stop offset="55%" stop-color="#fb923c"></stop><stop offset="100%" stop-color="#fbbf24"></stop>
                 </linearGradient>
               </defs>
-              <path class="star-underlay" :d="y3Path" /><path class="star-glow" :d="y3Path" /><path class="star-road" :d="y3Path" /><path class="star-core" :d="y3Path" />
+              <path class="star-underlay" :d="y3Path" />
+              <path class="star-glow" :d="y3Path" />
+              <path class="star-road" :d="y3Path" />
+              <path class="star-core" :d="y3Path" />
+
+              <!-- 新的节点组，类似 Y2 的 SVG 节点 -->
+              <g
+                v-for="node in y3Nodes"
+                :key="node.id"
+                :ref="setNodeRef('y3', node.id)"
+                class="node-svg-group"
+                :class="{
+                  locked: !isAccessible('y3', node.id),
+                  completed: isCleared('y3', node.id) && isAccessible('y3', node.id),
+                  final: node.final
+                }"
+                @click="openLevel('y3', node)"
+                @mouseenter="showTooltip($event, node, 'y3')"
+                @mouseleave="hideTooltip"
+              >
+                <circle class="node-svg-circle" :cx="node.x" :cy="node.y" :r="node.radius" />
+                <text class="node-svg-icon" :x="node.x" :y="node.y - 2" text-anchor="middle" dominant-baseline="middle">{{ node.iconText }}</text>
+                <text class="node-svg-label" :x="node.x" :y="node.y + node.radius + 14" text-anchor="middle">{{ node.label }}</text>
+              </g>
             </svg>
 
             <div class="traveler" :class="{ walking: traveler.y3.walking, reached: traveler.y3.reached }" :style="[travelerStyle, { left: traveler.y3.left, top: traveler.y3.top }]">
               <div class="traveler-shadow"></div>
-              <div class="traveler-body">
-                <div class="traveler-hair"></div>
-                <div class="traveler-face"><span class="eye left"></span><span class="eye right"></span><span class="blush left"></span><span class="blush right"></span><span class="mouth"></span></div>
-                <div class="traveler-arm left"></div><div class="traveler-arm right"></div><div class="traveler-leg left"></div><div class="traveler-leg right"></div>
+              <img class="traveler-image" :src="travelerImage" alt="">
+              <button
+                v-if="travelerTool"
+                type="button"
+                class="traveler-tool"
+                :class="`tool-${travelerTool.key}`"
+                @click.stop="toggleToolBubble"
+              >
+                <img :src="travelerTool.image" alt="">
+              </button>
+              <div v-if="showToolBubble && travelerTool" class="tool-skill-bubble">
+                <strong>{{ travelerToolSkill.title }}</strong>
+                <span>{{ travelerToolSkill.body }}</span>
               </div>
             </div>
             
-            <button v-for="node in y3Nodes" 
-              :key="node.id" 
-              :ref="setNodeRef('y3', node.id)" 
-              type="button" 
-              class="node" 
-              :class="[node.positionClass, { locked: !isAccessible('y3', node.id), completed: isCleared('y3', node.id), final: node.final }]" 
-              @click="openLevel('y3', node)"
-              @mouseenter="showTooltip($event, node, 'y3')"
-              @mouseleave="hideTooltip">
-              <span v-if="node.stacked" class="node-icon-stack"><i :class="[node.iconClass, 'icon-base']"></i><i :class="[node.iconTopClass, 'icon-top']"></i></span>
-              <i v-else :class="node.iconClass"></i>
-              <span class="node-label">{{ node.label }}</span>
-            </button>
           </div>
         </div>
       </section>
@@ -188,10 +240,41 @@
     <div v-if="activeLevel" class="modal-overlay">
       <div class="game-modal-content" :class="{ 'chrome-free-modal': isChromeFreeLevel }">
         <button v-if="!isChromeFreeLevel" class="absolute-close-btn" @click="closeGame"><i class="fas fa-times"></i></button>
-        <div v-if="!isChromeFreeLevel" class="modal-header"><span>{{ activeLevelTitle }}</span></div>
+        <div v-if="!isChromeFreeLevel" class="modal-header">
+          <span>{{ activeLevelTitle }}</span>
+          <button
+            v-if="canShowActiveOnboarding && hasAcknowledgedActiveOnboarding"
+            class="guide-reopen-btn"
+            type="button"
+            @click="reopenActiveOnboarding"
+          >
+            <i class="fas fa-circle-question" aria-hidden="true"></i>
+            {{ onboardingButtonText }}
+          </button>
+        </div>
         <div class="game-stage native-stage" :class="{ 'chrome-free-stage': isChromeFreeLevel }">
-          <component v-if="nativeGameComponent" :is="nativeGameComponent" @complete="handleNativeComplete" @close="closeGame" />
+          <PrePlayOnboarding
+            v-if="shouldGateActiveOnboarding"
+            :guide="activeOnboarding"
+            :level-title="activeLevelTitle"
+            @start="acknowledgeActiveOnboarding"
+          />
+          <GameCompletedView
+            v-else-if="activeGameResult"
+            :result="activeGameResult"
+            :title="activeLevelTitle"
+            @retry="retryActiveLevel"
+            @back="closeGame"
+          />
+          <component v-else-if="nativeGameComponent" :is="nativeGameComponent" @complete="handleNativeComplete" @close="closeGame" />
           <div v-else class="missing-native-game">{{ t('map.missingLevel') }}</div>
+          <PrePlayOnboarding
+            v-if="shouldOverlayActiveOnboarding"
+            class="floating"
+            :guide="activeOnboarding"
+            :level-title="activeLevelTitle"
+            @start="acknowledgeActiveOnboarding"
+          />
         </div>
       </div>
     </div>
@@ -242,18 +325,28 @@
 import { computed, defineAsyncComponent, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { getPortalText, useAppI18n } from '@/composables/useAppI18n'
+import { MUSIC_TRACKS, useWelcomeMusic } from '@/composables/useWelcomeMusic'
 import AvatarBadge from '@/components/AvatarBadge.vue'
+import GameCompletedView from '@/components/GameCompletedView.vue'
+import PrePlayOnboarding from '@/components/PrePlayOnboarding.vue'
 import PrizeShop from '@/components/PrizeShop.vue'
 import HealingSandbox from '@/components/HealingSandbox.vue'
 import { LEVEL_DEFINITIONS } from '@/config/levels'
 import { useAuthStore } from '@/stores/auth'
 import { useGameStore } from '@/stores/game'
 import HelpGuide from '@/components/HelpGuide.vue'
+import mapMonkey from '@/assets/avatars/map-monkey.png'
+import mapPuppy from '@/assets/avatars/map-puppy.png'
+import mapRobot from '@/assets/avatars/map-robot.png'
+import toolPrism from '@/assets/avatars/tool-prism.png'
+import toolQuill from '@/assets/avatars/tool-quill.png'
+import toolSatchel from '@/assets/avatars/tool-satchel.png'
 
 const router = useRouter()
 const authStore = useAuthStore()
 const store = useGameStore()
 const { currentLanguage, t } = useAppI18n()
+const { activateWelcomeMusicTrack } = useWelcomeMusic()
 store.hydrate()
 const chromeFreeFiles = new Set(['year3_8.vue'])
 const copy = computed(() => getPortalText(currentLanguage.value))
@@ -278,18 +371,48 @@ const y2NodeLayout = [{ id: 1, icon: '\uf2bb', radius: 28, x: 572, y: 368, textY
 const y3NodeLayout = [{ id: 1, positionClass: 'n1', iconClass: 'fas fa-hourglass-half' }, { id: 2, positionClass: 'n2', iconClass: 'fas fa-cubes' }, { id: 3, positionClass: 'n3', iconClass: 'fas fa-microscope' }, { id: 4, positionClass: 'n4', iconClass: 'fas fa-book-open', iconTopClass: 'fas fa-pen-nib', stacked: true }, { id: 5, positionClass: 'n5', iconClass: 'fas fa-cat' }, { id: 6, positionClass: 'n6', iconClass: 'fas fa-calendar-alt' }, { id: 7, positionClass: 'n7', iconClass: 'fas fa-biohazard' }, { id: 8, positionClass: 'n8', iconClass: 'fas fa-crown', final: true }]
 const y2Nodes = computed(() => y2NodeLayout.map((node) => ({
   ...node,
+  radius: windowWidth.value <= 768 ? node.radius + 10 : node.radius,
   label: `${node.id}. ${t(`${meta.y2[node.id].i18nKey}.mapLabel`)}`,
   title: t(`${meta.y2[node.id].i18nKey}.title`),
   file: meta.y2[node.id].file,
   i18nKey: meta.y2[node.id].i18nKey,
 })))
-const y3Nodes = computed(() => y3NodeLayout.map((node) => ({
-  ...node,
-  label: `${node.id}. ${t(`${meta.y3[node.id].i18nKey}.mapLabel`)}`,
-  title: t(`${meta.y3[node.id].i18nKey}.title`),
-  file: meta.y3[node.id].file,
-  i18nKey: meta.y3[node.id].i18nKey,
-})))
+const faUnicode = {
+  'fas fa-hourglass-half': '\uf252',
+  'fas fa-cubes': '\uf1b3',
+  'fas fa-microscope': '\uf610',
+  'fas fa-book-open': '\uf518',
+  'fas fa-pen-nib': '\uf5ad',
+  'fas fa-cat': '\uf6be',
+  'fas fa-calendar-alt': '\uf073',
+  'fas fa-biohazard': '\uf780',
+  'fas fa-crown': '\uf521',
+}
+const y3Nodes = computed(() => {
+  const isSmall = windowWidth.value <= 768
+  // 星形顶点坐标（映射自原 CSS 百分比）
+  const coords = {
+    1: { x: 623.5, y: 31 },          // 顶部顶点
+    2: { x: 863.563, y: 124.872 },   // 右上顶点
+    3: { x: 963, y: 351.5 },         // 右侧顶点
+    4: { x: 863.563, y: 578.128 },   // 右下顶点
+    5: { x: 623.5, y: 672 },         // 底部顶点
+    6: { x: 383.437, y: 578.128 },   // 左下顶点
+    7: { x: 284, y: 351.5 },         // 左侧顶点
+    8: { x: 383.437, y: 124.872 },   // 左上顶点
+  }
+  return y3NodeLayout.map((node) => ({
+    ...node,
+    x: coords[node.id].x,
+    y: coords[node.id].y,
+    radius: isSmall ? 56 : 32,        // 移动端稍大一些，但不会过分大
+    iconText: faUnicode[node.iconClass] || node.iconClass,
+    label: `${node.id}. ${t(`${meta.y3[node.id].i18nKey}.mapLabel`)}`,
+    title: t(`${meta.y3[node.id].i18nKey}.title`),
+    file: meta.y3[node.id].file,
+    i18nKey: meta.y3[node.id].i18nKey,
+  }))
+})
 const showPrizeShop = ref(false)
 const showHealingSandbox = ref(false)
 const showResetConfirm = ref(false)
@@ -300,10 +423,52 @@ const statusMessage = ref('')
 const showMobileMenu = ref(false)
 const windowWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 1024)
 const activeLevel = ref(null)
+const hasAcknowledgedActiveOnboarding = ref(false)
+const showActiveOnboardingOverlay = ref(false)
 const mapAreas = reactive({ y2: null, y3: null })
 const nodeRefs = reactive({ y2: {}, y3: {} })
 const traveler = reactive({ y2: { left: '50%', top: '50%', walking: false, reached: false }, y3: { left: '50%', top: '50%', walking: false, reached: false } })
 const travelerStyle = computed(() => ({ '--traveler-hair': store.travelerLook.hairColor, '--traveler-outfit': store.travelerLook.outfitColor }))
+const travelerImages = {
+  monkey: mapMonkey,
+  puppy: mapPuppy,
+  robot: mapRobot,
+}
+const travelerTools = {
+  prism: { key: 'prism', image: toolPrism },
+  quill: { key: 'quill', image: toolQuill },
+  satchel: { key: 'satchel', image: toolSatchel },
+}
+const travelerImage = computed(() => travelerImages[store.travelerLook.characterKey] || mapRobot)
+const travelerTool = computed(() => travelerTools[store.travelerLook.toolKey] || null)
+const showToolBubble = ref(false)
+const mapScaleRange = { min: 0.8, max: 1.5 }
+const mapTransform = reactive({
+  y2: { x: 0, y: 0, scale: 1 },
+  y3: { x: 0, y: 0, scale: 1 },
+})
+const mapTouchState = reactive({
+  y2: { mode: '', startX: 0, startY: 0, baseX: 0, baseY: 0, baseScale: 1, startDistance: 0, startMidX: 0, startMidY: 0 },
+  y3: { mode: '', startX: 0, startY: 0, baseX: 0, baseY: 0, baseScale: 1, startDistance: 0, startMidX: 0, startMidY: 0 },
+})
+const mapTransformStyle = computed(() => ({
+  y2: `translate(${mapTransform.y2.x}px, ${mapTransform.y2.y}px) scale(${mapTransform.y2.scale})`,
+  y3: `translate(${mapTransform.y3.x}px, ${mapTransform.y3.y}px) scale(${mapTransform.y3.scale})`,
+}))
+const toolSkillCopy = computed(() => (
+  currentLanguage.value === 'en'
+    ? {
+        prism: { title: 'Healing Boost', body: 'Increases recovery and reflection power.' },
+        quill: { title: 'Attack Boost', body: 'Sharpens ideas into stronger strikes.' },
+        satchel: { title: 'Protection Boost', body: 'Adds extra guard for the journey.' },
+      }
+    : {
+        prism: { title: '增加疗愈', body: '提升恢复与自我修复能力。' },
+        quill: { title: '增强攻击', body: '把思路凝成更有力的攻击。' },
+        satchel: { title: '增加防护', body: '为旅程提供额外保护。' },
+      }
+))
+const travelerToolSkill = computed(() => toolSkillCopy.value[travelerTool.value?.key] || { title: '', body: '' })
 const nativeGameComponent = computed(() => {
   if (!activeLevel.value) return null
   const loader = gameModules[`./games/${activeLevel.value.file}`]
@@ -314,6 +479,25 @@ const nativeGameComponent = computed(() => {
 const year2Complete = computed(() => store.y2.levels.length > 0 && store.y2.levels.every((level) => level.completed))
 const isChromeFreeLevel = computed(() => Boolean(activeLevel.value && chromeFreeFiles.has(activeLevel.value.file)))
 const activeLevelTitle = computed(() => activeLevel.value?.i18nKey ? t(`${activeLevel.value.i18nKey}.title`) : '')
+const activeOnboarding = computed(() => {
+  if (!activeLevel.value) return null
+  return activeLevel.value.onboarding || meta[activeLevel.value.year]?.[activeLevel.value.id]?.onboarding || null
+})
+const activeGameId = computed(() => activeLevel.value ? `${activeLevel.value.year === 'y3' ? 'year3' : 'year2'}_${activeLevel.value.id}` : '')
+const activeGameResult = computed(() => {
+  const result = activeGameId.value ? store.getGameResult(activeGameId.value) : null
+  return result?.completed ? result : null
+})
+const canShowActiveOnboarding = computed(() => Boolean(activeOnboarding.value && nativeGameComponent.value && !activeGameResult.value))
+const shouldGateActiveOnboarding = computed(() => (
+  canShowActiveOnboarding.value && !hasAcknowledgedActiveOnboarding.value
+))
+const shouldOverlayActiveOnboarding = computed(() => (
+  canShowActiveOnboarding.value && hasAcknowledgedActiveOnboarding.value && showActiveOnboardingOverlay.value
+))
+const onboardingButtonText = computed(() => (
+  currentLanguage.value === 'en' ? 'Controls' : '操作指引'
+))
 let openLevelTimer = null
 const travelerTimers = { y2: null, y3: null }
 const setMapAreaRef = (year) => (element) => { mapAreas[year] = element || null }
@@ -330,11 +514,92 @@ let tooltipTimer = null
 const getLevelState = (year, nodeId) => store.getLevel(year, nodeId)
 const isAccessible = (year, nodeId) => store.isNodeAccessible(year, nodeId)
 const isCleared = (year, nodeId) => Boolean(getLevelState(year, nodeId)?.completed || getLevelState(year, nodeId)?.skipped)
-function getNodeCenter(year, nodeId) { const map = mapAreas[year]; const node = nodeRefs[year][nodeId]; if (!map || !node) return null; const mr = map.getBoundingClientRect(); const nr = node.getBoundingClientRect(); if (!mr.width || !nr.width) return null; return { left: nr.left - mr.left + nr.width / 2, top: nr.top - mr.top + nr.height / 2 } }
-function moveTravelerToNode(year, nodeId) { const center = getNodeCenter(year, nodeId); if (!center) return; traveler[year].left = `${center.left}px`; traveler[year].top = `${center.top}px`; traveler[year].walking = true; traveler[year].reached = false; if (travelerTimers[year]) clearTimeout(travelerTimers[year]); travelerTimers[year] = window.setTimeout(() => { traveler[year].walking = false; traveler[year].reached = true }, 850) }
-function syncTraveler(year, nodeId = store[year].currentNode) { nextTick(() => window.requestAnimationFrame(() => moveTravelerToNode(year, nodeId))) }
+function getNodeCenter(year, nodeId) {
+  const map = mapAreas[year];          // .map-area 元素
+  const node = nodeRefs[year][nodeId];
+  if (!map || !node) return null;
+
+  const mapRect = map.getBoundingClientRect();
+  const nodeRect = node.getBoundingClientRect();
+
+  return {
+    left: nodeRect.left + nodeRect.width / 2 - mapRect.left,
+    top: nodeRect.top + nodeRect.height / 2 - mapRect.top
+  };
+}
+function clamp(value, min, max) {
+  return Math.min(max, Math.max(min, value))
+}
+function isMobilePortrait() {
+  if (typeof window === 'undefined') return false
+  return window.innerWidth <= 768 && window.innerHeight >= window.innerWidth
+}
+function getTouchDistance(touchA, touchB) {
+  return Math.hypot(touchA.clientX - touchB.clientX, touchA.clientY - touchB.clientY)
+}
+function getTouchMidPoint(touchA, touchB) {
+  return { x: (touchA.clientX + touchB.clientX) / 2, y: (touchA.clientY + touchB.clientY) / 2 }
+}
+
+function moveTravelerToNode(year, nodeId) { const center = getNodeCenter(year, nodeId); if (!center) return; traveler[year].left = `${center.left}px`; traveler[year].top = `${center.top}px`; traveler[year].walking = true; traveler[year].reached = false; if (travelerTimers[year]) clearTimeout(travelerTimers[year]); travelerTimers[year] = window.setTimeout(() => { traveler[year].walking = false; traveler[year].reached = true }, 600) }
+function syncTraveler(year, nodeId = store[year].currentNode) {
+  nextTick(() => window.requestAnimationFrame(() => {
+    moveTravelerToNode(year, nodeId)
+  }))
+}
+function handleMapTouchStart(year, event) {
+  if (!isMobilePortrait()) return
+  const state = mapTouchState[year]
+  if (event.touches.length >= 2) {
+    const [a, b] = event.touches
+    const mid = getTouchMidPoint(a, b)
+    state.mode = 'pinch'
+    state.baseScale = mapTransform[year].scale
+    state.startDistance = getTouchDistance(a, b)
+    state.startMidX = mid.x
+    state.startMidY = mid.y
+    state.baseX = mapTransform[year].x
+    state.baseY = mapTransform[year].y
+    return
+  }
+  if (event.touches.length === 1) {
+    const touch = event.touches[0]
+    state.mode = 'pan'
+    state.startX = touch.clientX
+    state.startY = touch.clientY
+    state.baseX = mapTransform[year].x
+    state.baseY = mapTransform[year].y
+  }
+}
+function handleMapTouchMove(year, event) {
+  if (!isMobilePortrait()) return
+  const state = mapTouchState[year]
+  if (state.mode === 'pinch' && event.touches.length >= 2) {
+    event.preventDefault()
+    const [a, b] = event.touches
+    const nextDistance = getTouchDistance(a, b)
+    const ratio = nextDistance / Math.max(1, state.startDistance)
+    const nextScale = clamp(state.baseScale * ratio, mapScaleRange.min, mapScaleRange.max)
+    mapTransform[year].scale = nextScale
+    moveTravelerToNode(year, store[year].currentNode)
+    return
+  }
+  if (state.mode === 'pan' && event.touches.length === 1) {
+    event.preventDefault()
+    const touch = event.touches[0]
+    mapTransform[year].x = state.baseX + (touch.clientX - state.startX)
+    mapTransform[year].y = state.baseY + (touch.clientY - state.startY)
+    moveTravelerToNode(year, store[year].currentNode) 
+  }
+}
+function handleMapTouchEnd(year) {
+  mapTouchState[year].mode = ''
+}
 function switchYear(year) { if (store.year === year) { syncTraveler(year); return } store.switchYear(year) }
-function switchYearAndClose(year) { switchYear(year); showMobileMenu.value = false }
+function switchYearAndClose(year) { switchYear(year); showMobileMenu.value = false; showToolBubble.value = false }
+function toggleToolBubble() {
+  showToolBubble.value = !showToolBubble.value
+}
 function showTooltipNow(node, year, type = 'locked') {
   let text = ''
   if (type === 'locked') {
@@ -363,17 +628,58 @@ function openLevel(year, node) {
   if (node.id === 1 && showGuide.value) {
     closeGuide();
   }
+  if (year === 'y3' && node.id === 6) {
+    activateWelcomeMusicTrack(MUSIC_TRACKS.year3_6, { play: true, restart: true })
+  } else if (year === 'y3' && node.id === 7) {
+    activateWelcomeMusicTrack(MUSIC_TRACKS.year3_7, { play: true, restart: true })
+  } else if (year === 'y3' && node.id === 8) {
+    activateWelcomeMusicTrack(MUSIC_TRACKS.year3_8, { play: true, restart: true })
+  } else {
+    activateWelcomeMusicTrack(MUSIC_TRACKS.year2, { play: true, restart: false })
+  }
   if (openLevelTimer) clearTimeout(openLevelTimer);
   if (store.year !== year) store.switchYear(year);
   store.setCurrentNode(year, node.id);
   moveTravelerToNode(year, node.id);
   openLevelTimer = window.setTimeout(() => {
+    hasAcknowledgedActiveOnboarding.value = false
+    showActiveOnboardingOverlay.value = false
     activeLevel.value = { ...node, year };
   }, 420);
 }
-function closeGame() { if (openLevelTimer) { clearTimeout(openLevelTimer); openLevelTimer = null } activeLevel.value = null }
+function closeGame() { if (openLevelTimer) { clearTimeout(openLevelTimer); openLevelTimer = null } activeLevel.value = null; hasAcknowledgedActiveOnboarding.value = false; showActiveOnboardingOverlay.value = false }
 async function redeemPrize(prize) { const label = store.year === 'y2' ? t('common.labels.coins') : t('common.labels.gems'); statusMessage.value = ''; try { await store.purchasePrize(prize); redeemMessage.value = `&#x1F389; ${t('map.redeemSuccess', { name: prize.name, cost: prize.cost, currency: label, balance: store.currentCoins })}` } catch (error) { redeemMessage.value = error.message || t('map.redeemNotEnough') } }
-async function handleNativeComplete(payload = {}) { if (!activeLevel.value) return; const year = activeLevel.value.year; const levelId = activeLevel.value.id; const profile = payload.profile || payload; const rewardCoins = Number(payload.rewardCoins) || 0; statusMessage.value = ''; try { await store.completeNode(year, levelId, { rewardCoins, profile }); closeGame(); syncTraveler(year, store[year].currentNode) } catch (error) { statusMessage.value = error.message || copy.value.map.syncFailed } }
+function buildResultPayload(payload = {}) {
+  const fallbackResultData = Object.fromEntries(
+    Object.entries(payload).filter(([key, value]) => (
+      !['profile', 'resultType', 'resultData', 'completed', 'passed', 'language', 'year', 'nodeId'].includes(key)
+      && value !== undefined
+    )),
+  )
+  return {
+    completed: payload.completed ?? true,
+    passed: payload.passed ?? true,
+    resultType: payload.resultType || (payload.resultData ? 'result' : 'passed'),
+    resultData: payload.resultData || fallbackResultData,
+    language: payload.language || currentLanguage.value,
+  }
+}
+function retryActiveLevel() {
+  if (!activeLevel.value) return
+  store.clearLevelResult(activeLevel.value.year, activeLevel.value.id)
+  hasAcknowledgedActiveOnboarding.value = false
+  showActiveOnboardingOverlay.value = false
+}
+function acknowledgeActiveOnboarding() {
+  hasAcknowledgedActiveOnboarding.value = true
+  showActiveOnboardingOverlay.value = false
+}
+function reopenActiveOnboarding() {
+  if (canShowActiveOnboarding.value) {
+    showActiveOnboardingOverlay.value = true
+  }
+}
+async function handleNativeComplete(payload = {}) { if (!activeLevel.value) return; const year = activeLevel.value.year; const levelId = activeLevel.value.id; const profile = Object.prototype.hasOwnProperty.call(payload, 'profile') ? payload.profile : undefined; const rewardCoins = Number(payload.rewardCoins) || 0; statusMessage.value = ''; store.saveLevelResult(year, levelId, buildResultPayload(payload)); try { await store.completeNode(year, levelId, { rewardCoins, profile }); closeGame(); syncTraveler(year, store[year].currentNode) } catch (error) { statusMessage.value = error.message || copy.value.map.syncFailed } }
 async function resetGame() { closeGame(); showPrizeShop.value = false; showHealingSandbox.value = false; showResetConfirm.value = false; redeemMessage.value = ''; statusMessage.value = ''; try { await store.resetStore(); syncTraveler('y2', 1) } catch (error) { statusMessage.value = error.message || copy.value.map.syncFailed } }
 async function handleLogout() { await authStore.logout(); store.clearState(); await router.replace({ name: 'login' }) }
 function handleYear3Unlock() {
@@ -385,6 +691,17 @@ function handleYear3Unlock() {
 function handleEscape(event) { if (event.key !== 'Escape') return; if (showResetConfirm.value) { showResetConfirm.value = false; return } if (activeLevel.value) { closeGame(); return } if (showYear3Unlock.value) { showYear3Unlock.value = false; return } if (showPrizeShop.value) { showPrizeShop.value = false; return } if (showHealingSandbox.value) showHealingSandbox.value = false }
 const handleResize = () => {
   syncTraveler(store.year);
+  if (!isMobilePortrait()) {
+    mapTransform.y2.x = 0
+    mapTransform.y2.y = 0
+    mapTransform.y2.scale = 1
+    mapTransform.y3.x = 0
+    mapTransform.y3.y = 0
+    mapTransform.y3.scale = 1
+  } else {
+    mapTransform.y2.scale = clamp(mapTransform.y2.scale, mapScaleRange.min, mapScaleRange.max)
+    mapTransform.y3.scale = clamp(mapTransform.y3.scale, mapScaleRange.min, mapScaleRange.max)
+  }
   if (showGuide.value) {
     updateGuidePosition();
   }
@@ -528,11 +845,17 @@ onMounted(() => {
   }
 })
 
-watch(() => store.year, (year) => syncTraveler(year, store[year].currentNode))
+watch(() => store.year, (year) => {
+  showToolBubble.value = false
+  syncTraveler(year, store[year].currentNode)
+})
 watch(() => store.y2.currentNode, (nodeId) => { if (store.year === 'y2') syncTraveler('y2', nodeId) })
 watch(() => store.y3.currentNode, (nodeId) => { if (store.year === 'y3') syncTraveler('y3', nodeId) })
 watch(() => store.year, () => {
   if (showGuide.value) nextTick(() => updateGuidePosition())
+})
+watch(() => store.travelerLook.toolKey, () => {
+  showToolBubble.value = false
 })
 onMounted(async () => {
   window.addEventListener('keydown', handleEscape)
@@ -571,9 +894,9 @@ onBeforeUnmount(() => { window.removeEventListener('keydown', handleEscape); win
   width: 50px;
   height: 50px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.1);
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  color: #fff;
+  background: linear-gradient(135deg, #f3cf9a, #e2bc7c);
+  border: 2px solid #f3cf9a;
+  color: #2c5a6e;
   font-size: 1.4rem;
   cursor: pointer;
   display: none;
@@ -584,8 +907,8 @@ onBeforeUnmount(() => { window.removeEventListener('keydown', handleEscape); win
 }
 
 .mobile-menu-toggle:hover {
-  background: rgba(255, 255, 255, 0.2);
-  transform: scale(1.05);
+  transform: scale(1.08);
+  box-shadow: 0 0 18px rgba(243, 207, 154, 0.6);
 }
 
 .mobile-menu-overlay {
@@ -604,7 +927,7 @@ onBeforeUnmount(() => { window.removeEventListener('keydown', handleEscape); win
   height: 100vh;
   background: linear-gradient(180deg, rgba(15, 23, 42, 0.98) 0%, rgba(7, 11, 20, 0.98) 100%);
   backdrop-filter: blur(16px);
-  border-left: 2px solid rgba(243, 207, 154, 0.2);
+  border-left: 3px solid #f3cf9a;  /* 加粗，纯金色 */
   z-index: 1205;
   padding: 20px 0;
   overflow-y: auto;
@@ -937,29 +1260,32 @@ onBeforeUnmount(() => { window.removeEventListener('keydown', handleEscape); win
 .node-label { position: absolute; top: calc(var(--y3-node-size) + 12px); left: 50%; transform: translateX(-50%); min-width: 140px; text-align: center; font-size: 0.82rem; font-weight: 900; color: #f8fafc; white-space: nowrap; pointer-events: none; text-shadow: 0 0 10px rgba(0, 0, 0, 0.85); }
 .n1 { left: calc(48.84% - var(--y3-node-offset)); top: calc(13.88% - var(--y3-node-offset)); } .n2 { left: calc(65.72% - var(--y3-node-offset)); top: calc(25.61% - var(--y3-node-offset)); } .n3 { left: calc(72.71% - var(--y3-node-offset)); top: calc(53.94% - var(--y3-node-offset)); } .n4 { left: calc(65.72% - var(--y3-node-offset)); top: calc(82.27% - var(--y3-node-offset)); } .n5 { left: calc(48.84% - var(--y3-node-offset)); top: calc(95.00% - var(--y3-node-offset)); } .n6 { left: calc(31.96% - var(--y3-node-offset)); top: calc(82.27% - var(--y3-node-offset)); } .n7 { left: calc(24.97% - var(--y3-node-offset)); top: calc(53.94% - var(--y3-node-offset)); } .n8 { left: calc(31.96% - var(--y3-node-offset)); top: calc(25.61% - var(--y3-node-offset)); }
 .n5 .node-label { top: auto; bottom: calc(var(--y3-node-size) + 12px); }
-.traveler { --traveler-scale: 1; position: absolute; width: 78px; height: 96px; z-index: 18; pointer-events: none; transition: left 0.8s cubic-bezier(0.22, 1, 0.36, 1), top 0.8s cubic-bezier(0.22, 1, 0.36, 1), transform 0.25s ease; transform: translate(-50%, -92%) scale(var(--traveler-scale)); transform-origin: 50% 92%; }
+.traveler { --traveler-scale: 1; position: absolute; width: 92px; height: 122px; z-index: 18; pointer-events: none; transition: left 0.8s cubic-bezier(0.22, 1, 0.36, 1), top 0.8s cubic-bezier(0.22, 1, 0.36, 1), transform 0.25s ease; transform: translate(-50%, -92%) scale(var(--traveler-scale)); transform-origin: 50% 92%; }
 .y3 .traveler { --traveler-scale: 0.86; }
 .traveler.walking { animation: bob-walk 0.55s ease-in-out infinite; }
 .traveler.reached::after { content: '\2728'; position: absolute; right: -6px; top: -10px; font-size: 1.15rem; animation: sparkle-pop 0.8s ease; }
-.traveler-shadow { position: absolute; bottom: 3px; left: 50%; width: 42px; height: 12px; transform: translateX(-50%); background: rgba(0, 0, 0, 0.18); border-radius: 50%; filter: blur(2px); }
-.traveler-body { position: absolute; left: 50%; bottom: 8px; width: 54px; height: 70px; transform: translateX(-50%); }
-.traveler-face { position: absolute; top: 2px; left: 50%; width: 44px; height: 42px; transform: translateX(-50%); background: #ffe8c7; border: 3px solid #273640; border-radius: 50% 50% 46% 46%; z-index: 3; }
-.traveler.reached .traveler-face { box-shadow: 0 0 0 6px rgba(255, 214, 102, 0.18); }
-.traveler-hair { position: absolute; top: -2px; left: 50%; width: 48px; height: 24px; transform: translateX(-50%); background: var(--traveler-hair); border: 3px solid #273640; border-bottom: none; border-radius: 20px 20px 10px 10px; z-index: 4; }
-.eye { position: absolute; top: 15px; width: 6px; height: 9px; background: #273640; border-radius: 50%; } .eye.left { left: 11px; } .eye.right { right: 11px; }
-.blush { position: absolute; top: 22px; width: 8px; height: 5px; background: rgba(255, 140, 140, 0.55); border-radius: 50%; } .blush.left { left: 5px; } .blush.right { right: 5px; }
-.mouth { position: absolute; left: 50%; bottom: 8px; width: 10px; height: 5px; transform: translateX(-50%); border-bottom: 3px solid #b55b5b; border-radius: 0 0 10px 10px; }
-.traveler-body::after { content: ''; position: absolute; top: 33px; left: 50%; width: 34px; height: 24px; transform: translateX(-50%); background: var(--traveler-outfit); border: 3px solid #273640; border-radius: 14px 14px 10px 10px; z-index: 2; }
-.traveler-arm, .traveler-leg { position: absolute; background: #ffe8c7; border: 3px solid #273640; z-index: 1; }
-.traveler-arm { top: 38px; width: 10px; height: 22px; border-radius: 10px; } .traveler-arm.left { left: 4px; transform: rotate(18deg); } .traveler-arm.right { right: 4px; transform: rotate(-18deg); }
-.traveler-leg { bottom: 0; width: 10px; height: 22px; border-radius: 10px; background: #fff3d9; } .traveler-leg.left { left: 16px; } .traveler-leg.right { right: 16px; }
+.traveler-shadow { position: absolute; bottom: 6px; left: 50%; width: 52px; height: 14px; transform: translateX(-50%); background: rgba(0, 0, 0, 0.22); border-radius: 50%; filter: blur(3px); }
+.traveler-image { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; display: block; filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.35)); }
+.traveler-tool { position: absolute; right: -34px; bottom: 30px; width: 64px; height: 64px; padding: 0; display: grid; place-items: center; transform: rotate(8deg); z-index: 4; border: none; background: transparent; cursor: pointer; pointer-events: auto; }
+.traveler-tool img { width: 100%; height: 100%; object-fit: contain; display: block; filter: drop-shadow(0 8px 10px rgba(0, 0, 0, 0.38)); }
+.traveler-tool:hover img { transform: scale(1.08); filter: drop-shadow(0 10px 14px rgba(0, 0, 0, 0.42)) drop-shadow(0 0 10px rgba(248, 214, 162, 0.45)); }
+.traveler-tool.tool-prism { right: -36px; bottom: 50px; width: 60px; height: 60px; }
+.traveler-tool.tool-satchel { right: -32px; bottom: 34px; width: 70px; height: 70px; transform: rotate(-6deg); }
+.tool-skill-bubble { position: absolute; right: -124px; bottom: 46px; width: 104px; min-height: 56px; padding: 10px 12px; z-index: 5; pointer-events: auto; color: #243142; background: #fffaf0; border: 2px solid rgba(248, 214, 162, 0.9); border-radius: 44% 56% 48% 52% / 58% 44% 56% 42%; box-shadow: 0 12px 20px rgba(0, 0, 0, 0.24), inset 0 0 0 2px rgba(255, 255, 255, 0.72); font-family: Georgia, serif; text-align: center; transform: rotate(-2deg); }
+.tool-skill-bubble::before, .tool-skill-bubble::after { content: ''; position: absolute; background: #fffaf0; border: 2px solid rgba(248, 214, 162, 0.9); border-radius: 50%; z-index: -1; }
+.tool-skill-bubble::before { width: 26px; height: 22px; left: 10px; top: -11px; }
+.tool-skill-bubble::after { width: 18px; height: 17px; right: 14px; bottom: -8px; }
+.tool-skill-bubble strong { display: block; color: #1e3a5f; font-size: 0.72rem; line-height: 1.15; }
+.tool-skill-bubble span { display: block; margin-top: 3px; color: #64748b; font-size: 0.58rem; line-height: 1.25; font-family: system-ui, sans-serif; font-weight: 800; }
 .modal-overlay { position: fixed; inset: 0; background: rgba(10, 20, 30, 0.85); backdrop-filter: blur(8px); display: flex; justify-content: center; align-items: center; z-index: 600; }
 .game-modal-content { background: #fffcf3; width: 95%; max-width: 1200px; height: 90vh; border-radius: 24px; padding: 25px; border: 3px solid #e2bc7c; box-shadow: 0 25px 40px rgba(0, 0, 0, 0.6); display: flex; flex-direction: column; position: relative; }
 .chrome-free-modal { background: transparent; width: 100vw; max-width: 100vw; height: 100vh; padding: 0; border: none; box-shadow: none; }
 .absolute-close-btn { position: absolute; top: -20px; right: -20px; width: 55px; height: 55px; border-radius: 50%; background: #e74c3c; color: #fff; border: 4px solid #fff; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4); font-size: 1.8rem; display: flex; justify-content: center; align-items: center; cursor: pointer; z-index: 1000; transition: 0.2s; }
 .absolute-close-btn:hover { background: #c0392b; transform: scale(1.15); }
-.modal-header { font-size: 1.5rem; color: #2d5a6e; border-bottom: 2px dashed #e7bc7a; padding-bottom: 12px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; font-weight: 900; font-family: Georgia, serif; }
-.game-stage { flex: 1; overflow: auto; border-radius: 16px; background: rgba(15, 23, 42, 0.04); }
+.modal-header { font-size: 1.5rem; color: #2d5a6e; border-bottom: 2px dashed #e7bc7a; padding-bottom: 12px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; gap: 12px; font-weight: 900; font-family: Georgia, serif; }
+.guide-reopen-btn { min-height: 36px; padding: 0 12px; border: 2px solid rgba(227, 178, 73, 0.35); border-radius: 999px; display: inline-flex; align-items: center; gap: 7px; background: rgba(44, 90, 110, 0.1); color: #2d5a6e; font-size: 0.86rem; font-weight: 900; cursor: pointer; transition: 0.18s; }
+.guide-reopen-btn:hover { transform: translateY(-2px); }
+.game-stage { flex: 1; position: relative; overflow: auto; border-radius: 16px; background: rgba(15, 23, 42, 0.04); }
 .native-stage { padding: 0; }
 .chrome-free-stage { overflow: visible; border-radius: 0; background: transparent; min-height: 100%; }
 .missing-native-game { min-height: 320px; display: grid; place-items: center; padding: 32px; text-align: center; color: #475569; font-weight: 700; }
@@ -972,6 +1298,72 @@ onBeforeUnmount(() => { window.removeEventListener('keydown', handleEscape); win
 .confirm-btn:hover { transform: translateY(-2px); }
 .confirm-btn.cancel { background: rgba(30, 41, 59, 0.08); color: #334155; border: 2px solid rgba(148, 163, 184, 0.28); }
 .confirm-btn.reset { background: linear-gradient(135deg, #ef4444, #b91c1c); color: #fff; box-shadow: 0 8px 18px rgba(185, 28, 28, 0.22); }
+/* Year 3 SVG 节点样式 - 与 Y2 一致 */
+.node-svg-group {
+  cursor: pointer;
+  pointer-events: auto;
+}
+.node-svg-circle {
+  fill: #0f172a;
+  stroke: #ffd7a1;
+  stroke-width: 3.5;
+  filter: drop-shadow(0 0 12px rgba(255, 166, 92, 0.65));
+  transition: all 0.25s ease;
+}
+.node-svg-icon {
+  fill: #ffd7a1;
+  font-family: 'Font Awesome 6 Free';
+  font-weight: 900;
+  font-size: 1.35rem;
+  pointer-events: none;
+  transition: fill 0.2s ease;
+}
+.node-svg-label {
+  fill: #f8fafc;
+  font-size: 14px;
+  font-weight: 800;
+  pointer-events: none;
+  text-shadow: 0 0 10px rgba(0,0,0,0.8);
+}
+.node-svg-group:hover .node-svg-circle {
+  stroke: #ffe6ba;
+  filter: drop-shadow(0 0 18px rgba(255, 183, 77, 0.6));
+}
+.node-svg-group:hover .node-svg-icon {
+  fill: #ffe6ba;
+}
+
+/* 锁定状态 */
+.node-svg-group.locked .node-svg-circle {
+  stroke: #6b7280;
+  filter: grayscale(1) brightness(0.7);
+  opacity: 0.6;
+}
+.node-svg-group.locked .node-svg-icon,
+.node-svg-group.locked .node-svg-label {
+  fill: #9ca3af;
+}
+
+/* 完成状态 */
+.node-svg-group.completed .node-svg-circle {
+  stroke: #fbbf24;
+  fill: #1e2a4a;
+  filter: drop-shadow(0 0 20px #fbbf24);
+}
+.node-svg-group.completed .node-svg-icon {
+  fill: #fcd34d;
+}
+
+/* 最终节点 */
+.node-svg-group.final .node-svg-circle {
+  stroke-width: 5;
+  stroke: #ffe08a;
+  filter: drop-shadow(0 0 24px rgba(255, 224, 138, 0.6));
+}
+.node-svg-group.final .node-svg-icon {
+  fill: #ffe08a;
+}
+
 @keyframes fade-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes star-twinkle { 0% { opacity: 0.5; transform: scale(1); } 50% { opacity: 1; transform: scale(1.015); } 100% { opacity: 0.72; transform: scale(1.03); } }
 @keyframes map-star-twinkle { 0% { opacity: 0.42; filter: brightness(0.9); } 50% { opacity: 0.95; filter: brightness(1.25); } 100% { opacity: 0.64; filter: brightness(1); } }
@@ -1004,7 +1396,123 @@ onBeforeUnmount(() => { window.removeEventListener('keydown', handleEscape); win
   .header-right { width: 100%; flex-wrap: wrap; }
   .btn-action, .coin-panel, .switch-btn, .session-pill { width: 100%; justify-content: center; }
   .game-modal-content { padding: 18px; width: calc(100% - 24px); }
-  .absolute-close-btn { right: 8px; top: 8px; width: 44px; height: 44px; font-size: 1.2rem; }
-  .modal-header { padding-right: 44px; font-size: 1.2rem; }
+  .absolute-close-btn {
+    top: 8px;
+    right: 8px;
+    width: 44px;
+    height: 44px;
+    font-size: 1.4rem;
+  }
+  .modal-header { padding-right: 48px; font-size: 1.2rem; }
+}
+
+@media (max-width: 768px) {
+  .map-page {
+    padding: 10px 8px 14px;
+    overflow: hidden;
+  }
+  .star-svg {
+    transform: translateY(0) scale(1.5);
+  }
+  .node-svg-icon {
+    font-size: 3.2rem;
+  }
+  .node-svg-label {
+    font-size: 24px;
+  }
+  .help-btn-wrapper {
+    display: none;
+  }
+  .mobile-menu-toggle {
+    top: 12px;
+    left: 64px;            /* 语言按钮 left:12px + 宽40px + 间距12px */
+    right: auto;
+    width: 44px;
+    height: 44px;
+  }
+  
+  .app-shell {
+    padding-top: 52px;
+  }
+  .global-progress {
+    margin-top: 0;
+  }
+
+  .sync-banner {
+    margin-left: 0;
+    margin-right: 0;
+  }
+  .board {
+    height: calc(100vh - 82px);
+    border-radius: 20px;
+  }
+  .header {
+    position: relative;
+    top: auto;
+    left: auto;
+    right: auto;
+    margin: 0 0 8px;        /* 下边距分隔 */
+    padding: 10px 12px;
+    border-radius: 14px;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(8px);
+  }
+  .header h1 {
+    font-size: 1.06rem;
+  }
+  .header-right {
+    display: none;
+  }
+  
+
+  .board .header {
+    padding-top: 12px;      /* 标题栏顶部留白 */
+  }
+  .map-area {
+    margin-top: 0;
+    touch-action: none;
+  }
+  .y2-map-shell,
+  .y3-map-shell {
+    transition: transform 0.28s ease;
+    will-change: transform;
+  }
+  .node,
+  .mobile-menu-item,
+  .btn-action,
+  .confirm-btn,
+  .switch-btn,
+  .help-btn,
+  .traveler-tool {
+    min-height: 48px;
+  }
+  .node {
+    --y3-node-size: 60px;
+  }
+  .traveler {
+    transition: left 0.6s cubic-bezier(0.22, 1, 0.36, 1), top 0.6s cubic-bezier(0.22, 1, 0.36, 1), transform 0.25s ease;
+  }
+  .game-modal-content {
+    width: 100%;
+    height: 100vh;
+    border-radius: 0;
+    padding: 50px 12px 12px; /* 顶部留出 50px 安全区，防止被关闭按钮遮挡 */
+  }
+  .modal-header {
+    padding-right: 48px;
+    font-size: 1rem;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+  }
+  .absolute-close-btn {
+    top: 8px;
+    right: 8px;
+    width: 44px;
+    height: 44px;
+    font-size: 1.4rem;
+  }
+  .guide-reopen-btn {
+    min-height: 44px;
+  }
 }
 </style>
