@@ -161,7 +161,10 @@ const formattedTime = computed(() => {
 const labelMap = computed(() => ({
   score: t('gameResult.fields.score'),
   correct: t('gameResult.fields.correct'),
+  wrong: currentLanguage.value === 'en' ? 'Wrong' : '答错',
   total: t('gameResult.fields.total'),
+  track: currentLanguage.value === 'en' ? 'Track' : '专业方向',
+  accuracy: currentLanguage.value === 'en' ? 'Accuracy' : '正确率',
   passed: t('gameResult.fields.passed'),
   winner: t('gameResult.fields.recommendation'),
   matchedCountry: t('gameResult.fields.matchedCountry'),
@@ -475,6 +478,8 @@ function stringifyValue(value) {
     return value.map((item) => stringifyValue(item)).filter(Boolean).join(' / ')
   }
   if (typeof value === 'object') {
+    if (value[currentLanguage.value]) return stringifyValue(value[currentLanguage.value])
+    if (value.en || value.zh) return stringifyValue(value.en || value.zh)
     const entries = Object.entries(value)
       .filter(([, entryValue]) => entryValue !== null && entryValue !== undefined && entryValue !== '')
       .slice(0, 8)
