@@ -51,45 +51,151 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref, watchEffect } from 'vue'
 import { useAppI18n } from '@/composables/useAppI18n'
+import { YEAR3_RECOMMENDATION_ROUTES } from '@/config/year3RecommendationQuestions'
 
 const emit = defineEmits(['complete'])
-const { currentLanguage, t, tm } = useAppI18n()
+const { currentLanguage, t, tm, localize } = useAppI18n()
 
-const currentNodeId = ref('start')
-const visitedNodes = ref(['start'])
 const previousTitle = ref(typeof document !== 'undefined' ? document.title : '')
 const showCompleteModal = ref(false)
 const rewardAmount = ref(50)   // 与原有奖励值一致
 const pageCopy = computed(() => tm('pages.y3_5') || {})
-const storyTree = computed(() => pageCopy.value.tree || {})
+const routes = computed(() => YEAR3_RECOMMENDATION_ROUTES)
+const selectedRouteId = ref('')
+const currentQuestionIndex = ref(0)
+const selectedOptionIndex = ref(null)
+const answerHistory = ref([])
 
-const currentNode = computed(() => storyTree.value[currentNodeId.value] ?? storyTree.value.start ?? {
-  text: '',
-  emoji: '😼',
-  mood: 'normal',
-  hearts: '',
-  choices: [],
+const selectedRoute = computed(() => routes.value.find((route) => route.id === selectedRouteId.value) || null)
+const currentQuestion = computed(() => selectedRoute.value?.questions?.[currentQuestionIndex.value] || null)
+const selectedOption = computed(() => {
+  if (selectedOptionIndex.value === null || !currentQuestion.value) return null
+  return currentQuestion.value.options[selectedOptionIndex.value] || null
+})
+const correctCount = computed(() => answerHistory.value.filter((answer) => answer.correct).length)
+const currentNodeId = computed(() => (
+  selectedRoute.value ? `${selectedRoute.value.id}-${currentQuestionIndex.value}` : 'start'
+))
+
+function asHtml(value) {
+  return String(value || '').replace(/\n/g, '<br>')
+}
+
+function copyValue(key, fallback) {
+  return pageCopy.value[key] || fallback
+}
+
+function makeRouteChoice(route) {
+  return {
+    nextId: `route:${route.id}`,
+    text: `<strong>${localize(route.title)}</strong><br><span>${localize(route.subtitle)}</span>`,
+  }
+}
+
+function makeAnswerChoice(option, index) {
+  return {
+    nextId: `answer:${index}`,
+    text: asHtml(localize(option)),
+  }
+}
+
+const currentNode = computed(() => {
+  if (!selectedRoute.value) {
+    return {
+      text: `<strong>${copyValue('introTitle', 'Recommendation Request Adventure')}</strong><br>${copyValue('intro', 'Choose a scenario and practice the recommendation request wording.')}`,
+      emoji: '🐶',
+      mood: 'normal',
+      hearts: copyValue('chooseRoute', 'Choose a route'),
+      choices: routes.value.map((route) => makeRouteChoice(route)),
+    }
+  }
+
+  const question = currentQuestion.value
+  if (!question) {
+    return {
+      text: copyValue('emptyQuestion', 'No question available.'),
+      emoji: '🐾',
+      mood: 'normal',
+      hearts: '',
+      choices: [{ text: copyValue('restart', 'Restart'), nextId: 'start' }],
+    }
+  }
+
+  const answered = selectedOption.value !== null
+  const answerIsCorrect = Boolean(selectedOption.value?.correct)
+  const answerCopy = answered
+    ? `<div class="answer-result ${answerIsCorrect ? 'correct' : 'wrong'}">${answerIsCorrect ? copyValue('correctPrefix', '正确！') : copyValue('wrongPrefix', '还差一点')}</div><div class="answer-explanation"><strong>${copyValue('explanationLabel', '解析')}</strong><br>${asHtml(localize(question.explanation))}</div>`
+    : ''
+
+  return {
+    text: `<strong>${localize(question.title)}</strong><br>${asHtml(localize(question.prompt))}${answerCopy}`,
+    emoji: answered ? (answerIsCorrect ? '😻' : '😾') : selectedRoute.value.emoji,
+    mood: answered ? (answerIsCorrect ? 'happy' : 'angry') : 'normal',
+    hearts: `${copyValue('progressLabel', '进度')} ${currentQuestionIndex.value + 1}/${selectedRoute.value.questions.length} · ${copyValue('scoreLabel', '答对')} ${correctCount.value}/${answerHistory.value.length}`,
+    choices: answered
+      ? [{
+          text: currentQuestionIndex.value === selectedRoute.value.questions.length - 1
+            ? copyValue('finishRoute', '完成路线')
+            : copyValue('nextQuestion', '下一题'),
+          nextId: currentQuestionIndex.value === selectedRoute.value.questions.length - 1 ? 'exit' : 'next',
+        }]
+      : question.options.map((option, index) => makeAnswerChoice(option, index)),
+  }
 })
 const catMoodClass = computed(() => ({
   'angry-shake': currentNode.value.mood === 'angry',
   'happy-bounce': currentNode.value.mood === 'happy',
 }))
+
 function restartGame() {
   showCompleteModal.value = false
-  // 重置故事到开始节点
-  currentNodeId.value = 'start'
-  visitedNodes.value = ['start']
-  // 如果有其他需要重置的状态（如 hearts 等），可以在这里重置
-  // 由于故事树没有额外状态，只重置节点 ID 即可
+  selectedRouteId.value = ''
+  currentQuestionIndex.value = 0
+  selectedOptionIndex.value = null
+  answerHistory.value = []
 }
+
 function renderNode(nodeId) {
-  if (nodeId === 'exit') {
-    showCompleteModal.value = true   // 弹出模态框，不再 alert
+  if (nodeId === 'start') {
+    restartGame()
     return
   }
-  currentNodeId.value = nodeId
-  visitedNodes.value.push(nodeId)
+
+  if (nodeId === 'next') {
+    currentQuestionIndex.value += 1
+    selectedOptionIndex.value = null
+    return
+  }
+
+  if (nodeId.startsWith('route:')) {
+    selectedRouteId.value = nodeId.replace('route:', '')
+    currentQuestionIndex.value = 0
+    selectedOptionIndex.value = null
+    answerHistory.value = []
+    return
+  }
+
+  if (nodeId.startsWith('answer:')) {
+    if (!currentQuestion.value || selectedOptionIndex.value !== null) return
+    const choiceIndex = Number(nodeId.replace('answer:', ''))
+    const option = currentQuestion.value.options[choiceIndex]
+    if (!option) return
+    selectedOptionIndex.value = choiceIndex
+    answerHistory.value.push({
+      routeId: selectedRoute.value?.id || '',
+      questionId: currentQuestion.value.id,
+      question: localize(currentQuestion.value.title),
+      answer: localize(option),
+      correct: Boolean(option.correct),
+    })
+    return
+  }
+
+  if (nodeId === 'exit') {
+    showCompleteModal.value = true   // 弹出模态框，不再 alert
+  }
 }
+
 function confirmComplete() {
   showCompleteModal.value = false
   if (window.parent && window.parent !== window) {
@@ -104,8 +210,15 @@ function confirmComplete() {
     rewardCoins: rewardAmount.value,
     resultType: 'summary',
     resultData: {
-      finalNode: currentNodeId.value,
-      visitedNodes: [...visitedNodes.value],
+      route: selectedRoute.value ? localize(selectedRoute.value.title) : '',
+      correct: correctCount.value,
+      total: selectedRoute.value?.questions?.length || 0,
+      answers: answerHistory.value.map((answer, index) => ({
+        index: index + 1,
+        question: answer.question,
+        answer: answer.answer,
+        correct: answer.correct,
+      })),
       rewardCoins: rewardAmount.value,
     },
     language: currentLanguage.value,
@@ -117,7 +230,7 @@ function closeModal() {
 }
 
 onMounted(() => {
-  renderNode('start')
+  restartGame()
 })
 
 watchEffect(() => {
@@ -151,7 +264,7 @@ onBeforeUnmount(() => {
   background: linear-gradient(to bottom, #4a6984, #2a3b4c);
   width: 100%;
   max-width: 800px;
-  height: 600px;
+  min-height: 680px;
   border-radius: 20px;
   border: 4px solid #f5b342;
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
@@ -175,9 +288,10 @@ onBeforeUnmount(() => {
 }
 
 .hearts {
-  color: #e74c3c;
-  letter-spacing: 5px;
+  color: #fde68a;
+  letter-spacing: 0;
   transition: 0.3s;
+  text-align: right;
 }
 
 .character-stage {
@@ -189,7 +303,7 @@ onBeforeUnmount(() => {
 }
 
 .cat-avatar {
-  font-size: 10rem;
+  font-size: 8.5rem;
   filter: drop-shadow(0 15px 15px rgba(0, 0, 0, 0.4));
   transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   transform-origin: bottom center;
@@ -208,7 +322,7 @@ onBeforeUnmount(() => {
 .dialogue-box {
   background: rgba(20, 20, 20, 0.85);
   border-top: 3px solid #f5b342;
-  height: 250px;
+  min-height: 360px;
   display: flex;
   flex-direction: column;
   z-index: 10;
@@ -231,9 +345,10 @@ onBeforeUnmount(() => {
 .text-content {
   color: #fff;
   padding: 20px 30px;
-  font-size: 1.15rem;
+  font-size: 1.08rem;
   line-height: 1.6;
   flex: 1;
+  overflow-y: auto;
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
   font-family: Georgia, serif;
 }
@@ -261,6 +376,18 @@ onBeforeUnmount(() => {
   font-weight: 600;
 }
 
+.choice-btn :deep(strong) {
+  display: block;
+  margin-bottom: 4px;
+  color: #fde68a;
+  font-size: 1.02rem;
+}
+
+.choice-btn :deep(span) {
+  color: #e2e8f0;
+  line-height: 1.45;
+}
+
 .choice-btn::before {
   content: '▶';
   margin-right: 10px;
@@ -277,6 +404,37 @@ onBeforeUnmount(() => {
 
 .choice-btn:hover::before {
   opacity: 1;
+}
+
+.answer-result {
+  margin-top: 14px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 0.92rem;
+  font-weight: 900;
+}
+
+.answer-result.correct {
+  color: #052e16;
+  background: #86efac;
+}
+
+.answer-result.wrong {
+  color: #450a0a;
+  background: #fca5a5;
+}
+
+.answer-explanation {
+  margin-top: 10px;
+  padding: 12px 14px;
+  border-left: 4px solid #f5b342;
+  border-radius: 8px;
+  background: rgba(245, 179, 66, 0.12);
+  color: #fff7ed;
+  font-size: 0.98rem;
+  line-height: 1.55;
 }
 
 @keyframes shake {

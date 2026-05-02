@@ -101,6 +101,10 @@ export default {
       matchedCountry: 'Matched Country/Region',
       schools: 'Schools',
       schoolTiers: 'School Tiers',
+      feedback: 'Feedback',
+      message: 'Message',
+      routeResult: 'Route Result',
+      explanation: 'Explanation',
       clearedStages: 'Cleared Stages',
       artifacts: 'Artifacts',
       level: 'Level',
@@ -308,7 +312,7 @@ export default {
         uk: 'Path of Albion (UK)',
         us: 'Path of the New World (USA)',
         australia: 'Path of Australia',
-        eu: 'Path of Continental Europe',
+        eu: 'Path of Europe',
         sg: 'Path of the Lion City (Singapore)',
         hk: 'Path of the Orient (Hong Kong)',
         niche: 'Japan / Korea and other niche regions',
@@ -326,6 +330,7 @@ export default {
       manualRegion: {
         title: 'Unhappy with the match? Manually change region',
         copy: 'Your chosen region will be saved for the next level, and Y2-3 will show schools from that region.',
+        selectLabel: 'Preferred region',
         schools: 'Next-level schools:',
       },
       
@@ -433,9 +438,9 @@ export default {
           analysis: 'Australia suits students who want a steady English-speaking route with strong city life. Keep checking program fit, internship access, and visa planning.',
         },
         eu: {
-          title: 'Route Result: Scholar of Continental Europe',
+          title: 'Route Result: Scholar of Europe',
           icon: '🏛️',
-          desc: '<b>Your selection points to Continental Europe.</b><br><br>You are drawn to cultural depth, research focus, and programs that reward academic preparation. Be prepared for more structured deadlines and program-specific requirements.',
+          desc: '<b>Your selection points to Europe.</b><br><br>You are drawn to cultural depth, research focus, and programs that reward academic preparation. Be prepared for more structured deadlines and program-specific requirements.',
           analysis: 'Europe suits those who want strong academic signal with a meaningful cross-border experience. Continue with targeted program research and language planning.',
         },
         sg: {
@@ -460,18 +465,18 @@ export default {
     },
     y2_3: {
       title: 'Scales of Destiny',
-      subtitle: 'For a GPA 82 STEM / CS applicant with one ordinary internship, place the {country} schools from the previous level into more realistic tiers.',
+      subtitle: 'Using the Year2-1 profile, place the {country} schools from the previous level into more realistic tiers.',
       currentAvatar: 'Current profile: GPA 82/100 | STEM/CS track | 1 ordinary internship',
       matchedRoute: 'Matched destination: {country}',
       fallbackCopy: 'No saved country match was found yet, so the game is showing a cross-region fallback set for now. Once you finish the previous level, this list will switch automatically.',
       regionSelector: {
         title: 'Unhappy with the match? Choose a region',
-        copy: 'Changing the region immediately swaps the school deck below, so you can tier the list around your own target.',
+        copy: 'The country is inherited from Year2-2, so the school deck below stays on that matched route.',
         preview: 'Current schools:',
       },
       schoolSearch: {
         title: 'Want more schools from this region?',
-        copy: 'Only extra schools from the currently selected region appear here. Each region has 5 options, so regions do not get mixed.',
+        copy: 'The deck starts with the first 10 sample schools from this region. Search here to add the remaining sample schools.',
         placeholder: 'Search current-region school / tier',
         emptyOption: 'Choose a current-region school',
         add: 'Add card',
@@ -1196,9 +1201,9 @@ export default {
     },
 
     y3_5: {
-      documentTitle: 'Y3-5 Tsundere Wildcat Mentor Simulator',
-      statusLabel: "Mentor's Favorability",
-      speakerName: 'Prof. Wildcat (Archmage)',
+      documentTitle: 'Y3-5 Recommendation Request Adventure',
+      statusLabel: 'Recommendation Request Training',
+      speakerName: 'Wangzai’s Recommendation Training Room',
       alerts: {
         returnToMap: 'Map Guide: Returned to the map interface! (This triggers the unlock code for the next stage in the main system)',
       },
@@ -1208,104 +1213,18 @@ export default {
         restart: "Restart Story",
         confirm: "Return to Map"
       },
-      restart: "Restart Story",
-      tree: {
-        start: {
-          text: "(You peek into the office)<br>😼 Meow? Another application season, huh? What do you want? Speak quickly, I am extremely busy.",
-          emoji: '😼',
-          mood: 'normal',
-          hearts: '❤️❤️🤍🤍🤍',
-          choices: [
-            { text: 'Professor! I want you to write me a recommendation letter! (Straight to the point, slightly abrupt)', nextId: 'bad_start' },
-            { text: "Greetings, Prof. Wildcat. I am XXX from your 'Advanced Yarn Ball Catching' class. I'm here to consult you regarding a recommendation letter.", nextId: 'good_start' },
-          ],
-        },
-        bad_start: {
-          text: "😾 MEOW! Barking orders right off the bat? Not even an introduction! I've taught countless students, how am I supposed to remember which mouse you are!",
-          emoji: '😾',
-          mood: 'angry',
-          hearts: '❤️🤍🤍🤍🤍',
-          choices: [
-            { text: 'Ah, my deepest apologies! I was the one sitting in the front row last semester...', nextId: 'recover_start' },
-            { text: "Oh, please don't be mad, Professor. Just write a few casual sentences for me, it's fine.", nextId: 'game_over_rude' },
-          ],
-        },
-        game_over_rude: {
-          text: "💢 A few casual sentences?! Is my academic reputation something to be thrown around casually? Get out! And close the door!<br><span style='color:#e74c3c'>[Game Over: The mentor is thoroughly enraged. You have lost this RL.]</span>",
-          emoji: '🙀',
-          mood: 'angry',
-          hearts: '🖤🖤🖤🖤🖤',
-          choices: [
-            { text: '🔄 Reload Save: Go learn basic email and office etiquette.', nextId: 'start' },
-          ],
-        },
-        recover_start: {
-          text: '😼 Hmph, I have a faint recollection. Speak, which program are you applying for? When is the deadline?',
-          emoji: '😼',
-          mood: 'normal',
-          hearts: '❤️❤️🤍🤍🤍',
-          choices: [
-            { text: "Uhh... The specific academies aren't decided yet. Just write me one as a backup for now.", nextId: 'game_over_vague' },
-            { text: "I wish to apply for the CS program at XX University; the deadline is at the end of next month. There's plenty of time.", nextId: 'good_timing' },
-          ],
-        },
-        good_start: {
-          text: "😸 Oh, it's the little one who got an A on the final. *Purr...* Alright, what program are you applying for? When do you need it?",
-          emoji: '😸',
-          mood: 'happy',
-          hearts: '❤️❤️❤️🤍🤍',
-          choices: [
-            { text: 'The application closes tomorrow night! Please save me, Professor!', nextId: 'game_over_rush' },
-            { text: "It's a program at XX University due at the end of next month. I came a month in advance to ask for your willingness.", nextId: 'good_timing' },
-          ],
-        },
-        game_over_rush: {
-          text: "😾 MEOW!! Due tomorrow and you come to me today?! Do you think I'm an automatic typewriter?! I'm busy, no rush orders!<br><span style='color:#e74c3c'>[Game Over: High-risk maneuver! Never push a professor's DDL to the extreme.]</span>",
-          emoji: '😾',
-          mood: 'angry',
-          hearts: '🖤🖤🖤🖤🖤',
-          choices: [
-            { text: '🔄 Reload Save: Remember to contact professors at least a month in advance.', nextId: 'start' },
-          ],
-        },
-        game_over_vague: {
-          text: "😾 You haven't even set a target, who am I writing this for? Different academies value entirely different traits. Come back when you've figured it out!<br><span style='color:#e74c3c'>[Game Over: Lack of planning. RLs must be tailored to specific programs.]</span>",
-          emoji: '😾',
-          mood: 'angry',
-          hearts: '❤️🤍🤍🤍🤍',
-          choices: [
-            { text: '🔄 Reload Save: Do your homework first.', nextId: 'start' },
-          ],
-        },
-        good_timing: {
-          text: '😼 A month in advance, at least you know the rules. But I\'m very busy this term. Do you have any materials to help me quickly recall your shining moments?',
-          emoji: '😼',
-          mood: 'normal',
-          hearts: '❤️❤️❤️🤍🤍',
-          choices: [
-            { text: 'Uhh... Does my final transcript count? For the rest, just freestyle based on your impression.', nextId: 'game_over_lazy' },
-            { text: "Yes! I've prepared an [Application Care Package]: including my latest CV, transcript, target program list, and a highlight summary of my final project in your class.", nextId: 'perfect_ending' },
-          ],
-        },
-        game_over_lazy: {
-          text: "😾 Freestyle based on my impression? Then I'll write 'This student had zero presence other than not snoring in class.' Not even organizing your own materials is a waste of my time!<br><span style='color:#e74c3c'>[Game Over: Professors have no obligation to remember your brilliance. Prepare a material package.]</span>",
-          emoji: '😾',
-          mood: 'angry',
-          hearts: '🤍🤍🤍🤍🤍',
-          choices: [
-            { text: '🔄 Reload Save: Organize your info package before knocking.', nextId: 'start' },
-          ],
-        },
-        perfect_ending: {
-          text: "😻 *Purr, purr...* The materials are this well-organized? Even the highlight summary is listed. Writing this letter will take me ten minutes tops.<br>Alright, leave it to me. May your applications go smoothly!<br><span style='color:#2ecc71'>[Cleared! You successfully smoothed the fur of the Tsundere Wildcat and mastered the perfect template for requesting an RL!]</span>",
-          emoji: '😻',
-          mood: 'happy',
-          hearts: '❤️❤️❤️❤️❤️',
-          choices: [
-            { text: '🎁 Claim Clear Reward (+50 Coins) and Return to Map', nextId: 'exit' },
-          ],
-        },
-      },
+      restart: "Restart",
+      introTitle: 'Recommendation Request Wording Adventure',
+      intro: 'Choose a real scenario: asking in person or requesting by email. Each route follows the recommendation-letter wording checklist so you can practice when to ask, what to prepare, how to remind, and how to say thanks.',
+      chooseRoute: 'Choose a route',
+      progressLabel: 'Progress',
+      scoreLabel: 'Correct',
+      correctPrefix: 'Correct!',
+      wrongPrefix: 'Not quite',
+      explanationLabel: 'Playful explanation',
+      nextQuestion: 'Next question',
+      finishRoute: 'Finish route and claim reward',
+      emptyQuestion: 'No question available yet.',
     },
     y3_6: {
       documentTitle: 'Y3-6 The Dark Citadel: Battle of the Ordeals',

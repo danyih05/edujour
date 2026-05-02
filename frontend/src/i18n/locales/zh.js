@@ -101,6 +101,10 @@ export default {
       matchedCountry: '匹配国家/地区',
       schools: '学校',
       schoolTiers: '选校分层',
+      feedback: '反馈',
+      message: '提示',
+      routeResult: '路线结果',
+      explanation: '说明',
       clearedStages: '已通过阶段',
       artifacts: '收集物',
       level: '等级',
@@ -308,7 +312,7 @@ export default {
         uk: '阿尔比恩之路（英国）',
         us: '新世界之路（美国）',
         australia: '南十字之路（澳洲）',
-        eu: '欧陆之路（欧洲）',
+        eu: '欧洲之路',
         sg: '狮城之路（新加坡）',
         hk: '东方之路（中国香港）',
         niche: '小众探索之路（日韩等小众地区）',
@@ -326,6 +330,7 @@ export default {
       manualRegion: {
         title: '如果不满意系统定位，可以手动改地区',
         copy: '你选择的地区会保存给下一关，Y2-3 会按该地区展示对应学校。',
+        selectLabel: '想去的地区',
         schools: '下一关学校：',
       },
       questionCount: '问题 {current} / {total}',
@@ -438,9 +443,9 @@ export default {
           analysis: '澳洲适合希望在英语环境中获得稳健升学路径和城市生活体验的同学。继续确认专业匹配、实习机会和签证规划。',
         },
         eu: {
-          title: '路径结果：欧陆学者',
+          title: '路径结果：欧洲学者',
           icon: '🏛️',
-          desc: '<b>你的选择更偏向：欧洲大陆。</b><br><br>你更看重文化厚度、研究导向和项目要求的明确性。应对结构化的申请节奏和专业要求做好准备。',
+          desc: '<b>你的选择更偏向：欧洲。</b><br><br>你更看重文化厚度、研究导向和项目要求的明确性。应对结构化的申请节奏和专业要求做好准备。',
           analysis: '欧洲适合希望获得学术深度和跨境文化体验的同学。继续细化项目研究和语言/条件准备。',
         },
         sg: {
@@ -465,18 +470,18 @@ export default {
     },
     y2_3: {
       title: '命运天平',
-      subtitle: '对于 GPA 82、STEM / CS、只有一段普通实习的申请者，请把上一关匹配到的 {country} 学校放进更合理的层级。',
+      subtitle: '根据 Year2-1 的当前画像，请把上一关匹配到的 {country} 学校放进更合理的层级。',
       currentAvatar: '当前画像：GPA 82/100 ｜ STEM/CS 方向 ｜ 1 段普通实习',
       matchedRoute: '当前匹配国家：{country}',
       fallbackCopy: '还没有读到上一关的匹配结果，当前先展示一组跨地区兜底学校。完成上一关后，这里会自动切换成对应国家。',
       regionSelector: {
         title: '对定位不满意？手动选择地区',
-        copy: '切换地区后，下方学校卡牌会立刻换成该地区对应学校，你可以按自己的目标重新分层。',
+        copy: '国家继承 Year2-2 的匹配结果，本关不再单独选择；下方学校卡牌会保持在该路线内。',
         preview: '当前学校：',
       },
       schoolSearch: {
         title: '想加入更多当前地区学校？',
-        copy: '这里只显示当前所选地区的额外学校。每个地区提供 5 所可选学校，不会和其他地区混在一起。',
+        copy: '牌堆先展示当前地区前 10 所样本学校；其余样本学校可在这里搜索并加入卡牌。',
         placeholder: '搜索当前地区学校 / 层级',
         emptyOption: '选择当前地区学校',
         add: '加入卡牌',
@@ -1163,9 +1168,9 @@ export default {
       },
     },
     y3_5: {
-      documentTitle: 'Y3-5 傲娇野猫导师模拟器',
-      statusLabel: '导师好感度',
-      speakerName: '野猫教授（大法师）',
+      documentTitle: 'Y3-5 推荐信话术大冒险',
+      statusLabel: '推荐信话术训练',
+      speakerName: '汪仔的推荐信训练场',
       alerts: {
         returnToMap: '地图指引：已返回地图界面！（这会触发主系统里下一阶段的解锁代码）',
       },
@@ -1176,103 +1181,17 @@ export default {
         confirm: "返回地图"
       },
       restart: "重新开始",
-      tree: {
-        start: {
-          text: '(你探头看向办公室)<br>😼 喵？又到申请季了，是吗？你找我做什么？快说，我现在非常忙。',
-          emoji: '😼',
-          mood: 'normal',
-          hearts: '❤️❤️🤍🤍🤍',
-          choices: [
-            { text: '老师！我想让您给我写一封推荐信！（开门见山，但有点冒失）', nextId: 'bad_start' },
-            { text: '野猫教授您好，我是您“高级毛线球捕捉学”课程里的 XXX。我这次来，是想向您请教推荐信的事情。', nextId: 'good_start' },
-          ],
-        },
-        bad_start: {
-          text: '😾 喵呜！一上来就发号施令？连自我介绍都没有！我教过那么多学生，我怎么知道你是哪只小老鼠！',
-          emoji: '😾',
-          mood: 'angry',
-          hearts: '❤️🤍🤍🤍🤍',
-          choices: [
-            { text: '啊，真的非常抱歉！我是上学期坐在前排、做过课程期末项目的那个学生……', nextId: 'recover_start' },
-            { text: '老师您别生气嘛，随便帮我写几句就行，不会有事的。', nextId: 'game_over_rude' },
-          ],
-        },
-        game_over_rude: {
-          text: '💢 随便写几句？！我挂在推荐信上的可是自己的学术声誉！出去！顺便把门带上！<br><span style=\'color:#e74c3c\'>[游戏失败：导师被彻底激怒了。这封推荐信已经没了。]</span>',
-          emoji: '🙀',
-          mood: 'angry',
-          hearts: '🖤🖤🖤🖤🖤',
-          choices: [
-            { text: '🔄 读档重来：先去补上最基本的邮件与办公室礼仪。', nextId: 'start' },
-          ],
-        },
-        recover_start: {
-          text: '😼 哼，我大概有点印象了。说吧，你申请什么项目？什么时候截止？',
-          emoji: '😼',
-          mood: 'normal',
-          hearts: '❤️❤️🤍🤍🤍',
-          choices: [
-            { text: '呃……具体学院我还没定下来。您先帮我写一封通用备用版吧。', nextId: 'game_over_vague' },
-            { text: '我想申请 XX 大学的计算机科学项目，截止时间在下个月月底，时间还算充裕。', nextId: 'good_timing' },
-          ],
-        },
-        good_start: {
-          text: '😸 哦，是那个期末拿了 A 的小家伙。*呼噜……* 好吧，你申请什么项目？什么时候需要我写好？',
-          emoji: '😸',
-          mood: 'happy',
-          hearts: '❤️❤️❤️🤍🤍',
-          choices: [
-            { text: '系统明天晚上就要关了！老师快救救我！', nextId: 'game_over_rush' },
-            { text: '是 XX 大学的一个项目，下个月月底截止。我提前一个月来，是想先征求您的意愿。', nextId: 'good_timing' },
-          ],
-        },
-        game_over_rush: {
-          text: '😾 喵呜！！明天截止你今天才来找我？！你以为我是自动打字机吗？！我很忙，不接急单！<br><span style=\'color:#e74c3c\'>[游戏失败：高危操作！永远不要把教授的截止日逼到极限。]</span>',
-          emoji: '😾',
-          mood: 'angry',
-          hearts: '🖤🖤🖤🖤🖤',
-          choices: [
-            { text: '🔄 读档重来：记住，至少要提前一个月联系老师。', nextId: 'start' },
-          ],
-        },
-        game_over_vague: {
-          text: '😾 你连目标都没定，我这封信到底是写给谁看的？不同学院看重的特质完全不一样。等你想清楚了再来！<br><span style=\'color:#e74c3c\'>[游戏失败：缺乏规划。推荐信必须围绕具体项目定制。]</span>',
-          emoji: '😾',
-          mood: 'angry',
-          hearts: '❤️🤍🤍🤍🤍',
-          choices: [
-            { text: '🔄 读档重来：先把学校和项目研究清楚。', nextId: 'start' },
-          ],
-        },
-        good_timing: {
-          text: '😼 提前一个月，至少说明你懂规矩。但我这学期非常忙。你有能让我迅速回忆起你高光表现的材料吗？',
-          emoji: '😼',
-          mood: 'normal',
-          hearts: '❤️❤️❤️🤍🤍',
-          choices: [
-            { text: '呃……成绩单应该算吧？剩下的老师您凭印象自由发挥就好。', nextId: 'game_over_lazy' },
-            { text: '有的！我准备了一份【申请材料包】：包括最新简历、成绩单、目标项目清单，以及您课上那个期末项目的亮点摘要。', nextId: 'perfect_ending' },
-          ],
-        },
-        game_over_lazy: {
-          text: '😾 凭印象自由发挥？那我大概只能写“这个学生上课不打呼噜”。连自己的材料都不整理好，就是在浪费我的时间！<br><span style=\'color:#e74c3c\'>[游戏失败：教授没有义务记住你的光辉时刻。请准备好推荐人材料包。]</span>',
-          emoji: '😾',
-          mood: 'angry',
-          hearts: '🤍🤍🤍🤍🤍',
-          choices: [
-            { text: '🔄 读档重来：先把信息包整理好，再来敲门。', nextId: 'start' },
-          ],
-        },
-        perfect_ending: {
-          text: '😻 *呼噜、呼噜……* 这份材料整理得这么清楚？连亮点摘要都列好了。这样写起来最多十分钟。<br>好吧，交给我。祝你的申请一路顺利！<br><span style=\'color:#2ecc71\'>[通关成功！你成功顺平了傲娇野猫的毛，也掌握了请求推荐信的完美模板！]</span>',
-          emoji: '😻',
-          mood: 'happy',
-          hearts: '❤️❤️❤️❤️❤️',
-          choices: [
-            { text: '🎁 领取通关奖励（+50 金币）并返回地图', nextId: 'exit' },
-          ],
-        },
-      },
+      introTitle: '推荐信请求话术大冒险',
+      intro: '选择一种真实场景：当面开口，或邮件请求。每条路线都来自推荐信话术清单，练完就知道该怎么开口、怎么发材料、怎么提醒和感谢。',
+      chooseRoute: '选择路线',
+      progressLabel: '进度',
+      scoreLabel: '答对',
+      correctPrefix: '正确！',
+      wrongPrefix: '还差一点',
+      explanationLabel: '俏皮解析',
+      nextQuestion: '下一题',
+      finishRoute: '完成路线并领取奖励',
+      emptyQuestion: '暂时没有题目。',
     },
     y3_6: {
       documentTitle: 'Y3-6 暗黑要塞：试炼之战',
