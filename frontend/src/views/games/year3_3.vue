@@ -59,7 +59,7 @@
                   {{ t('pages.y3_3.cv.gpa') }}
                 </span>
                 <div class="sub-item">
-                  <span class="bug-text" :class="{ fixed: isFound('hs') }" @click="findBug('hs')">
+                  <span class="bug-text" :class="{ fixed: isFound('gpa') }" @click="findBug('gpa')">
                     {{ t('pages.y3_3.cv.hs') }}
                   </span>
                 </div>
@@ -67,7 +67,7 @@
             </div>
 
             <div class="cv-section">
-              <h3><i class="fas fa-briefcase"></i> {{ t('pages.y3_3.sections.experience') }}</h3>
+              <h3><i class="fas fa-search"></i> {{ t('pages.y3_3.sections.researchExperience') }}</h3>
               <div class="cv-item">
                 <strong>{{ t('pages.y3_3.cv.role') }}</strong>
                 <span class="float-right">{{ t('pages.y3_3.cv.roleTime') }}</span>
@@ -78,12 +78,21 @@
                     </span>
                   </li>
                   <li>
-                    <span class="bug-text" :class="{ fixed: isFound('passive') }" @click="findBug('passive')">
+                    <span class="bug-text" :class="{ fixed: isFound('vague') }" @click="findBug('vague')">
                       {{ t('pages.y3_3.cv.passive') }}
+                    </span>
+                  </li>
+                  <li>
+                    <span class="bug-text" :class="{ fixed: isFound('passive') }" @click="findBug('passive')">
+                      {{ t('pages.y3_3.cv.placeholder') }}
                     </span>
                   </li>
                 </ul>
               </div>
+            </div>
+
+            <div class="cv-section">
+              <h3><i class="fas fa-briefcase"></i> {{ t('pages.y3_3.sections.workExperience') }}</h3>
               <div class="cv-item muted">
                 <span class="bug-text" :class="{ fixed: isFound('order') }" @click="findBug('order')">
                   {{ t('pages.y3_3.cv.order') }}
@@ -92,7 +101,7 @@
             </div>
 
             <div class="cv-section">
-              <h3><i class="fas fa-tools"></i> {{ t('pages.y3_3.sections.additional') }}</h3>
+              <h3><i class="fas fa-tools"></i> {{ t('pages.y3_3.sections.additionalSkills') }}</h3>
               <ul class="cv-bullet">
                 <li>
                   {{ t('pages.y3_3.cv.skillLabel') }}
@@ -100,6 +109,12 @@
                     {{ t('pages.y3_3.cv.score') }}
                   </span>
                 </li>
+              </ul>
+            </div>
+
+            <div class="cv-section">
+              <h3><i class="fas fa-star"></i> {{ t('pages.y3_3.sections.extracurricularActivities') }}</h3>
+              <ul class="cv-bullet">
                 <li>
                   <span class="bug-text" :class="{ fixed: isFound('hobby') }" @click="findBug('hobby')">
                     {{ t('pages.y3_3.cv.hobby') }}
@@ -169,7 +184,7 @@ import { useAppI18n } from '@/composables/useAppI18n'
 const emit = defineEmits(['complete', 'close'])
 const { t, tm } = useAppI18n()
 
-const coreBugIds = ['filename', 'email', 'gpa', 'vague', 'hobby', 'font']
+const coreBugIds = ['gpa', 'vague', 'order', 'score', 'hobby', 'passive']
 const bugDatabase = computed(() => tm('pages.y3_3.bugs') || {})
 
 const foundIds = reactive(new Set())
