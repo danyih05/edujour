@@ -52,6 +52,8 @@ export const MUSIC_TRACKS = {
 }
 
 const MUTED_STORAGE_KEY = 'edujour_welcome_music_muted'
+const VOLUME_STORAGE_KEY = 'edujour_welcome_music_volume'
+const DEFAULT_VOLUME = 0.55
 
 const audioSource = ref('')
 const currentTrack = ref(null)
@@ -60,6 +62,7 @@ const isMuted = ref(false)
 const isBlocked = ref(false)
 const hasCompletedOnce = ref(false)
 const loadError = ref('')
+const volume = ref(DEFAULT_VOLUME)
 
 let audio = null
 let initialized = false
@@ -90,6 +93,41 @@ function persistMutedPreference(value) {
   }
 }
 
+function clampVolume(value) {
+  const numericValue = Number(value)
+  if (!Number.isFinite(numericValue)) {
+    return DEFAULT_VOLUME
+  }
+
+  return Math.min(1, Math.max(0, numericValue))
+}
+
+function readVolumePreference() {
+  if (typeof localStorage === 'undefined') {
+    return DEFAULT_VOLUME
+  }
+
+  try {
+    const savedVolume = localStorage.getItem(VOLUME_STORAGE_KEY)
+    return savedVolume === null ? DEFAULT_VOLUME : clampVolume(savedVolume)
+  } catch (error) {
+    console.warn('Failed to read music volume preference.', error)
+    return DEFAULT_VOLUME
+  }
+}
+
+function persistVolumePreference(value) {
+  if (typeof localStorage === 'undefined') {
+    return
+  }
+
+  try {
+    localStorage.setItem(VOLUME_STORAGE_KEY, String(value))
+  } catch (error) {
+    console.warn('Failed to save music volume preference.', error)
+  }
+}
+
 function resolveTrack(track) {
   if (typeof track === 'string') {
     return MUSIC_TRACKS[track] || null
@@ -104,6 +142,16 @@ function syncMutedPreference(value) {
 
   if (audio) {
     audio.muted = value
+  }
+}
+
+function syncVolumePreference(value) {
+  const nextVolume = clampVolume(value)
+  volume.value = nextVolume
+  persistVolumePreference(nextVolume)
+
+  if (audio) {
+    audio.volume = nextVolume
   }
 }
 
@@ -169,11 +217,12 @@ export function initializeWelcomeMusic() {
 
   initialized = true
   syncMutedPreference(readMutedPreference())
+  syncVolumePreference(readVolumePreference())
 
   audio = new Audio()
   audio.preload = 'auto'
   audio.loop = false
-  audio.volume = 0.55
+  audio.volume = volume.value
   audio.muted = isMuted.value
   audio.addEventListener('ended', handleAudioEnded)
   audio.addEventListener('error', handleAudioError)
@@ -265,6 +314,11 @@ export function toggleWelcomeMusicMuted() {
   muteWelcomeMusic()
 }
 
+export function setWelcomeMusicVolume(value) {
+  initializeWelcomeMusic()
+  syncVolumePreference(value)
+}
+
 export function useWelcomeMusic() {
   return {
     audioSource,
@@ -274,11 +328,13 @@ export function useWelcomeMusic() {
     isBlocked,
     hasCompletedOnce,
     loadError,
+    volume,
     initializeWelcomeMusic,
     activateWelcomeMusicTrack,
     playWelcomeMusic,
     muteWelcomeMusic,
     unmuteWelcomeMusic,
     toggleWelcomeMusicMuted,
+    setWelcomeMusicVolume,
   }
 }

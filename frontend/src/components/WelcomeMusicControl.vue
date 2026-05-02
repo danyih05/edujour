@@ -39,7 +39,57 @@
         <i :class="isMuted ? 'fas fa-volume-xmark' : 'fas fa-volume-high'" aria-hidden="true"></i>
         <span class="btn-label">{{ muteLabel }}</span>
       </button>
+      <button
+        type="button"
+        class="music-action volume-action desktop-volume-action"
+        :aria-label="copy.volumeToggleAria"
+        :aria-expanded="isVolumePanelOpen"
+        @click="toggleVolumePanel"
+      >
+        <i class="fas fa-sliders" aria-hidden="true"></i>
+        <span class="btn-label">{{ copy.volume }}</span>
+      </button>
     </div>
+
+    <transition name="volume-panel">
+      <div
+        v-if="isVolumePanelOpen"
+        class="volume-popover desktop-volume-panel"
+        :class="{ below: shouldOpenVolumePanelBelow }"
+        @click.stop
+        @pointerdown.stop
+        @pointermove.stop
+        @pointerup.stop
+        @pointercancel.stop
+      >
+        <div class="volume-popover-head">
+          <span>{{ copy.volume }}</span>
+          <strong>{{ volumePercent }}%</strong>
+          <button
+            type="button"
+            class="volume-close"
+            :aria-label="copy.volumeCloseAria"
+            @click="closeVolumePanel"
+          >
+            <i class="fas fa-chevron-down" aria-hidden="true"></i>
+          </button>
+        </div>
+        <div class="volume-slider-row">
+          <i class="fas fa-volume-low" aria-hidden="true"></i>
+          <input
+            class="volume-slider"
+            type="range"
+            min="0"
+            max="100"
+            step="1"
+            :value="volumePercent"
+            :aria-label="copy.volumeSliderAria"
+            @input="setVolumeFromSlider"
+          >
+          <i class="fas fa-volume-high" aria-hidden="true"></i>
+        </div>
+      </div>
+    </transition>
   </aside>
 </template>
 
@@ -60,9 +110,11 @@ const {
   isBlocked,
   hasCompletedOnce,
   loadError,
+  volume,
   initializeWelcomeMusic,
   playWelcomeMusic,
   toggleWelcomeMusicMuted,
+  setWelcomeMusicVolume,
 } = useWelcomeMusic()
 
 const initialViewportWidth = typeof window === 'undefined' ? 1280 : window.innerWidth
@@ -81,6 +133,7 @@ const viewportSize = ref({
 const isDragging = ref(false)
 const suppressNextClick = ref(false)
 const hasCustomControlPosition = ref(false)
+const isVolumePanelOpen = ref(false)
 
 const activeDrag = {
   pointerId: null,
@@ -108,6 +161,10 @@ const copy = computed(() => (
         unmute: 'Unmute',
         muteAria: 'Mute music',
         unmuteAria: 'Unmute music',
+        volume: 'Volume',
+        volumeToggleAria: 'Open volume slider',
+        volumeCloseAria: 'Collapse volume slider',
+        volumeSliderAria: 'Music volume',
       }
     : {
         panelLabel: '音乐控制',
@@ -124,6 +181,10 @@ const copy = computed(() => (
         unmute: '开声',
         muteAria: '静音音乐',
         unmuteAria: '开启音乐声音',
+        volume: '音量',
+        volumeToggleAria: '展开音量滑杆',
+        volumeCloseAria: '收起音量滑杆',
+        volumeSliderAria: '音乐音量',
       }
 ))
 
@@ -144,6 +205,8 @@ const statusText = computed(() => {
 
 const muteLabel = computed(() => (isMuted.value ? copy.value.unmute : copy.value.mute))
 const muteAriaLabel = computed(() => (isMuted.value ? copy.value.unmuteAria : copy.value.muteAria))
+const volumePercent = computed(() => Math.round(volume.value * 100))
+const shouldOpenVolumePanelBelow = computed(() => controlPosition.value.y < 124)
 const controlStyle = computed(() => ({
   left: `${controlPosition.value.x}px`,
   top: `${controlPosition.value.y}px`,
@@ -156,7 +219,7 @@ function clampNumber(value, min, max) {
 
 function getControlMetrics() {
   const isMobile = viewportSize.value.width <= 768
-  const fallbackWidth = isMobile ? 102 : 310
+  const fallbackWidth = isMobile ? 102 : 340
   const fallbackHeight = isMobile ? 52 : 60
 
   return {
@@ -223,8 +286,16 @@ function refreshViewportSize() {
     : buildDefaultControlPosition()
 }
 
+function isInteractiveControlTarget(target) {
+  return Boolean(target?.closest?.('button, input, .volume-popover'))
+}
+
 function handleControlPointerDown(event) {
   if (event.button !== undefined && event.button !== 0) {
+    return
+  }
+
+  if (isInteractiveControlTarget(event.target)) {
     return
   }
 
@@ -299,6 +370,23 @@ function toggleMute() {
   toggleWelcomeMusicMuted()
 }
 
+function toggleVolumePanel() {
+  isVolumePanelOpen.value = !isVolumePanelOpen.value
+}
+
+function closeVolumePanel() {
+  isVolumePanelOpen.value = false
+}
+
+function setVolumeFromSlider(event) {
+  const nextPercent = Number(event.target?.value)
+  if (!Number.isFinite(nextPercent)) {
+    return
+  }
+
+  setWelcomeMusicVolume(nextPercent / 100)
+}
+
 onMounted(() => {
   initializeWelcomeMusic()
 
@@ -324,7 +412,7 @@ onBeforeUnmount(() => {
   left: 18px;
   top: 18px;
   z-index: 1250;
-  width: min(310px, calc(100vw - 36px));
+  width: min(340px, calc(100vw - 36px));
   padding: 10px;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -407,7 +495,7 @@ onBeforeUnmount(() => {
 
 .music-actions {
   display: grid;
-  grid-template-columns: repeat(2, auto);
+  grid-template-columns: repeat(3, auto);
   gap: 6px;
 }
 
@@ -438,6 +526,110 @@ onBeforeUnmount(() => {
   background: linear-gradient(135deg, #d97706, #ea580c);
 }
 
+.volume-action {
+  width: 38px;
+  min-width: 38px;
+  padding: 0;
+  color: #e0f2fe;
+}
+
+.volume-action[aria-expanded="true"] {
+  color: #2c5a6e;
+  background: #c7e8f3;
+}
+
+.volume-action .btn-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+.volume-popover {
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + 8px);
+  width: min(280px, calc(100vw - 36px));
+  padding: 12px;
+  border-radius: 16px;
+  background: rgba(7, 12, 22, 0.94);
+  border: 1px solid rgba(243, 207, 154, 0.28);
+  box-shadow: 0 18px 34px rgba(0, 0, 0, 0.26);
+  backdrop-filter: blur(10px);
+  cursor: default;
+  touch-action: auto;
+}
+
+.volume-popover.below {
+  top: calc(100% + 8px);
+  bottom: auto;
+}
+
+.volume-popover-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 10px;
+  color: #f8fafc;
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.volume-popover-head strong {
+  color: #fef3c7;
+  font-size: 0.82rem;
+}
+
+.volume-close {
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.1);
+  color: #f8fafc;
+  cursor: pointer;
+}
+
+.volume-close:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.volume-slider-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  color: #c7e8f3;
+}
+
+.volume-slider {
+  width: 100%;
+  accent-color: #f8d48d;
+  cursor: pointer;
+}
+
+.volume-panel-enter-active,
+.volume-panel-leave-active {
+  transition: opacity 0.16s ease, transform 0.16s ease;
+}
+
+.volume-panel-enter-from,
+.volume-panel-leave-to {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.volume-popover.below.volume-panel-enter-from,
+.volume-popover.below.volume-panel-leave-to {
+  transform: translateY(-8px);
+}
+
 .mute-action {
   color: #dbeafe;
 }
@@ -456,8 +648,20 @@ onBeforeUnmount(() => {
     grid-template-columns: auto;
   }
 
+  .desktop-volume-action {
+    display: none;
+  }
+
+  .desktop-volume-panel {
+    display: none;
+  }
+
   .music-status {
     display: none;
+  }
+
+  .music-actions {
+    grid-template-columns: repeat(2, auto);
   }
 
   .music-action {
