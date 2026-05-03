@@ -1007,34 +1007,90 @@ export default {
       retry: 'Try This Fragment Again',
       fragments: [
         {
-          text: 'During my SAP internship, I refactored backend code, increasing system response speed by 25%.',
-          note: 'Quantified, objective outcomes are ideal CV bullets.',
+          text: 'Led a volunteer team facilitating international students’ campus adaptation, cultural integration.',
+          note: 'This is an activity and leadership bullet, so it belongs on the CV.',
         },
         {
-          text: 'A setback during a big-tech internship revealed my bottleneck in distributed systems and pushed me toward graduate study.',
-          note: 'A turning point, reflection, and academic motivation belong in the PS.',
+          text: 'My undergraduate learning has paved the way for my further study through core modules regarding mechanical engineering like Engineering Computation, Mechatronics, and Engineering Mathematics.',
+          note: 'This explains academic preparation and motivation for further study, so it belongs in the PS.',
         },
         {
-          text: 'The student showed leadership in the Advanced Algorithms group project and found core bugs when the team was stuck.',
-          note: 'Praise of teamwork and character sounds credible when it comes from a recommender.',
+          text: 'I have had the pleasure of instructing xxx in the course "Intelligent System Design" and supervising his undergraduate research project for over one year, which allows me to provide a comprehensive and objective evaluation of his academic ability and potential.',
+          note: 'The recommender is establishing their relationship with the applicant, so this belongs in the RL.',
         },
         {
-          text: 'Proficient in Python, Java and C++; skilled in MySQL database management.',
-          note: 'Skill lists are scan-friendly on CVs. They become grocery lists inside a PS.',
+          text: 'Competed in university basketball events, winning Second Prize of student Sport Skills Competition.',
+          note: 'This is a concise activity and award record, so it fits the CV.',
         },
         {
-          text: 'My long-term vision is to lead enterprise-level cloud-computing architecture projects.',
-          note: 'Future vision is part of your application narrative, not a CV record.',
+          text: 'Fire, the wheel, boats, booking printing, electricity, engines, automobiles, planes, spaceships, wireless information transfer: engineering is determining this progress.',
+          note: 'This is narrative framing for field interest, so it belongs in the PS.',
         },
         {
-          text: 'She remained calm under extreme deadlines and produced efficient work without lowering quality.',
-          note: 'Soft traits need third-party observation and concrete context.',
+          text: 'Xxx has demonstrated outstanding academic performance in core courses of intelligent engineering, particularly in "Machine Learning", "Python Programming for Intelligent Systems" and "Pattern Recognition", where he consistently achieved top 5% grades in the class.',
+          note: 'This is third-party evaluation of coursework performance, so it belongs in the RL.',
+        },
+        {
+          text: 'Developed machine learning models in Python, using NumPy, Pandas, Matplotlib, and scilit-learn for data processing, modeling, and optimization.',
+          note: 'This describes tools, methods, and project work in a scan-friendly CV style.',
+        },
+        {
+          text: 'With the rapid progress of automation, intelligent manufacturing, and emerging material technologies, the application domains of mechanical engineering would extend.',
+          note: 'This builds field context and application direction, which suits the PS.',
+        },
+        {
+          text: 'During the undergraduate research project "Design and Optimization of Intelligent Detection Systems" that I supervised, xxx took charge of the algorithm design and experimental verification work.',
+          note: 'The recommender describes supervised work and the student’s contribution, so it belongs in the RL.',
+        },
+        {
+          text: 'Trained and analyszed 500+ backdoored models under diverse attack settings across five NLP benchmark datasets, constructing a comprehensive backdoor vector pool.',
+          note: 'Specific numbers, technical work, and outputs make this a CV bullet.',
+        },
+        {
+          text: 'The program has captured my attention due to its comprehensive curriculum covering a wide array of subjects such as robotics, artificial intelligence, advanced fabrication, precision engineering, and energy systems.',
+          note: 'Programme fit and application motivation belong in the PS.',
+        },
+        {
+          text: 'She proactively explored cutting-edge technologies such as deep learning and successfully solved the problem of low detection accuracy in complex environments, fully reflecting excellent logical thinking, innovative consciousness and a strong desire to explore frontier technologies in the field of intelligent engineering.',
+          note: 'This is a recommender’s assessment of ability, qualities, and potential, so it belongs in the RL.',
+        },
+        {
+          text: 'Proficient in C/C++, Matlab, R, Python, Java, SQL, Linux, MS Office Suite, Bloomberg etc.',
+          note: 'A technical skill list belongs on the CV for quick scanning.',
+        },
+        {
+          text: 'I learned about the importance of teamwork and time management, good interpersonal communication skills and managing with tight deadlines all of which I am sure are applicable to academic life too.',
+          note: 'Reflection and transfer to academic life are PS material.',
+        },
+        {
+          text: 'Xxx has excellent teamwork and communication skills.',
+          note: 'Third-party evaluation of soft skills belongs in the recommendation letter.',
+        },
+        {
+          text: 'Designed and built a filter to generate data input for a quantitative trading strategy in China.',
+          note: 'This is a concise work or project responsibility, so it fits the CV.',
+        },
+        {
+          text: 'I am especially interested, for example, in the filed of dynamics; the complexities of calculating different velocities and accelerations of a system in motion are both fascinating to a car enthusiast, and are also central to the study of mechanical engineering.',
+          note: 'This connects personal interest with the target discipline, so it belongs in the PS.',
+        },
+        {
+          text: 'When participating in group projects and interdisciplinary cooperation tasks, she can actively listen to the opinions of team members, coordinate resources reasonably, and effectively convey her own ideas and technical schemes, which enables her to cooperate smoothly with peers and mentors in the research process.',
+          note: 'The recommender is describing teamwork through observed behavior, so it belongs in the RL.',
+        },
+        {
+          text: 'Identified project requirements and selected optimal hardware components and sensors to ensure seamless integration and reliable operation by conducting in-depth technical consultations with clients and technicians.',
+          note: 'Concrete project actions and professional skills fit the CV.',
+        },
+        {
+          text: 'As I delved deeper, lectures on electromagnetic materials and optical networks catalyzed my curiosity, leading to independent projects like the design of a rudimentary optical communication system.',
+          note: 'This shows intellectual development and independent exploration, so it belongs in the PS.',
+        },
+        {
+          text: 'Xxx has a clear academic plan and strong research motivation for graduate studies.',
+          note: 'A recommender’s view of research motivation belongs in the RL.',
         },
       ],
-    },
-
-    y3_2: {
-      title: 'Magic Ministry Archives',
       guide: {
         title: 'Archives Guide',
         body: 'Explore the archives to understand application materials.',

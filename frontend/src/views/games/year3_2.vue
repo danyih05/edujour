@@ -123,7 +123,7 @@ const STAMP_META = {
   },
 }
 
-const targetByIndex = ['cv', 'ps', 'rl', 'cv', 'ps', 'rl']
+const targetByIndex = Array.from({ length: 7 }, () => ['cv', 'ps', 'rl']).flat()
 const originalTargetPattern = targetByIndex.join('|')
 
 function shuffleArray(items) {
