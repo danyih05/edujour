@@ -189,6 +189,7 @@ const SchoolCard = defineComponent({
       onDragstart: (event) => emit('dragstart', event),
       onDragend: () => emit('dragend'),
     }, [
+      h('div', { class: 'school-card-icon', 'aria-hidden': 'true' }, props.card.icon || '🎓'),
       h('div', { class: 'school-card-copy' }, [
         h('div', { class: 'school-name' }, props.card.name),
         h('div', { class: 'school-tag' }, props.card.tag),
@@ -1027,13 +1028,17 @@ function completeWithResult() {
 .school-card {
   width: 140px;
   min-height: 126px;
-  padding: 14px 10px;
+  padding: 12px 10px 14px;
   text-align: center;
   cursor: grab;
   background: linear-gradient(145deg, #1e293b, #0f172a);
   border: 2px solid #64748b;
   border-radius: 12px;
   box-shadow: 0 8px 15px rgba(0, 0, 0, 0.4);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
 }
 
 .school-card:hover,
@@ -1048,10 +1053,31 @@ function completeWithResult() {
   min-height: 54px;
   padding: 8px 10px;
   display: flex;
+  flex-direction: row;
   align-items: center;
   gap: 10px;
-  align-items: center;
   text-align: left;
+}
+
+.school-card-icon {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: rgba(248, 250, 252, 0.1);
+  border: 1px solid rgba(251, 191, 36, 0.38);
+  box-shadow: inset 0 0 14px rgba(251, 191, 36, 0.08), 0 6px 12px rgba(0, 0, 0, 0.22);
+  font-size: 1.35rem;
+  line-height: 1;
+  flex: 0 0 auto;
+}
+
+.school-card.compact .school-card-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  font-size: 1.05rem;
 }
 
 .school-card-copy {

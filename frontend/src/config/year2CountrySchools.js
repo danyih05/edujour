@@ -34,6 +34,10 @@ const COUNTRY_ALIAS_MAP = Object.freeze({
   '中外合作': 'jointProgram',
   '中外合作大学': 'jointProgram',
   '中外合作大學': 'jointProgram',
+  '中外合办': 'jointProgram',
+  '中外合办大学': 'jointProgram',
+  '中外合辦': 'jointProgram',
+  '中外合辦大學': 'jointProgram',
 
   niche: 'niche',
   'niche regions': 'niche',
@@ -120,10 +124,6 @@ const YEAR2_COUNTRY_SCHOOLS = Object.freeze({
     icon: '🏫',
     canonicalName: 'Sino-foreign Cooperative Universities',
     label: { zh: '中外合作', en: 'Sino-foreign Cooperative Universities' },
-    adviceMessage: {
-      zh: '中外合作大学路径，请联系 DA 获取更适合你的升学建议。',
-      en: 'For Sino-foreign cooperative university pathways, please contact your DA for more tailored study planning advice.',
-    },
     schools: [],
   },
   niche: {
@@ -174,10 +174,11 @@ const YEAR2_COUNTRY_SCHOOLS = Object.freeze({
 const SCORE_BAND_ORDER = Object.freeze(['70-100', '60-70', '50-60', '40-50'])
 
 const GPA_BAND_SCORE = Object.freeze({
-  scholar: 82,
-  steady: 75,
-  sprint: 65,
-  comeback: 55,
+  elite: 85,
+  scholar: 75,
+  steady: 65,
+  sprint: 55,
+  comeback: 45,
 })
 
 const YEAR2_SCORE_SCHOOL_BANDS = Object.freeze({
@@ -215,6 +216,11 @@ const YEAR2_SCORE_SCHOOL_BANDS = Object.freeze({
     '50-60': ['香港浸会大学', '香港理工大学'],
     '60-70': ['香港中文大学', '香港城市大学', '香港大学', '香港理工大学'],
     '70-100': ['香港中文大学', '香港中文大学（深圳）', '香港大学'],
+  },
+  jointProgram: {
+    '50-60': ['西交利物浦大学', '宁波诺丁汉大学'],
+    '60-70': ['昆山杜克大学', '西交利物浦大学', '宁波诺丁汉大学'],
+    '70-100': ['昆山杜克大学', '香港中文大学（深圳）'],
   },
 })
 
@@ -587,7 +593,7 @@ export function getYear2ScoreBand(profile) {
 
 export function getYear2ScoreSchoolCards(countryKey, profile, options = {}) {
   const normalizedKey = normalizeCountryKey(countryKey)
-  if (normalizedKey === 'niche' || normalizedKey === 'jointProgram') return []
+  if (normalizedKey === 'niche') return []
   const schools = YEAR2_SCORE_SCHOOL_DATA[normalizedKey]
   if (!schools) return []
   const countrySchools = schools.filter((school) => isSchoolInSelectedCountry(school, normalizedKey))

@@ -299,10 +299,11 @@ const EN_COPY = {
 }
 
 const gpaDefs = [
-  { id: 'scholar', icon: 'fa-crown', range: { zh: 'GPA ≥ 80', en: 'GPA ≥ 80' } },
-  { id: 'steady', icon: 'fa-shield-halved', range: { zh: '70 ≤ GPA < 80', en: '70 ≤ GPA < 80' } },
-  { id: 'sprint', icon: 'fa-bolt', range: { zh: '60 ≤ GPA < 70', en: '60 ≤ GPA < 70' } },
-  { id: 'comeback', icon: 'fa-fire', range: { zh: 'GPA < 60', en: 'GPA < 60' } },
+  { id: 'elite', icon: 'fa-crown', score: 85, range: { zh: 'GPA ≥ 80', en: 'GPA ≥ 80' } },
+  { id: 'scholar', icon: 'fa-star', score: 75, range: { zh: '70 ≤ GPA < 80', en: '70 ≤ GPA < 80' } },
+  { id: 'steady', icon: 'fa-shield-halved', score: 65, range: { zh: '60 ≤ GPA < 70', en: '60 ≤ GPA < 70' } },
+  { id: 'sprint', icon: 'fa-bolt', score: 55, range: { zh: '50 ≤ GPA < 60', en: '50 ≤ GPA < 60' } },
+  { id: 'comeback', icon: 'fa-fire', score: 45, range: { zh: '40 ≤ GPA < 50', en: '40 ≤ GPA < 50' } },
 ]
 
 const characterDefs = [
@@ -412,8 +413,8 @@ const ui = computed(() => (currentLanguage.value === 'en' ? EN_COPY : ZH_COPY))
 const gpaOptions = computed(() => gpaDefs.map((gpa) => ({
   ...gpa,
   label: currentLanguage.value === 'en'
-    ? ({ scholar: 'Scholar Type', steady: 'Steady Type', sprint: 'Sprint Type', comeback: 'Comeback Type' }[gpa.id])
-    : ({ scholar: '学霸型', steady: '稳扎型', sprint: '冲刺型', comeback: '逆袭型' }[gpa.id]),
+    ? ({ elite: 'Elite Band', scholar: 'High Band', steady: 'Solid Band', sprint: 'Builder Band', comeback: 'Comeback Band' }[gpa.id])
+    : ({ elite: '卓越段', scholar: '高分段', steady: '稳定段', sprint: '提升段', comeback: '逆袭段' }[gpa.id]),
   range: gpa.range[currentLanguage.value === 'en' ? 'en' : 'zh'],
 })))
 
@@ -520,6 +521,8 @@ const forgedProfile = computed(() => ({
   academicProfile: {
     gpaBand: selectedGpa.value?.id || '',
     gpa: selectedGpa.value?.range || '',
+    gpaScore: selectedGpa.value?.score || null,
+    scoreBand: selectedGpa.value?.range || '',
     experiences: {
       internship: state.experiences.internship === 'yes',
       research: state.experiences.research === 'yes',
