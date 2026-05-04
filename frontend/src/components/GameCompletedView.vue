@@ -48,7 +48,9 @@
 <script setup>
 import { computed } from 'vue'
 import { useAppI18n } from '@/composables/useAppI18n'
+import { messages } from '@/i18n'
 import { localizeYear2SchoolName, normalizeCountryKey } from '@/config/year2CountrySchools'
+import { YEAR3_RECOMMENDATION_ROUTES } from '@/config/year3RecommendationQuestions'
 
 const props = defineProps({
   result: {
@@ -179,10 +181,15 @@ const labelMap = computed(() => ({
   finalNode: t('gameResult.fields.finalNode'),
   feedback: currentLanguage.value === 'en' ? 'Feedback' : '反馈',
   message: currentLanguage.value === 'en' ? 'Message' : '提示',
+  potions: currentLanguage.value === 'en' ? 'Iced Americanos' : '冰美式',
+  selectedTool: currentLanguage.value === 'en' ? 'Selected tool' : '选择的道具',
   scores: currentLanguage.value === 'en' ? 'Scores' : '分数',
   countryScores: currentLanguage.value === 'en' ? 'Region Scores' : '地区分数',
   answers: currentLanguage.value === 'en' ? 'Answers' : '作答记录',
   explanation: currentLanguage.value === 'en' ? 'Explanation' : '说明',
+  route: currentLanguage.value === 'en' ? 'Route' : '\u8def\u7ebf',
+  routeId: currentLanguage.value === 'en' ? 'Route' : '\u8def\u7ebf',
+  rewardCoins: currentLanguage.value === 'en' ? 'Reward coins' : '\u5956\u52b1\u91d1\u5e01',
   allocation: currentLanguage.value === 'en' ? 'Action allocation' : '行动点分配',
   topPriorities: currentLanguage.value === 'en' ? 'Top priorities' : '重点方向',
   topPriorityIds: currentLanguage.value === 'en' ? 'Top priorities' : '重点方向',
@@ -234,10 +241,62 @@ function localizeResultValue(key, value, data) {
   if (key === 'allocation') return stringifyAllocation(value)
   if (key === 'topPriorityIds') return stringifyTaskIds(value)
   if (key === 'topPriorities' && Array.isArray(data.topPriorityIds)) return stringifyTaskIds(data.topPriorityIds)
+  if (key === 'route' || key === 'routeId') return localizeY35Route(value, data)
+  if (key === 'clearedStages') return stringifyY36Stages(value, data)
+  if (key === 'selectedTool') return localizeToolName(value)
   if (key === 'tierBuckets') return stringifyTierBuckets(value)
   if (key === 'feedback') return stringifyFeedback(value, data)
   if (key === 'message') return localizeMessage(value)
   return stringifyValue(value)
+}
+
+function localizeY35Route(value, data = {}) {
+  const rawValue = String(value || data.routeId || '').trim()
+  const route = YEAR3_RECOMMENDATION_ROUTES.find((item) => (
+    item.id === rawValue ||
+    item.id === data.routeId ||
+    String(item.title?.en || '').trim() === rawValue ||
+    String(item.title?.zh || '').trim() === rawValue
+  ))
+
+  if (!route) return stringifyValue(value)
+  return stringifyValue(route.title)
+}
+
+function y36StageTitleById(index) {
+  const stage = messages[currentLanguage.value]?.pages?.y3_6?.stages?.[index]
+  return stage?.title || `Stage ${Number(index) + 1}`
+}
+
+function y36StageIndexFromTitle(value) {
+  const rawValue = String(value || '').trim()
+  const languages = ['zh', 'en']
+  return languages.reduce((matchedIndex, language) => {
+    if (matchedIndex >= 0) return matchedIndex
+    const stages = messages[language]?.pages?.y3_6?.stages || []
+    return stages.findIndex((stage) => String(stage?.title || '').trim() === rawValue)
+  }, -1)
+}
+
+function stringifyY36Stages(value, data = {}) {
+  const stageIds = Array.isArray(data.clearedStageIds) ? data.clearedStageIds : null
+  if (stageIds) {
+    return stageIds.map((index) => y36StageTitleById(Number(index))).filter(Boolean).join(' / ')
+  }
+
+  if (!Array.isArray(value)) return stringifyValue(value)
+  return value
+    .map((stageTitle) => {
+      const index = y36StageIndexFromTitle(stageTitle)
+      return index >= 0 ? y36StageTitleById(index) : stringifyValue(stageTitle)
+    })
+    .filter(Boolean)
+    .join(' / ')
+}
+
+function localizeToolName(value) {
+  const key = String(value || '').trim()
+  return tm(`pages.y2_1.tools.${key}`)?.name || key
 }
 
 function localizeMessage(value) {
@@ -518,7 +577,7 @@ function stringifyValue(value) {
 
 const resultItems = computed(() => {
   const data = props.result?.resultData || {}
-  const hiddenKeys = new Set(['recommendedCountryKey', 'matchedCountryZh', 'matchedCountryEn', 'countryScores', 'profileBased'])
+  const hiddenKeys = new Set(['recommendedCountryKey', 'matchedCountryZh', 'matchedCountryEn', 'countryScores', 'profileBased', 'routeId', 'language', 'clearedStageIds'])
   if (Array.isArray(data.topPriorityIds)) hiddenKeys.add('topPriorities')
   return Object.entries(data)
     .filter(([key]) => !hiddenKeys.has(key))

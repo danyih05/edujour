@@ -105,11 +105,11 @@
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, reactive, ref } from 'vue'
+import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue'
 import { useAppI18n } from '@/composables/useAppI18n'
 
 const emit = defineEmits(['complete', 'close'])
-const { t, tm } = useAppI18n()
+const { currentLanguage, t, tm } = useAppI18n()
 
 const STAMP_META = {
   cv: {
@@ -210,6 +210,12 @@ const feedback = reactive({
   title: '',
   message: '',
 })
+const feedbackSource = reactive({
+  visible: false,
+  type: 'success',
+  stampedTarget: '',
+  fragmentIndex: 0,
+})
 const stampState = reactive({
   visible: false,
   type: 'success',
@@ -246,15 +252,47 @@ function resetBoardFeedback() {
   feedback.visible = false
   feedback.title = ''
   feedback.message = ''
+  feedbackSource.visible = false
   stampState.visible = false
   stampState.label = ''
 }
 
-function triggerBoardFeedback(type, targetLabel, title, message) {
+function feedbackTextFor(type, stampedTarget, fragmentIndex) {
+  const fragment = fragments.value[fragmentIndex]
+  if (!fragment) {
+    return { title: '', message: '' }
+  }
+
+  return {
+    title: type === 'error'
+      ? t('pages.y3_2.wrongTitle', { target: fragment.target.toUpperCase() })
+      : t('pages.y3_2.correctTitle'),
+    message: fragment.note,
+    stampedTarget,
+  }
+}
+
+function refreshFeedbackText() {
+  if (!feedbackSource.visible) return
+  const next = feedbackTextFor(
+    feedbackSource.type,
+    feedbackSource.stampedTarget,
+    feedbackSource.fragmentIndex,
+  )
+  feedback.title = next.title
+  feedback.message = next.message
+}
+
+function triggerBoardFeedback(type, targetLabel, fragmentIndex) {
+  const nextFeedback = feedbackTextFor(type, targetLabel, fragmentIndex)
   feedback.type = type
-  feedback.title = title
-  feedback.message = message
+  feedback.title = nextFeedback.title
+  feedback.message = nextFeedback.message
   feedback.visible = false
+  feedbackSource.visible = true
+  feedbackSource.type = type
+  feedbackSource.stampedTarget = targetLabel
+  feedbackSource.fragmentIndex = fragmentIndex
 
   stampState.type = type
   stampState.label = targetLabel.toUpperCase()
@@ -291,8 +329,7 @@ function stamp(target) {
     triggerBoardFeedback(
       'error',
       target,
-      t('pages.y3_2.wrongTitle', { target: fragment.target.toUpperCase() }),
-      fragment.note,
+      currentIndex.value,
     )
     schedule(() => {
       isResolving.value = false
@@ -301,7 +338,7 @@ function stamp(target) {
     return
   }
 
-  triggerBoardFeedback('success', target, t('pages.y3_2.correctTitle'), fragment.note)
+  triggerBoardFeedback('success', target, currentIndex.value)
 
   schedule(() => {
     resetBoardFeedback()
@@ -318,6 +355,10 @@ function stamp(target) {
 onBeforeUnmount(() => {
   timers.forEach((timer) => window.clearTimeout(timer))
   timers.clear()
+})
+
+watch(currentLanguage, () => {
+  refreshFeedbackText()
 })
 </script>
 

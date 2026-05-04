@@ -956,6 +956,9 @@ function completeNode() {
     nodeId: 6,
     resultType: 'summary',
     resultData: {
+      clearedStageIds: gameState.cleared
+        .map((cleared, index) => (cleared ? index : null))
+        .filter((index) => index !== null),
       clearedStages: gameState.cleared
         .map((cleared, index) => (cleared ? localizedStages.value[index]?.title || `Stage ${index + 1}` : ''))
         .filter(Boolean),
