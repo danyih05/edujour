@@ -38,3 +38,8 @@ dist-ssr/
 # 缓存文件
 *.cache
 .temp/
+
+# test reports
+coverage/
+playwright-report/
+test-results/
