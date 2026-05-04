@@ -268,14 +268,16 @@
           />
           <component v-else-if="nativeGameComponent" :is="nativeGameComponent" @complete="handleNativeComplete" @close="closeGame" />
           <div v-else class="missing-native-game">{{ t('map.missingLevel') }}</div>
-          <PrePlayOnboarding
-            v-if="shouldOverlayActiveOnboarding"
-            class="floating"
-            :guide="activeOnboarding"
-            :level-title="activeLevelTitle"
-            @start="acknowledgeActiveOnboarding"
-          />
         </div>
+        <PrePlayOnboarding
+          v-if="shouldOverlayActiveOnboarding"
+          class="floating"
+          dismissible
+          :guide="activeOnboarding"
+          :level-title="activeLevelTitle"
+          @start="acknowledgeActiveOnboarding"
+          @close="showActiveOnboardingOverlay = false"
+        />
       </div>
     </div>
 
