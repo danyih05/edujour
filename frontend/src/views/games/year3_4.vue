@@ -60,8 +60,8 @@
       <div class="modal-overlay" :class="{ show: result.show }" id="resultModal">
         <div class="feedback-card" :class="result.type">
           <div class="fb-icon"><i :class="result.icon"></i></div>
-          <div class="fb-title">{{ result.title }}</div>
-          <div class="fb-desc" v-html="result.desc"></div>
+          <div class="fb-title">{{ resultTitle }}</div>
+          <div class="fb-desc" v-html="resultDesc"></div>
           <div class="modal-actions">
             <button class="btn-reset" type="button" @click="resetStars">{{ t('pages.y3_4.reset') }}</button>
             <button
@@ -124,10 +124,13 @@ const guideItems = computed(() => tm('pages.y3_4.guide.items') || [])
 const result = reactive({
   show: false,
   type: 'error',
-  title: '',
-  desc: '',
+  titleKey: '',
+  descKey: '',
   icon: ''
 })
+
+const resultTitle = computed(() => result.titleKey ? t(result.titleKey) : '')
+const resultDesc = computed(() => result.descKey ? t(result.descKey) : '')
 
 const linePoints = computed(() => selectedOrder.value
   .map((id) => stars.value.find((star) => star.id === id))
@@ -178,15 +181,15 @@ function validateConstellation() {
   const order = selectedOrder.value
 
   if (order[0] === 'match') {
-    return showResult('error', t('pages.y3_4.results.templateWarning.title'), t('pages.y3_4.results.templateWarning.desc'))
+    return showResult('error', 'pages.y3_4.results.templateWarning.title', 'pages.y3_4.results.templateWarning.desc')
   }
 
   if (order.indexOf('goal') < order.indexOf('action') || order.indexOf('match') < order.indexOf('action')) {
-    return showResult('error', t('pages.y3_4.results.logicalCollapse.title'), t('pages.y3_4.results.logicalCollapse.desc'))
+    return showResult('error', 'pages.y3_4.results.logicalCollapse.title', 'pages.y3_4.results.logicalCollapse.desc')
   }
 
   if (order.indexOf('motive') > order.indexOf('action')) {
-    return showResult('error', t('pages.y3_4.results.narrativeRisk.title'), t('pages.y3_4.results.narrativeRisk.desc'))
+    return showResult('error', 'pages.y3_4.results.narrativeRisk.title', 'pages.y3_4.results.narrativeRisk.desc')
   }
 
   const orthodox = ['motive', 'incident', 'action', 'match', 'goal']
@@ -197,18 +200,18 @@ function validateConstellation() {
   if (isOrthodox || isHook) {
     return showResult(
       'success',
-      isHook ? t('pages.y3_4.results.suspenseHook.title') : t('pages.y3_4.results.heroJourney.title'),
-      isHook ? t('pages.y3_4.results.suspenseHook.desc') : t('pages.y3_4.results.heroJourney.desc'),
+      isHook ? 'pages.y3_4.results.suspenseHook.title' : 'pages.y3_4.results.heroJourney.title',
+      isHook ? 'pages.y3_4.results.suspenseHook.desc' : 'pages.y3_4.results.heroJourney.desc',
     )
   }
 
-  return showResult('error', t('pages.y3_4.results.fallback.title'), t('pages.y3_4.results.fallback.desc'))
+  return showResult('error', 'pages.y3_4.results.fallback.title', 'pages.y3_4.results.fallback.desc')
 }
 
-function showResult(type, title, desc) {
+function showResult(type, titleKey, descKey) {
   result.type = type
-  result.title = title
-  result.desc = desc
+  result.titleKey = titleKey
+  result.descKey = descKey
   result.icon = type === 'success' ? 'fas fa-crown' : 'fas fa-skull-crossbones'
   result.show = true
   canvasState.value = type
