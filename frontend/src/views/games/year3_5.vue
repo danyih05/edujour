@@ -210,7 +210,8 @@ function confirmComplete() {
     rewardCoins: rewardAmount.value,
     resultType: 'summary',
     resultData: {
-      route: selectedRoute.value ? localize(selectedRoute.value.title) : '',
+      routeId: selectedRoute.value?.id || '',
+      route: selectedRoute.value?.title || '',
       correct: correctCount.value,
       total: selectedRoute.value?.questions?.length || 0,
       answers: answerHistory.value.map((answer, index) => ({

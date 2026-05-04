@@ -143,9 +143,9 @@
             </li>
           </ul>
 
-          <div class="feedback-box" :class="{ visible: feedback.title }">
-            <div class="feedback-title">{{ feedback.title || t('pages.y3_3.defaultTitle') }}</div>
-            <div class="feedback-desc" v-html="feedback.desc || t('pages.y3_3.defaultDesc')"></div>
+          <div class="feedback-box" :class="{ visible: feedbackVisible }">
+            <div class="feedback-title">{{ feedbackTitle }}</div>
+            <div class="feedback-desc" v-html="feedbackDesc"></div>
           </div>
         </div>
       </div>
@@ -188,12 +188,23 @@ const coreBugIds = ['gpa', 'vague', 'order', 'score', 'hobby', 'passive']
 const bugDatabase = computed(() => tm('pages.y3_3.bugs') || {})
 
 const foundIds = reactive(new Set())
-const feedback = reactive({ title: '', desc: '' })
+const activeFeedbackId = ref('')
+const showSuccessFeedback = ref(false)
 const showGuide = ref(false)
 
 const foundCoreCount = computed(() => coreBugIds.filter((id) => foundIds.has(id)).length)
 const allCoreFound = computed(() => foundCoreCount.value === coreBugIds.length)
 const guideItems = computed(() => tm('pages.y3_3.guide.items') || [])
+const activeBug = computed(() => bugDatabase.value?.[activeFeedbackId.value] || null)
+const feedbackVisible = computed(() => showSuccessFeedback.value || Boolean(activeBug.value))
+const feedbackTitle = computed(() => {
+  if (showSuccessFeedback.value) return t('pages.y3_3.success.title')
+  return activeBug.value?.title || t('pages.y3_3.defaultTitle')
+})
+const feedbackDesc = computed(() => {
+  if (showSuccessFeedback.value) return t('pages.y3_3.success.toast')
+  return activeBug.value?.desc || t('pages.y3_3.defaultDesc')
+})
 
 function isFound(id) {
   return foundIds.has(id)
@@ -204,8 +215,8 @@ function findBug(id) {
   if (!bug) return
   if (isFound(id)) return
 
-  feedback.title = bug.title
-  feedback.desc = bug.desc
+  activeFeedbackId.value = id
+  showSuccessFeedback.value = false
 
   foundIds.add(id)
 }
@@ -213,8 +224,8 @@ function findBug(id) {
 function completeAndClose() {
   if (!allCoreFound.value) return
   showGuide.value = false
-  feedback.title = t('pages.y3_3.success.title')
-  feedback.desc = t('pages.y3_3.success.toast')
+  activeFeedbackId.value = ''
+  showSuccessFeedback.value = true
   emit('complete', { game: 'cv-surgery', fixed: foundCoreCount.value })
 }
 </script>
