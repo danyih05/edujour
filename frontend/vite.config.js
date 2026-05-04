@@ -44,5 +44,30 @@ export default defineConfig(({ mode }) => {
         allow: [repoRoot],
       },
     },
+    test: {
+      globals: true,
+      environment: 'jsdom',
+      setupFiles: ['./src/test/setup.js'],
+      exclude: [
+        'node_modules/**',
+        'dist/**',
+        'e2e/**',
+      ],
+      environmentOptions: {
+        jsdom: {
+          url: 'http://localhost/',
+        },
+      },
+      coverage: {
+        provider: 'v8',
+        reporter: ['text', 'html'],
+        include: ['src/**/*.{js,vue}'],
+        exclude: [
+          'src/main.js',
+          'src/test/**',
+          '**/*.test.js',
+        ],
+      },
+    },
   }
 })
