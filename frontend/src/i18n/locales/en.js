@@ -1260,15 +1260,6 @@ export default {
         close: 'Close Guide',
       },
     },
-    y3_4: {
-      title: 'Memory Star Map',
-      guide: {
-        title: 'Star Map Guide',
-        body: 'Navigate the stars to craft your personal statement.',
-        items: ['Item 1', 'Item 2'],
-      },
-    },
-
     y3_5: {
       documentTitle: 'Y3-5 Recommendation Request Adventure',
       statusLabel: 'Recommendation Request Training',
