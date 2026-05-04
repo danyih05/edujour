@@ -183,7 +183,12 @@ const labelMap = computed(() => ({
   countryScores: currentLanguage.value === 'en' ? 'Region Scores' : '地区分数',
   answers: currentLanguage.value === 'en' ? 'Answers' : '作答记录',
   explanation: currentLanguage.value === 'en' ? 'Explanation' : '说明',
+  allocation: currentLanguage.value === 'en' ? 'Action allocation' : '行动点分配',
+  topPriorities: currentLanguage.value === 'en' ? 'Top priorities' : '重点方向',
+  topPriorityIds: currentLanguage.value === 'en' ? 'Top priorities' : '重点方向',
 }))
+
+const y25TaskOrder = ['gpa', 'lang', 'proj', 'res', 'int', 'comp', 'info', 'net']
 
 function localizeCountryKey(value) {
   const rawValue = String(value || '')
@@ -226,6 +231,9 @@ function localizeResultValue(key, value, data) {
   if (key === 'scores' || key === 'countryScores') return stringifyCountryScores(value)
   if (key === 'explanation' && routeResult?.analysis) return stripHtml(routeResult.analysis)
   if (key === 'answers') return stringifyAnswers(value)
+  if (key === 'allocation') return stringifyAllocation(value)
+  if (key === 'topPriorityIds') return stringifyTaskIds(value)
+  if (key === 'topPriorities' && Array.isArray(data.topPriorityIds)) return stringifyTaskIds(data.topPriorityIds)
   if (key === 'tierBuckets') return stringifyTierBuckets(value)
   if (key === 'feedback') return stringifyFeedback(value, data)
   if (key === 'message') return localizeMessage(value)
@@ -471,9 +479,28 @@ function stringifyFeedback(value, data) {
   return value.map((item) => localizeFeedbackItem(item, data)).filter(Boolean).join(' / ')
 }
 
+function y25TaskName(taskId) {
+  const translated = t(`pages.y2_5.tasks.${taskId}.name`)
+  return translated && translated !== `pages.y2_5.tasks.${taskId}.name` ? translated : taskId
+}
+
+function stringifyAllocation(value) {
+  if (!value || typeof value !== 'object') return stringifyValue(value)
+  return y25TaskOrder
+    .filter((taskId) => value[taskId] !== null && value[taskId] !== undefined && value[taskId] !== '')
+    .map((taskId) => `${y25TaskName(taskId)}: ${Number(value[taskId]) || 0} ${currentLanguage.value === 'en' ? 'pt' : '点'}`)
+    .join(' / ')
+}
+
+function stringifyTaskIds(value) {
+  if (!Array.isArray(value)) return stringifyValue(value)
+  return value.map((taskId) => y25TaskName(taskId)).filter(Boolean).join(' / ')
+}
+
 function stringifyValue(value) {
   if (value === null || value === undefined || value === '') return ''
   if (typeof value === 'boolean') return value ? t('gameResult.yes') : t('gameResult.no')
+  if (typeof value === 'number') return String(value)
   if (Array.isArray(value)) {
     return value.map((item) => stringifyValue(item)).filter(Boolean).join(' / ')
   }
@@ -491,7 +518,8 @@ function stringifyValue(value) {
 
 const resultItems = computed(() => {
   const data = props.result?.resultData || {}
-  const hiddenKeys = new Set(['recommendedCountryKey', 'matchedCountryZh', 'matchedCountryEn', 'countryScores'])
+  const hiddenKeys = new Set(['recommendedCountryKey', 'matchedCountryZh', 'matchedCountryEn', 'countryScores', 'profileBased'])
+  if (Array.isArray(data.topPriorityIds)) hiddenKeys.add('topPriorities')
   return Object.entries(data)
     .filter(([key]) => !hiddenKeys.has(key))
     .filter(([, value]) => value !== null && value !== undefined && value !== '')

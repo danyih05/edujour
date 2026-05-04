@@ -225,11 +225,8 @@ const shields = computed(() => clauseIds.map((id) => ({
   ...(localizedShields.value[id] || {}),
 })))
 
-const shuffledShields = ref([])
+const shuffledShieldIds = ref([])
 const guideItems = computed(() => tm('pages.y2_6.guide.items') || [])
-
-const leftShields = computed(() => shuffledShields.value.slice(0, Math.ceil(shuffledShields.value.length / 2)))
-const rightShields = computed(() => shuffledShields.value.slice(Math.ceil(shuffledShields.value.length / 2)))
 
 const clauses = computed(() => clauseIds.map((id) => ({
   id,
@@ -239,6 +236,9 @@ const clauses = computed(() => clauseIds.map((id) => ({
 const shieldMap = computed(() => Object.fromEntries(shields.value.map((shield) => [shield.id, shield])))
 const clauseMap = computed(() => Object.fromEntries(clauses.value.map((clause) => [clause.id, clause])))
 const activeShield = computed(() => shieldMap.value[selectedShieldId.value] || null)
+const shuffledShields = computed(() => shuffledShieldIds.value.map((id) => shieldMap.value[id]).filter(Boolean))
+const leftShields = computed(() => shuffledShields.value.slice(0, Math.ceil(shuffledShields.value.length / 2)))
+const rightShields = computed(() => shuffledShields.value.slice(Math.ceil(shuffledShields.value.length / 2)))
 
 const protectedStatus = reactive(Object.fromEntries(clauseIds.map((id) => [id, false])))
 const totalClauses = clauseIds.length
@@ -432,8 +432,12 @@ function shuffleArray(arr) {
   return arr;
 }
 
+function shuffleShields() {
+  shuffledShieldIds.value = shuffleArray([...clauseIds])
+}
+
 onMounted(() => {
-  shuffledShields.value = shuffleArray([...shields.value])
+  shuffleShields()
 })
 
 onBeforeUnmount(() => {

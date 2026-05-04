@@ -37,7 +37,7 @@
         </button>
       </div>
 
-      <section v-if="prophecy" class="prophecy-panel">
+      <section v-if="hasProphecy" class="prophecy-panel">
         <div class="prophecy-title"><i class="fas fa-scroll"></i> {{ t('pages.y2_5.prophecyTitle') }}</div>
         <p class="muted">{{ t('pages.y2_5.prophecyIntro') }}</p>
 
@@ -48,9 +48,9 @@
           </div>
         </div>
 
-        <div class="analysis-text" v-html="prophecy"></div>
+        <div class="analysis-text" v-html="prophecyHtml"></div>
         <div class="seasonal-pact" v-html="t('pages.y2_5.pact')"></div>
-        <button type="button" class="btn-complete" @click="emit('complete')">{{ t('pages.y2_5.complete') }}</button>
+        <button type="button" class="btn-complete" @click="completeAllocation">{{ t('pages.y2_5.complete') }}</button>
       </section>
     </section>
   </div>
@@ -59,10 +59,12 @@
 <script setup>
 import { computed, nextTick, reactive, ref } from 'vue'
 import { useAppI18n } from '@/composables/useAppI18n'
+import { useGameStore } from '@/stores/game'
 import KnowledgeGuidePanel from '@/components/KnowledgeGuidePanel.vue'
 
 const emit = defineEmits(['complete', 'close'])
 const { t, tm, currentLanguage } = useAppI18n()
+const store = useGameStore()
 
 const maxAP = 10
 const maxTaskAP = 5
@@ -84,20 +86,24 @@ const tasks = computed(() => taskDefs.map((task) => ({
 })))
 
 const points = reactive(Object.fromEntries(taskDefs.map((task) => [task.id, 0])))
-const prophecy = ref('')
+const hasProphecy = ref(false)
 const guideItems = computed(() => tm('pages.y2_5.guide.items') || [])
+const academicProfile = computed(() => store.travelerProfile?.academicProfile || {})
 
 const spentAP = computed(() => Object.values(points).reduce((sum, value) => sum + value, 0))
 const availableAP = computed(() => maxAP - spentAP.value)
 const topTasks = computed(() => (
   [...tasks.value].sort((a, b) => points[b.id] - points[a.id]).slice(0, 3)
 ))
+const prophecyHtml = computed(() => (
+  hasProphecy.value ? buildPersonalizedAnalysis(currentLanguage.value === 'en') : ''
+))
 
 function updateAP(taskId, delta) {
   if (delta > 0 && (availableAP.value <= 0 || points[taskId] >= maxTaskAP)) return
   if (delta < 0 && points[taskId] <= 0) return
   points[taskId] += delta
-  prophecy.value = ''
+  hasProphecy.value = false
 }
 
 function generateProphecy() {
@@ -106,7 +112,15 @@ function generateProphecy() {
     return
   }
 
-  const isEn = currentLanguage.value === 'en'
+  hasProphecy.value = true
+
+  nextTick(() => {
+    const panel = document.querySelector('.prophecy-panel')
+    if (panel) {
+      panel.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  })
+  return
 
   // 获取关键得分
   const gpaScore = points.gpa || 0
@@ -167,6 +181,189 @@ function generateProphecy() {
       panel.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }
   })
+}
+
+function completeAllocation() {
+  emit('complete', {
+    resultType: 'result',
+    resultData: {
+      allocation: { ...points },
+      topPriorityIds: topTasks.value.map((task) => task.id),
+    },
+  })
+}
+
+function buildPersonalizedAnalysis(isEn) {
+  const profile = academicProfile.value
+  const experiences = profile.experiences || {}
+  const gpaBand = profile.gpaBand || ''
+  const languageExam = profile.languageExam || ''
+  const languageScore = parseScore(profile.languageScore)
+  const hasLanguage = languageExam && languageExam !== 'none'
+  const hasStrongGpa = ['elite', 'scholar'].includes(gpaBand)
+  const hasOkayLanguage = hasLanguage && (
+    languageExam === 'ielts' ? languageScore >= 6.5 :
+      languageExam === 'toefl' ? languageScore >= 90 :
+        Boolean(profile.languageScore)
+  )
+
+  const profileSummary = isEn
+    ? describeProfileEn(experiences, hasStrongGpa, hasOkayLanguage)
+    : describeProfileZh(experiences, hasStrongGpa, hasOkayLanguage)
+  const rows = taskDefs.map((task) => buildTaskFeedback(task, {
+    isEn,
+    score: points[task.id],
+    experiences,
+    hasStrongGpa,
+    hasLanguage,
+    hasOkayLanguage,
+  }))
+  const softTotal = points.info + points.net
+  const evidenceTotal = points.proj + points.res + points.int + points.comp
+  const closing = isEn
+    ? buildClosingEn({ softTotal, evidenceTotal, hasStrongGpa, hasOkayLanguage })
+    : buildClosingZh({ softTotal, evidenceTotal, hasStrongGpa, hasOkayLanguage })
+
+  return [
+    isEn ? '<strong>Personalized Stardust Analysis</strong>' : '<strong>个性化星尘解析</strong>',
+    profileSummary,
+    rows.map((row) => `<p>${row}</p>`).join(''),
+    `<p>${closing}</p>`,
+  ].join('')
+}
+
+function buildTaskFeedback(task, context) {
+  const { isEn, score } = context
+  const level = score > 3 ? 'high' : score <= 1 ? 'low' : 'fit'
+  const taskName = t(`pages.y2_5.tasks.${task.id}.name`)
+  const levelText = {
+    high: isEn ? 'too much' : '过多',
+    low: isEn ? 'too little' : '过少',
+    fit: isEn ? 'reasonable' : '较合理',
+  }[level]
+  const reason = isEn
+    ? taskReasonEn(task.id, level, context)
+    : taskReasonZh(task.id, level, context)
+
+  return `<strong>${taskName} ${score} pt: ${levelText}.</strong> ${reason}`
+}
+
+function taskReasonZh(taskId, level, context) {
+  const { experiences, hasStrongGpa, hasLanguage, hasOkayLanguage } = context
+  const already = Boolean(experiences[experienceKeyForTask(taskId)])
+
+  if (taskId === 'gpa') {
+    if (hasStrongGpa && level === 'high') return '你在 Year2-1 已经属于前两档成绩，GPA 仍要稳住，但不需要把过多精力继续堆在学业修炼上。'
+    if (!hasStrongGpa && level === 'low') return '你的成绩画像还不是前两档，GPA 是硬背景，投入小于等于 1 点会偏少。'
+    return hasStrongGpa ? '成绩底盘不错，保持稳定即可，把更多精力留给短板或差异化证据。' : '当前成绩仍值得继续抬升，这部分投入能提高申请底盘。'
+  }
+
+  if (taskId === 'lang') {
+    if (!hasLanguage && level === 'low') return 'Year2-1 里还没有语言成绩，语言是硬门槛，小于等于 1 点明显过少。'
+    if (hasOkayLanguage && level === 'high') return '你已有相对可用的语言基础，继续投入可以冲分，但 4 点以上可能挤占项目、科研或实习产出。'
+    return hasOkayLanguage ? '语言可以以查漏补缺为主，不必无限加码。' : '语言还需要优先推进，先拿到能覆盖目标项目要求的分数。'
+  }
+
+  if (['proj', 'res', 'int', 'comp'].includes(taskId)) {
+    if (already && level === 'high') return 'Year2-1 已经显示你有这类经历，后面重点应放在质量、量化成果和材料表达，不一定继续投入过多时间做数量堆叠。'
+    if (!already && level === 'low') return 'Year2-1 里这块还是空白，小于等于 1 点会让申请证据不够立体，建议至少做出一个可写进 CV 的成果。'
+    if (already) return '已有基础，当前投入适合把经历打磨成更强证据。'
+    return '这是画像中的待补强模块，当前投入能帮助你补齐可展示经历。'
+  }
+
+  if (taskId === 'info') {
+    if (level === 'high') return '项目信息很重要，但 4 点以上容易变成只收藏项目、不产生申请证据。建议控制信息搜集时间，尽快转向行动。'
+    if (level === 'low') return '信息搜集过少可能导致选校和要求判断失误，至少要确认目标项目、截止日期和语言/GPA要求。'
+    return '信息搜集投入适中，适合服务后续决策。'
+  }
+
+  if (level === 'high') return '套磁和联系有价值，但 4 点以上容易替代真实背景建设；除非你已经有强项目或科研产出，否则不建议过度依赖。'
+  if (level === 'low') return '联系和咨询不必很多，但完全忽视会错过项目细节、推荐人沟通和申请节奏信息。'
+  return '联系投入适中，可以作为信息校验，而不是申请主战场。'
+}
+
+function taskReasonEn(taskId, level, context) {
+  const { experiences, hasStrongGpa, hasLanguage, hasOkayLanguage } = context
+  const already = Boolean(experiences[experienceKeyForTask(taskId)])
+
+  if (taskId === 'gpa') {
+    if (hasStrongGpa && level === 'high') return 'Your Year2-1 profile is already in the top two GPA bands, so grades should be maintained rather than over-invested in.'
+    if (!hasStrongGpa && level === 'low') return 'Your GPA profile is not in the top two bands yet, so 1 point or less is too light for a hard academic signal.'
+    return hasStrongGpa ? 'Your academic base is solid; keep it stable and shift effort toward gaps or differentiating evidence.' : 'Improving grades is still meaningful because it raises the floor of your application.'
+  }
+
+  if (taskId === 'lang') {
+    if (!hasLanguage && level === 'low') return 'Your Year2-1 profile has no language score yet. Since this is a hard threshold, 1 point or less is too little.'
+    if (hasOkayLanguage && level === 'high') return 'You already have a usable language base. More prep can help, but 4+ points may crowd out projects, research, or internship evidence.'
+    return hasOkayLanguage ? 'Language work can focus on polishing weak sections instead of endless retakes.' : 'Language should stay high priority until you have a score that covers target programme requirements.'
+  }
+
+  if (['proj', 'res', 'int', 'comp'].includes(taskId)) {
+    if (already && level === 'high') return 'Your Year2-1 profile already includes this experience, so the next step is quality, quantified outcomes, and application writing rather than adding too much more volume.'
+    if (!already && level === 'low') return 'This area is still blank in Year2-1. With 1 point or less, your evidence may stay too thin; aim for at least one CV-ready outcome.'
+    if (already) return 'You already have a base here, and this allocation can help turn it into stronger evidence.'
+    return 'This is a gap in your profile, so the allocation helps build visible evidence.'
+  }
+
+  if (taskId === 'info') {
+    if (level === 'high') return 'Programme research matters, but 4+ points can become collecting lists without creating evidence. Cap research time and move into action.'
+    if (level === 'low') return 'Too little research can cause poor school choices or missed requirements. At least verify programmes, deadlines, GPA rules, and language rules.'
+    return 'This is a reasonable amount of research to support decisions.'
+  }
+
+  if (level === 'high') return 'Networking is useful, but 4+ points can replace real profile building. Unless you already have strong project or research output, do not over-rely on it.'
+  if (level === 'low') return 'You do not need much networking, but ignoring it completely can cost you programme details, recommender communication, or timing information.'
+  return 'This is a reasonable support activity, not the main application battlefield.'
+}
+
+function describeProfileZh(experiences, hasStrongGpa, hasOkayLanguage) {
+  const strengths = []
+  if (hasStrongGpa) strengths.push('成绩在前两档')
+  if (experiences.internship) strengths.push('已有实习')
+  if (experiences.research) strengths.push('已有科研')
+  if (experiences.project) strengths.push('已有项目')
+  if (experiences.competition) strengths.push('已有竞赛')
+  if (hasOkayLanguage) strengths.push('语言已有基础')
+  const text = strengths.length ? strengths.join('、') : '暂时没有明显强项标签'
+  return `<p>基于你在 Year2-1 填写的画像：${text}。下面的判断会把你自己分配的点数和已有背景一起看，而不是套用固定模板。</p>`
+}
+
+function describeProfileEn(experiences, hasStrongGpa, hasOkayLanguage) {
+  const strengths = []
+  if (hasStrongGpa) strengths.push('top-two GPA band')
+  if (experiences.internship) strengths.push('internship experience')
+  if (experiences.research) strengths.push('research experience')
+  if (experiences.project) strengths.push('project experience')
+  if (experiences.competition) strengths.push('competition experience')
+  if (hasOkayLanguage) strengths.push('usable language score')
+  const text = strengths.length ? strengths.join(', ') : 'no obvious strength tag yet'
+  return `<p>Based on your Year2-1 profile: ${text}. The analysis below reads your own allocation against your existing background instead of using a fixed template.</p>`
+}
+
+function buildClosingZh({ softTotal, evidenceTotal, hasStrongGpa, hasOkayLanguage }) {
+  if (softTotal > evidenceTotal) return '总体提醒：信息搜集和联系投入已经超过硬证据建设。申请结果更依赖成绩、语言、项目、科研、实习这些可证明的材料。'
+  if (hasStrongGpa && !hasOkayLanguage) return '总体建议：你的成绩底盘可以支撑申请，下一阶段优先把语言做成硬通货，再补一到两个能写进材料的经历成果。'
+  return '总体建议：把点数用在“画像短板”和“可展示成果”上。已有强项维持质量，空白模块至少补出一个能被招生官看懂的证据。'
+}
+
+function buildClosingEn({ softTotal, evidenceTotal, hasStrongGpa, hasOkayLanguage }) {
+  if (softTotal > evidenceTotal) return 'Overall: your information and networking effort is higher than your evidence-building effort. Applications rely more on grades, language, projects, research, and internships that can be proven.'
+  if (hasStrongGpa && !hasOkayLanguage) return 'Overall: your GPA can support the application, so the next priority is turning language into a usable threshold score and adding one or two CV-ready outcomes.'
+  return 'Overall: spend points on profile gaps and visible outcomes. Maintain existing strengths, and turn blank areas into evidence an admissions reader can understand.'
+}
+
+function experienceKeyForTask(taskId) {
+  return {
+    proj: 'project',
+    res: 'research',
+    int: 'internship',
+    comp: 'competition',
+  }[taskId] || ''
+}
+
+function parseScore(value) {
+  const parsed = Number(String(value || '').match(/\d+(?:\.\d+)?/)?.[0])
+  return Number.isFinite(parsed) ? parsed : 0
 }
 </script>
 
