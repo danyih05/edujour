@@ -485,7 +485,7 @@ export default {
       schoolSearch: {
         title: 'Want more schools from this region?',
         copy: 'The deck starts with the first 10 sample schools from this region. Search here to add the remaining sample schools.',
-        placeholder: 'Search current-region school / tier',
+        placeholder: 'Search current-region school',
         emptyOption: 'Choose a current-region school',
         add: 'Add card',
         added: 'Already added',

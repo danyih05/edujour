@@ -160,7 +160,6 @@ import KnowledgeGuidePanel from '@/components/KnowledgeGuidePanel.vue'
 import { useGameStore } from '@/stores/game'
 import {
   getPersistedMatchedCountryKey,
-  getTierBuckets,
   getYear2ProfileScore,
   getYear2ScoreBand,
   getYear2ScoreSchoolCards,
@@ -192,7 +191,7 @@ const SchoolCard = defineComponent({
       h('div', { class: 'school-card-icon', 'aria-hidden': 'true' }, props.card.icon || '🎓'),
       h('div', { class: 'school-card-copy' }, [
         h('div', { class: 'school-name' }, props.card.name),
-        h('div', { class: 'school-tag' }, props.card.tag),
+        props.card.displayTag ? h('div', { class: 'school-tag' }, props.card.displayTag) : null,
       ]),
     ])
   },
@@ -211,22 +210,28 @@ const selectedCountryKey = ref(inheritedCountryKey.value)
 const usingFallbackCountry = computed(() => selectedCountryKey.value === 'global')
 const countryConfig = computed(() => getYear2CountrySchoolConfig(selectedCountryKey.value || 'global'))
 const matchedCountryLabel = computed(() => localize(countryConfig.value.label))
+const profileScore = computed(() => getYear2ProfileScore(store.travelerProfile))
+const profileScoreBand = computed(() => getYear2ScoreBand(store.travelerProfile))
+function scoreBandTag(school) {
+  const scoreBand = school?.scoreBand || profileScoreBand.value
+  if (!scoreBand) return ''
+  return currentLanguage.value === 'en' ? `Current ${scoreBand}` : `当前 ${scoreBand}`
+}
+
 const baseSchoolCards = computed(() => (countryConfig.value.schools || []).map((school, index) => ({
   ...school,
   id: school.id || `configured-${countryConfig.value.key}-${index + 1}`,
   rawName: school.name,
-  rawTag: school.tag,
   name: localize(school.name),
-  tag: localize(school.tag),
+  displayTag: scoreBandTag(school),
   countryKey: school.countryKey || countryConfig.value.key,
   countryLabel: school.countryLabel || countryConfig.value.label,
 })))
 const scoreSchoolCards = computed(() => (baseSchoolCards.value.length ? [] : getYear2ScoreSchoolCards(selectedCountryKey.value, store.travelerProfile).map((school) => ({
   ...school,
   rawName: school.name,
-  rawTag: school.tag,
   name: localize(school.name),
-  tag: localize(school.tag),
+  displayTag: scoreBandTag(school),
 }))))
 const isAdviceOnlyCountry = computed(() => Boolean(countryConfig.value.adviceMessage || countryConfig.value.nicheMessage))
 const specialRegionMessage = computed(() => (
@@ -237,9 +242,8 @@ const addedSchoolIds = ref([])
 const schoolCases = computed(() => (baseSchoolCards.value.length ? [] : getYear2SchoolCases(selectedCountryKey.value, store.travelerProfile).map((school) => ({
   ...school,
   rawName: school.name,
-  rawTag: school.tag,
   name: localize(school.name),
-  tag: localize(school.tag),
+  displayTag: scoreBandTag(school),
   countryLabelText: localize(school.countryLabel || getYear2CountrySchoolConfig(school.countryKey).label),
   caseInfo: localize(school.caseInfo),
 }))))
@@ -254,8 +258,6 @@ const schoolCards = computed(() => {
     ...addedSchoolCards.value.filter((school) => !baseIds.has(school.id)),
   ]
 })
-const profileScore = computed(() => getYear2ProfileScore(store.travelerProfile))
-const profileScoreBand = computed(() => getYear2ScoreBand(store.travelerProfile))
 const profileSummary = computed(() => {
   const profile = store.travelerProfile || {}
   const academicProfile = profile.academicProfile || {}
@@ -284,7 +286,7 @@ const filteredSchoolCases = computed(() => {
   return list.filter((school) => (
     school.name.toLowerCase().includes(query) ||
     school.countryLabelText.toLowerCase().includes(query) ||
-    school.tag.toLowerCase().includes(query)
+    school.displayTag.toLowerCase().includes(query)
   ))
 })
 const selectedSchoolCase = computed(() => (
@@ -345,14 +347,6 @@ const guideItems = computed(() => {
     ]
   }
 
-  const tierBuckets = getTierBuckets(schoolCards.value)
-  const joinNames = (items) => items.map((item) => item.name).join(' / ')
-  const reachExamples = joinNames(tierBuckets.reach)
-  const matchExamples = joinNames(tierBuckets.match)
-  const safetyExamples = joinNames(tierBuckets.safety)
-  const topSchool = tierBuckets.reach[0]?.name || ''
-  const safeSchool = tierBuckets.safety[0]?.name || ''
-
   return [
     {
       title: t('pages.y2_3.guide.items.reach.title'),
@@ -365,22 +359,6 @@ const guideItems = computed(() => {
     {
       title: t('pages.y2_3.guide.items.safety.title'),
       text: t('pages.y2_3.guide.items.safety.text'),
-    },
-    {
-      title: t('pages.y2_3.guide.items.reference.title', { country: matchedCountryLabel.value }),
-      text: t('pages.y2_3.guide.items.reference.text', {
-        country: matchedCountryLabel.value,
-        reachSchools: reachExamples,
-        matchSchools: matchExamples,
-        safetySchools: safetyExamples,
-      }),
-    },
-    {
-      title: t('pages.y2_3.guide.items.warning.title'),
-      text: t('pages.y2_3.guide.items.warning.text', {
-        topSchool,
-        safeSchool,
-      }),
     },
   ]
 })
