@@ -490,7 +490,7 @@ export default {
       schoolSearch: {
         title: '想加入更多当前地区学校？',
         copy: '牌堆先展示当前地区前 10 所样本学校；其余样本学校可在这里搜索并加入卡牌。',
-        placeholder: '搜索当前地区学校 / 层级',
+        placeholder: '搜索当前地区学校',
         emptyOption: '选择当前地区学校',
         add: '加入卡牌',
         added: '已在卡牌中',
