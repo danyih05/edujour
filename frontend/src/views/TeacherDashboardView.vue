@@ -124,7 +124,7 @@
                     class="tag"
                     :class="level.status"
                   >
-                    {{ level.id }}. {{ level.status }}
+                    {{ level.id }}. {{ formatStatus(level.status) }}
                   </span>
                 </div>
               </article>
@@ -141,7 +141,7 @@
                     class="tag"
                     :class="level.status"
                   >
-                    {{ level.id }}. {{ level.status }}
+                    {{ level.id }}. {{ formatStatus(level.status) }}
                   </span>
                 </div>
               </article>
@@ -154,8 +154,8 @@
             <div v-else class="inventory-grid">
               <article v-for="item in studentDetail.inventory" :key="item.id" class="inventory-card">
                 <div class="inventory-icon">{{ item.icon }}</div>
-                <strong>{{ item.name }}</strong>
-                <p>{{ item.description }}</p>
+                <strong>{{ formatInventoryItem(item).name }}</strong>
+                <p>{{ formatInventoryItem(item).description }}</p>
                 <span>{{ item.acquiredAt ? formatDate(item.acquiredAt) : '-' }}</span>
               </article>
             </div>
@@ -189,19 +189,11 @@ const detailLoading = ref(false)
 const errorMessage = ref('')
 
 const copy = computed(() => getPortalText(currentLanguage.value))
-const studentSearchCopy = computed(() => (
-  currentLanguage.value === 'en'
-    ? {
-        label: 'Search Students',
-        placeholder: 'Search by name or email',
-        empty: 'No matching students found.',
-      }
-    : {
-        label: '搜索学生',
-        placeholder: '输入学生姓名或邮箱',
-        empty: '没有找到匹配的学生。',
-      }
-))
+const studentSearchCopy = computed(() => ({
+  label: copy.value.teacher.searchLabel,
+  placeholder: copy.value.teacher.searchPlaceholder,
+  empty: copy.value.teacher.searchEmpty,
+}))
 const filteredStudents = computed(() => {
   const students = dashboard.value?.students || []
   const keyword = studentSearch.value.trim().toLowerCase()
@@ -231,6 +223,19 @@ function formatDate(value) {
 function formatPercent(value) {
   const percent = Number.isFinite(Number(value)) ? Math.round(Number(value) * 100) : 0
   return `${percent}%`
+}
+
+function formatStatus(status) {
+  return copy.value.teacher.status?.[status] || status
+}
+
+function formatInventoryItem(item) {
+  const localized = copy.value.teacher.rewards?.[item.slug]
+
+  return {
+    name: localized?.name || item.name,
+    description: localized?.description || item.description,
+  }
 }
 
 function formatLatestProgress(years) {
