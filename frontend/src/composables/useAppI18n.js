@@ -6,9 +6,9 @@ import { useLanguageStore } from '@/stores/language'
 const PORTAL_TEXT = {
   zh: {
     login: {
-      eyebrow: 'Role-Based Portal',
+      eyebrow: '角色门户',
       title: '学生 / 教师登录',
-      subtitle: '学生登录后继续闯关，教师登录后查看学生数据与进度。',
+      subtitle: '学生登录后继续游戏旅程，教师登录后查看学生数据与学习进度。',
       loginTab: '登录',
       registerTab: '注册',
       displayName: '显示名称',
@@ -20,8 +20,8 @@ const PORTAL_TEXT = {
       submitLogin: '登录',
       submitRegister: '创建账号',
       loading: '处理中...',
-      switchToRegister: '还没有账户？去注册',
-      switchToLogin: '已有账户？去登录',
+      switchToRegister: '还没有账号？去注册',
+      switchToLogin: '已有账号？去登录',
     },
     map: {
       studentPortal: '学生端',
@@ -30,7 +30,7 @@ const PORTAL_TEXT = {
       syncFailed: '同步失败',
     },
     teacher: {
-      eyebrow: 'Teacher Console',
+      eyebrow: '教师控制台',
       title: '教师监控面板',
       subtitle: '查看学生完成度、金币、最近登录与学习更新时间。',
       refresh: '刷新',
@@ -43,7 +43,7 @@ const PORTAL_TEXT = {
       detailEmpty: '选择左侧学生查看详情。',
       progress: '关卡进度',
       inventory: '奖励记录',
-      inventoryEmpty: '还没有兑换记录',
+      inventoryEmpty: '还没有兑换记录。',
       lastLogin: '最近登录',
       lastProgress: '最近学习时间',
       coins: '金币',
@@ -55,6 +55,37 @@ const PORTAL_TEXT = {
       loading: '加载中...',
       loadingDetail: '正在读取学生详情...',
       traveler: '角色形象',
+      searchLabel: '搜索学生',
+      searchPlaceholder: '输入学生姓名或邮箱',
+      searchEmpty: '没有找到匹配的学生。',
+      status: {
+        completed: '已完成',
+        skipped: '已跳过',
+        unlocked: '未完成',
+        locked: '未解锁',
+      },
+      rewards: {
+        bear: {
+          name: '西浦小熊',
+          description: '送给稳定进步的小纪念品。',
+        },
+        movie: {
+          name: '电影票',
+          description: '提醒学生适当休息也是长期规划的一部分。',
+        },
+        hotpot: {
+          name: '火锅券',
+          description: '庆祝一段努力完成的申请准备。',
+        },
+        course: {
+          name: '进阶课程优惠券',
+          description: '送给持续积累与坚持学习的高价值奖励。',
+        },
+        vocab: {
+          name: '词汇书',
+          description: '实用、门槛低的学习奖励。',
+        },
+      },
     },
   },
   en: {
@@ -108,6 +139,16 @@ const PORTAL_TEXT = {
       loading: 'Loading...',
       loadingDetail: 'Loading student detail...',
       traveler: 'Traveler Profile',
+      searchLabel: 'Search Students',
+      searchPlaceholder: 'Search by name or email',
+      searchEmpty: 'No matching students found.',
+      status: {
+        completed: 'completed',
+        skipped: 'skipped',
+        unlocked: 'not completed',
+        locked: 'locked',
+      },
+      rewards: {},
     },
   },
 }
@@ -136,4 +177,3 @@ export function useAppI18n() {
     localize,
   }
 }
-
