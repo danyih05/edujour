@@ -1,60 +1,36 @@
-# CW_web
+# EduJourney
 
-`CW_web` is a study-abroad / postgraduate-application planning game app with a Vue 3 frontend and a Spring Boot backend.
+## Project Overview
 
-## Structure
+EduJourney is a gamified postgraduate application planning platform designed to help students manage study-abroad preparation tasks through progression systems, rewards, and milestone tracking.
 
-- `frontend`: Vue 3 + Vite + Vue Router + Pinia
-- `backend`: Spring Boot + MySQL + JWT
+The platform supports both student and teacher roles:
 
-## Readable SQL Dump
+- Students can register accounts, complete application-planning tasks, earn rewards, and track progress.
+- Teachers can monitor student progress through a dedicated dashboard.
 
-The live backend now uses MySQL at runtime, and you can export the current database into a plain-text `.sql` file whenever you want to inspect it.
+This project was developed as a coursework submission and demonstrates full-stack web application development using Vue 3, Spring Boot, JWT authentication, and relational database persistence.
 
-```bash
-powershell -ExecutionPolicy Bypass -File backend/scripts/export-db-dump.ps1
-```
+---
 
-That command writes a readable SQL dump to:
+# Running the Project
 
-```text
-backend/sql/gradquest_mysql_dump.sql
-```
+## Prerequisites
 
-You can also inspect the schema reference directly in:
+Please ensure the following software is installed:
 
-```text
-backend/sql/mysql_schema.sql
-```
+- Node.js 18+
+- Java 17+
+- Maven 3.9+
+- (Optional) MySQL 8
 
-## What Changed
+---
 
-- Added role-based login/logout for `student` and `teacher`
-- Added a teacher monitoring dashboard to inspect student progress data
-- Moved the active backend runtime path to Spring Boot so the backend can run with `mvn spring-boot:run`
-- Synced student progress, rewards, and profile data to MySQL-backed APIs
+## 1. Start the Backend
 
-## Local Startup
+The backend can run directly using the embedded H2 database by default, so no separate database setup is required for local testing.
 
-### 1. Install dependencies
-
-Frontend:
-
-```bash
-cd frontend
-npm install
-```
-
-Backend:
-
-```bash
-cd backend
-mvn dependency:resolve
-```
-
-### 2. Start the backend
-
-The default local backend profile now uses an embedded H2 database, so no separate database setup is required for local registration/login testing.
+Open a terminal and run:
 
 ```bash
 cd backend
@@ -67,22 +43,21 @@ Backend default URL:
 http://localhost:18080
 ```
 
-Health check:
+Health check endpoint:
 
 ```text
 http://localhost:18080/api/health
 ```
 
-To run against MySQL instead, start MySQL 8 and then run:
+---
 
-```bash
-powershell -ExecutionPolicy Bypass -File backend/scripts/run-backend-with-mysql.ps1
-```
+## 2. Start the Frontend
 
-### 3. Start the frontend
+Open another terminal and run:
 
 ```bash
 cd frontend
+npm install
 npm run dev
 ```
 
@@ -92,53 +67,180 @@ Frontend default URL:
 http://localhost:5173
 ```
 
-The frontend proxies `/api` requests to `http://localhost:18080` during local development by default.
+The frontend automatically proxies `/api` requests to the backend during local development.
 
-You can register student or teacher accounts from the login page.
+---
 
-## Optional Backend Environment Variables
+## 3. Register an Account
 
-```bash
+The login page supports both:
+
+- Student registration
+- Teacher registration
+
+For coursework demonstration purposes:
+
+- Registration fields may contain arbitrary values
+- No email verification is required
+- Users can freely create new accounts for testing
+
+---
+
+# Features
+
+## Student Features
+
+- User registration and login
+- JWT-based authentication
+- Progress tracking system
+- Task completion and skipping
+- Reward / coin system
+- Inventory management
+- In-app shop and item purchasing
+- Persistent profile and progress storage
+
+---
+
+## Teacher Features
+
+- Teacher account login
+- Student monitoring dashboard
+- Student progress inspection
+- Progress overview for multiple students
+
+---
+
+# Technology Stack
+
+| Layer | Technology |
+|---|---|
+| Frontend | Vue 3 + Vite + Vue Router + Pinia |
+| Backend | Spring Boot |
+| Database | MySQL / H2 |
+| Authentication | JWT |
+| Build Tools | Maven + npm |
+
+---
+
+# Database
+
+The production-style backend supports MySQL persistence.
+
+Schema reference:
+
+```text
+backend/sql/mysql_schema.sql
+```
+
+Readable SQL dump:
+
+```text
+backend/sql/gradquest_mysql_dump.sql
+```
+
+To export the latest database state:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File backend/scripts/export-db-dump.ps1
+```
+
+---
+
+# Optional MySQL Runtime
+
+The default local setup uses H2 for convenience.
+
+To run the backend using MySQL 8 instead:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File backend/scripts/run-backend-with-mysql.ps1
+```
+
+Optional backend environment variables:
+
+```env
 PORT=18080
 CLIENT_ORIGIN=http://localhost:5173
 JWT_SECRET=change-this-in-real-use
 JWT_EXPIRES_IN_DAYS=7
+
 DB_HOST=localhost
 DB_PORT=3306
 DB_NAME=gradquest
 DB_USERNAME=gradquest
 DB_PASSWORD=GradQuest123!
+
 INITIAL_COINS=140
 ```
 
-If a previous backend process still occupies port `18080`, you can stop it with:
+---
+
+# Main API Endpoints
+
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/api/auth/register` | Register account |
+| POST | `/api/auth/login` | Login |
+| POST | `/api/auth/logout` | Logout |
+| GET | `/api/auth/me` | Get current user |
+| GET | `/api/progress` | Get student progress |
+| POST | `/api/progress/complete` | Complete task |
+| POST | `/api/shop/purchase` | Purchase item |
+| GET | `/api/inventory` | Get inventory |
+| GET | `/api/teacher/students` | Teacher dashboard |
+| GET | `/api/health` | Backend health check |
+
+---
+
+# Build Verification
+
+The current repository state has been verified successfully using:
+
+Backend compilation:
 
 ```bash
-powershell -ExecutionPolicy Bypass -File backend/scripts/stop-backend.ps1
+cd backend
+mvn -q -DskipTests compile
 ```
 
-## Main API Groups
+Frontend production build:
 
-- `POST /api/auth/register`
-- `POST /api/auth/login`
-- `POST /api/auth/logout`
-- `GET /api/auth/me`
-- `GET /api/progress`
-- `POST /api/progress/complete`
-- `POST /api/progress/skip`
-- `POST /api/progress/reset`
-- `GET /api/shop/items`
-- `POST /api/shop/purchase`
-- `GET /api/inventory`
-- `GET /api/teacher/students`
-- `GET /api/teacher/students/{studentId}`
-- `GET /api/health`
+```bash
+cd frontend
+npm run build
+```
 
-## Verification
+Both frontend and backend compile successfully in the current submission state.
 
-The current repository state has been verified with:
+---
 
-- `cd backend && mvn -q -DskipTests compile`
-- `cd frontend && npm run build`
+# Demo Notes
 
-The MySQL migration compiles cleanly, but runtime API smoke tests still require valid local MySQL credentials.
+- Users may freely register new student or teacher accounts
+- No email verification is required
+- Teacher accounts can immediately access the monitoring dashboard
+- The local default runtime uses the embedded H2 database
+- MySQL support is included for persistent runtime testing
+
+---
+
+# Screenshots
+
+## Login Page
+
+![Login Page](screenshots/login.jpg)
+
+---
+
+## Student Dashboard
+
+![Student Dashboard](screenshots/student-dashboard.jpg)
+
+---
+
+## Teacher Dashboard
+
+![Teacher Dashboard](screenshots/teacher-dashboard.jpg)
+
+---
+
