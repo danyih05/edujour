@@ -47,13 +47,19 @@
       <section class="panel">
         <p class="label">{{ t('pages.y2_1.console') }}</p>
 
-        <div class="box">
+        <div class="box" :class="{ error: isMissingField('name') }">
           <label for="codename">{{ t('pages.y2_1.nameLabel') }}</label>
-          <input id="codename" v-model.trim="state.name" maxlength="18" :placeholder="t('pages.y2_1.namePlaceholder')">
+          <input
+            id="codename"
+            v-model.trim="state.name"
+            maxlength="18"
+            :class="{ error: isMissingField('name') }"
+            :placeholder="t('pages.y2_1.namePlaceholder')"
+          >
         </div>
 
         <div class="groups">
-          <div class="group">
+          <div class="group" :class="{ error: isMissingField('gpa') }">
             <h3>{{ ui.gpaTitle }}</h3>
             <p>{{ ui.gpaDesc }}</p>
             <div class="grid3">
@@ -72,7 +78,7 @@
             </div>
           </div>
 
-          <div class="group">
+          <div class="group" :class="{ error: isMissingField('character') }">
             <h3>{{ ui.characterTitle }}</h3>
             <p>{{ ui.characterDesc }}</p>
             <div class="character-grid">
@@ -90,7 +96,7 @@
             </div>
           </div>
 
-          <div class="group">
+          <div class="group" :class="{ error: isMissingField('tool') }">
             <h3>{{ t('pages.y2_1.toolTitle') }}</h3>
             <p>{{ t('pages.y2_1.toolDesc') }}</p>
             <div class="grid3">
@@ -109,11 +115,16 @@
             </div>
           </div>
 
-          <div class="group">
+          <div class="group" :class="{ error: hasExperienceError }">
             <h3>{{ ui.experienceTitle }}</h3>
             <p>{{ ui.experienceDesc }}</p>
             <div class="extra-grid">
-              <div v-for="field in experienceFields" :key="field.id" class="mini-card">
+              <div
+                v-for="field in experienceFields"
+                :key="field.id"
+                class="mini-card"
+                :class="{ error: isMissingField(`experience.${field.id}`) }"
+              >
                 <strong>{{ field.label }}</strong>
                 <div class="toggle-row">
                   <button
@@ -137,7 +148,7 @@
             </div>
           </div>
 
-          <div class="group">
+          <div class="group" :class="{ error: hasLanguageError }">
             <h3>{{ ui.languageTitle }}</h3>
             <p>{{ ui.languageDesc }}</p>
             <div class="grid3 compact-grid">
@@ -154,17 +165,22 @@
                 <span>{{ option.copy }}</span>
               </button>
             </div>
-            <div v-if="state.languageExam === 'ielts' || state.languageExam === 'toefl'" class="inline-input">
+            <div
+              v-if="state.languageExam === 'ielts' || state.languageExam === 'toefl'"
+              class="inline-input"
+              :class="{ error: isMissingField('languageScore') }"
+            >
               <label for="language-score">{{ ui.languageScoreLabel }}</label>
               <input
                 id="language-score"
                 v-model.trim="state.languageScore"
+                :class="{ error: isMissingField('languageScore') }"
                 :placeholder="ui.languageScorePlaceholder"
               >
             </div>
           </div>
 
-          <div class="group">
+          <div class="group" :class="{ error: hasGreError }">
             <h3>{{ ui.greTitle }}</h3>
             <p>{{ ui.greDesc }}</p>
             <div class="grid3 compact-grid">
@@ -181,11 +197,16 @@
                 <span>{{ option.copy }}</span>
               </button>
             </div>
-            <div v-if="state.greMode === 'has'" class="inline-input">
+            <div
+              v-if="state.greMode === 'has'"
+              class="inline-input"
+              :class="{ error: isMissingField('greScore') }"
+            >
               <label for="gre-score">{{ ui.greScoreLabel }}</label>
               <input
                 id="gre-score"
                 v-model.trim="state.greScore"
+                :class="{ error: isMissingField('greScore') }"
                 :placeholder="ui.greScorePlaceholder"
               >
             </div>
@@ -202,8 +223,25 @@
           <p>{{ progressCopy }}</p>
         </div>
 
+        <div
+          v-if="missingRequiredFieldLabels.length"
+          class="validation-alert"
+          role="alert"
+          aria-live="polite"
+        >
+          {{ t('pages.y2_1.validation.missingPrefix', { fields: missingRequiredFieldLabels.join(validationSeparator) }) }}
+        </div>
+
         <div class="foot">
-          <button class="primary" :disabled="!sealReady" @click="showSummary = true">{{ t('pages.y2_1.seal') }}</button>
+          <button
+            type="button"
+            class="primary"
+            :class="{ blocked: !sealReady }"
+            :aria-disabled="!sealReady"
+            @click="handleSealIdentity"
+          >
+            {{ t('pages.y2_1.seal') }}
+          </button>
         </div>
       </section>
     </div>
@@ -394,6 +432,56 @@ const completedSteps = computed(() => {
 
 const sealReady = computed(() => completedSteps.value === totalSteps)
 
+const missingRequiredFields = computed(() => {
+  const missing = []
+
+  if (!state.name) {
+    missing.push({ key: 'name', label: t('pages.y2_1.requiredFields.name') })
+  }
+
+  if (!selectedGpa.value) {
+    missing.push({ key: 'gpa', label: t('pages.y2_1.requiredFields.gpa') })
+  }
+
+  if (!selectedCharacter.value) {
+    missing.push({ key: 'character', label: t('pages.y2_1.requiredFields.character') })
+  }
+
+  if (!selectedTool.value) {
+    missing.push({ key: 'tool', label: t('pages.y2_1.requiredFields.tool') })
+  }
+
+  experienceFieldDefs.forEach((field) => {
+    if (!state.experiences[field.id]) {
+      missing.push({
+        key: `experience.${field.id}`,
+        label: t(`pages.y2_1.requiredFields.${field.id}`),
+      })
+    }
+  })
+
+  if (!state.languageExam) {
+    missing.push({ key: 'languageExam', label: t('pages.y2_1.requiredFields.languageExam') })
+  } else if (state.languageExam !== 'none' && !state.languageScore.trim()) {
+    missing.push({ key: 'languageScore', label: t('pages.y2_1.requiredFields.languageScore') })
+  }
+
+  if (!state.greMode) {
+    missing.push({ key: 'greMode', label: t('pages.y2_1.requiredFields.greMode') })
+  } else if (state.greMode === 'has' && !state.greScore.trim()) {
+    missing.push({ key: 'greScore', label: t('pages.y2_1.requiredFields.greScore') })
+  }
+
+  return missing
+})
+
+const missingRequiredFieldLabels = computed(() => missingRequiredFields.value.map((field) => field.label))
+const missingRequiredFieldKeys = computed(() => new Set(missingRequiredFields.value.map((field) => field.key)))
+const validationSeparator = computed(() => (currentLanguage.value === 'en' ? ', ' : '、'))
+const hasExperienceError = computed(() => experienceFieldDefs.some((field) => isMissingField(`experience.${field.id}`)))
+const hasLanguageError = computed(() => isMissingField('languageExam') || isMissingField('languageScore'))
+const hasGreError = computed(() => isMissingField('greMode') || isMissingField('greScore'))
+
 // 进度条百分比（0～100）
 const progressPercent = computed(() =>
   Math.floor((completedSteps.value / totalSteps) * 100)
@@ -563,6 +651,15 @@ function selectGre(id) {
   if (id === 'none') {
     state.greScore = ''
   }
+}
+
+function isMissingField(key) {
+  return missingRequiredFieldKeys.value.has(key)
+}
+
+function handleSealIdentity() {
+  if (missingRequiredFields.value.length) return
+  showSummary.value = true
 }
 
 function returnToMap() {
@@ -838,6 +935,11 @@ input:focus {
   box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
 }
 
+input.error {
+  border-color: rgba(248, 113, 113, 0.9);
+  box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.14);
+}
+
 .groups {
   display: grid;
   gap: 18px;
@@ -934,6 +1036,19 @@ input:focus {
 .toggle-btn.sel {
   border-color: #f8d6a2;
   box-shadow: 0 0 0 1px rgba(248, 214, 162, 0.25);
+}
+
+.box.error,
+.group.error,
+.mini-card.error {
+  border-color: rgba(248, 113, 113, 0.72);
+  box-shadow: 0 0 0 1px rgba(248, 113, 113, 0.2), 0 12px 22px rgba(127, 29, 29, 0.18);
+}
+
+.group.error h3,
+.mini-card.error strong,
+.inline-input.error label {
+  color: #fecaca;
 }
 
 .opt {
@@ -1046,6 +1161,18 @@ input:focus {
   font-size: 0.92rem;
 }
 
+.validation-alert {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(248, 113, 113, 0.72);
+  background: rgba(127, 29, 29, 0.26);
+  color: #fee2e2;
+  font-weight: 800;
+  line-height: 1.45;
+  box-shadow: 0 12px 22px rgba(127, 29, 29, 0.16);
+}
+
 .foot {
   margin-top: 18px;
   display: flex;
@@ -1076,6 +1203,14 @@ input:focus {
   opacity: 0.45;
   cursor: not-allowed;
   box-shadow: none;
+}
+
+.primary.blocked,
+.primary[aria-disabled="true"] {
+  opacity: 0.45;
+  cursor: not-allowed;
+  box-shadow: none;
+  filter: grayscale(0.18);
 }
 
 .modal {
@@ -1403,6 +1538,12 @@ input:focus {
   .progress p {
     font-size: 0.68rem;
     margin-top: 5px;
+  }
+  .validation-alert {
+    margin-top: 8px;
+    padding: 8px 10px;
+    border-radius: 10px;
+    font-size: 0.72rem;
   }
 
   /* 底部按钮 */
