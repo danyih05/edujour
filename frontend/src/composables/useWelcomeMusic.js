@@ -220,7 +220,7 @@ export function initializeWelcomeMusic() {
   syncVolumePreference(readVolumePreference())
 
   audio = new Audio()
-  audio.preload = 'auto'
+  audio.preload = 'none'
   audio.loop = false
   audio.volume = volume.value
   audio.muted = isMuted.value
