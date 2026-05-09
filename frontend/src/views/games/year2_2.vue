@@ -42,7 +42,13 @@
             :key="choice.id"
             type="button"
             class="btn-choice"
-            :class="{ selected: selectedChoice === choice.id }"
+            :class="{
+              answered: selectedChoice !== null,
+              selected: selectedChoice === choice.id,
+              unselected: selectedChoice !== null && selectedChoice !== choice.id,
+              correct: choice.correct === true,
+              wrong: selectedChoice === choice.id && choice.correct === false,
+            }"
             @click="answerQuestion(choice.id)"
           >
             <span class="choice-badge">{{ choice.id }}</span>
@@ -1036,5 +1042,94 @@ function completeWithReward() {
 @keyframes card-reveal {
   from { opacity: 0; transform: scale(0.86) rotateY(30deg); }
   to { opacity: 1; transform: scale(1) rotateY(0); }
+}
+
+/* Year 2 第二关选项状态：放在末尾覆盖前面重复的 .btn-choice 定义 */
+.question-panel .btn-choice {
+  border-color: rgba(249, 217, 118, 0.28);
+  background: rgba(11, 19, 26, 0.88);
+  color: #f4f7fb;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+
+.question-panel .btn-choice .choice-badge {
+  background: rgba(249, 217, 118, 0.18);
+  border: 1px solid rgba(249, 217, 118, 0.55);
+  color: #ffe8a3;
+}
+
+.question-panel .btn-choice:hover:not(:disabled) {
+  background: rgba(249, 217, 118, 0.16);
+  border-color: rgba(249, 217, 118, 0.72);
+  color: #fff8df;
+  transform: translateY(-1px);
+}
+
+.question-panel .btn-choice:hover:not(:disabled) .choice-badge {
+  background: rgba(249, 217, 118, 0.28);
+  border-color: #f9d976;
+  color: #fff6d6;
+}
+
+.question-panel .btn-choice.answered:not(.selected):not(.correct):not(.wrong),
+.question-panel .btn-choice.unselected:not(.correct):not(.wrong) {
+  background: rgba(11, 19, 26, 0.92);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #e7edf6;
+}
+
+.question-panel .btn-choice.answered:not(.selected):not(.correct):not(.wrong) .choice-badge,
+.question-panel .btn-choice.unselected:not(.correct):not(.wrong) .choice-badge {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(231, 237, 246, 0.42);
+  color: #f4f7fb;
+}
+
+.question-panel .btn-choice.selected:not(.correct):not(.wrong) {
+  background: linear-gradient(135deg, #fff3c4, #f4d47b);
+  border-color: #d6a72f;
+  color: #1f2933;
+  box-shadow: 0 10px 24px rgba(249, 217, 118, 0.24), inset 0 0 0 1px rgba(255, 255, 255, 0.45);
+}
+
+.question-panel .btn-choice.selected:not(.correct):not(.wrong) .choice-badge {
+  background: #7c4a03;
+  border-color: #4f2f02;
+  color: #fff6d6;
+}
+
+.question-panel .btn-choice.correct {
+  background: linear-gradient(135deg, #15803d, #16a34a);
+  border-color: #86efac;
+  color: #ffffff;
+  box-shadow: 0 10px 24px rgba(34, 197, 94, 0.24);
+}
+
+.question-panel .btn-choice.correct .choice-badge {
+  background: #ffffff;
+  border-color: #dcfce7;
+  color: #166534;
+}
+
+.question-panel .btn-choice.wrong {
+  background: linear-gradient(135deg, #b91c1c, #dc2626);
+  border-color: #fecaca;
+  color: #ffffff;
+  box-shadow: 0 10px 24px rgba(239, 68, 68, 0.24);
+}
+
+.question-panel .btn-choice.wrong .choice-badge {
+  background: #ffffff;
+  border-color: #fee2e2;
+  color: #991b1b;
+}
+
+.question-panel .btn-choice:disabled {
+  cursor: not-allowed;
+  opacity: 0.82;
+}
+
+.question-panel .btn-choice:disabled:hover {
+  transform: none;
 }
 </style>
