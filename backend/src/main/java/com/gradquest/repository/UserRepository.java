@@ -43,6 +43,16 @@ public class UserRepository {
         return results.stream().findFirst();
     }
 
+    public Optional<UserAccount> findByEmailAndRole(String email, UserRole role) {
+        List<UserAccount> results = jdbcTemplate.query("""
+            SELECT id, email, username, display_name, password_hash, role, coins,
+                   traveler_profile_json, created_at, updated_at, last_login_at
+            FROM users
+            WHERE email = ? AND role = ?
+            """, userRowMapper, email, role.value());
+        return results.stream().findFirst();
+    }
+
     public Optional<UserAccount> findByUsername(String username) {
         List<UserAccount> results = jdbcTemplate.query("""
             SELECT id, email, username, display_name, password_hash, role, coins,

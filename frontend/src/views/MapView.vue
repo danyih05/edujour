@@ -308,7 +308,7 @@
       {{ tooltip.text }}
     </div>
     <div v-if="showGuide" class="guide-overlay" @click.self="closeGuide">
-      <div class="guide-bubble" :style="guideBubbleStyle">
+      <div ref="guideBubbleRef" class="guide-bubble" :style="guideBubbleStyle">
         <div class="guide-arrow"></div>
         <div class="guide-content">
           <h3>✨ {{ t('guide.title') }} ✨</h3>
@@ -317,7 +317,7 @@
           <button class="guide-close-btn" @click="closeGuide">{{ t('guide.gotIt') }}</button>
         </div>
       </div>
-      <div class="hand-pointer" :style="handStyle">👆</div>
+      <div class="hand-pointer" :style="handPointerStyle">👆</div>
     </div>
     <HelpGuide v-if="showHelpModal" @close="showHelpModal = false" />
   </div>
@@ -361,8 +361,6 @@ const completedCount = computed(() => {
 })
 const progressPercent = computed(() => (completedCount.value / totalNodes.value) * 100)
 const showGuide = ref(false)
-const handStyle = reactive({ left: '0px', top: '0px' })
-const guideBubbleStyle = reactive({ left: 'auto', top: 'auto' })
 const showHelpModal = ref(false)
 
 const y2Path = 'M572.3 368.6C575.8 325.1 579.2 281.6 573.5 243.1 567.7 204.7 558.2 165.2 537.6 137.9 517 110.6 482.5 87.3 449.8 79.3c-32.8-8-78.8-5-108.7 10.7-29.9 15.7-55.7 49.8-70.5 83.7-14.8 33.9-17.9 79.3-18.5 119.5-.6 40.3 4.1 91.5 15.1 122 11 30.5 27.7 45.4 50.9 61 23.2 15.5 56.5 30.6 87.9 32.2 31.4 1.6 75.7-10 100.6-22.7 24.9-12.7 40.5-34.3 48.6-53.8 8.1-19.5 6.2-51.4 0-63.4-6.2-12-28-12.4-37-8.4-9 4-15.6 18.7-17.3 32.3-1.7 13.5-5.8 31.3 6.9 49 12.7 17.7 30.4 36 68.7 50.6 38.3 14.6 100.9 28.7 160.7 29.9 59.7 1.2 155.7-4.8 197.7-22.7 42-17.9 51.4-59.8 54.3-84.9 2.9-25.1-9.4-48.6-37-65.7-27.6-17.1-89.6-23.7-128.3-37.1-38.7-13.4-82.1-22.9-104-43-22-20.1-29.1-51.6-27.8-77.7 1.4-26.1 19.1-58.6 35.9-78.9 16.8-20.3 39.7-36.2 64.8-43 25-6.8 61.5-3.4 85.5 2.4 24 5.7 36.8 10.9 53.6 21.7 16.8 10.8 52.7 56.4 59.7 61.9'
@@ -427,6 +425,8 @@ const windowWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 1024
 const activeLevel = ref(null)
 const hasAcknowledgedActiveOnboarding = ref(false)
 const showActiveOnboardingOverlay = ref(false)
+const guideBubbleRef = ref(null)
+const guideTarget = reactive({ ready: false, x: 0, bubbleTop: 0, nodeBottom: 0, arrowLeft: '50%' })
 const mapAreas = reactive({ y2: null, y3: null })
 const nodeRefs = reactive({ y2: {}, y3: {} })
 const traveler = reactive({ y2: { left: '50%', top: '50%', walking: false, reached: false }, y3: { left: '50%', top: '50%', walking: false, reached: false } })
@@ -457,6 +457,24 @@ const mapTransformStyle = computed(() => ({
   y2: `translate(${mapTransform.y2.x}px, ${mapTransform.y2.y}px) scale(${mapTransform.y2.scale})`,
   y3: `translate(${mapTransform.y3.x}px, ${mapTransform.y3.y}px) scale(${mapTransform.y3.scale})`,
 }))
+const guideBubbleStyle = computed(() => {
+  if (!guideTarget.ready) return { visibility: 'hidden' }
+  const gap = 44
+  return {
+    left: `${guideTarget.x}px`,
+    top: `${guideTarget.bubbleTop}px`,
+    '--guide-arrow-left': guideTarget.arrowLeft,
+    visibility: 'visible',
+  }
+})
+const handPointerStyle = computed(() => {
+  if (!guideTarget.ready) return { visibility: 'hidden' }
+  return {
+    left: `${guideTarget.x}px`,
+    top: `${guideTarget.nodeBottom - 8}px`,
+    visibility: 'visible',
+  }
+})
 const toolSkillCopy = computed(() => (
   currentLanguage.value === 'en'
     ? {
@@ -506,12 +524,11 @@ const setMapAreaRef = (year) => (element) => { mapAreas[year] = element || null 
 const setNodeRef = (year, nodeId) => (element) => {
   if (element) nodeRefs[year][nodeId] = element;
   else delete nodeRefs[year][nodeId];
-  if (nodeId === 1 && showGuide.value) {
-    nextTick(() => updateGuidePosition());
-  }
+  if (year === 'y2' && nodeId === 1) scheduleGuidePositionUpdate()
 }
 const tooltip = reactive({ visible: false, text: '', x: 0, y: 0 })
 let tooltipTimer = null
+let guidePositionFrame = null
 
 const getLevelState = (year, nodeId) => store.getLevel(year, nodeId)
 const isAccessible = (year, nodeId) => store.isNodeAccessible(year, nodeId)
@@ -528,6 +545,41 @@ function getNodeCenter(year, nodeId) {
     left: nodeRect.left + nodeRect.width / 2 - mapRect.left,
     top: nodeRect.top + nodeRect.height / 2 - mapRect.top
   };
+}
+function updateGuidePosition() {
+  if (!showGuide.value || typeof window === 'undefined') return
+  const node = nodeRefs.y2[1]
+  if (!node) {
+    guideTarget.ready = false
+    return
+  }
+
+  const nodeRect = node.getBoundingClientRect()
+  const bubbleRect = guideBubbleRef.value?.getBoundingClientRect()
+  const bubbleWidth = bubbleRect?.width || 315
+  const bubbleHeight = bubbleRect?.height || 260
+  const margin = 12
+  const nodeCenterX = nodeRect.left + nodeRect.width / 2
+  const minCenterX = bubbleWidth / 2 + margin
+  const maxCenterX = window.innerWidth - bubbleWidth / 2 - margin
+  const bubbleCenterX = maxCenterX < minCenterX
+    ? window.innerWidth / 2
+    : clamp(nodeCenterX, minCenterX, maxCenterX)
+  const arrowOffset = clamp(nodeCenterX - (bubbleCenterX - bubbleWidth / 2), 18, bubbleWidth - 18)
+
+  guideTarget.x = bubbleCenterX
+  guideTarget.bubbleTop = Math.max(bubbleHeight + margin, nodeRect.top - 44)
+  guideTarget.nodeBottom = nodeRect.bottom
+  guideTarget.arrowLeft = `${arrowOffset}px`
+  guideTarget.ready = true
+}
+function scheduleGuidePositionUpdate() {
+  if (typeof window === 'undefined') return
+  if (guidePositionFrame) window.cancelAnimationFrame(guidePositionFrame)
+  guidePositionFrame = window.requestAnimationFrame(() => {
+    guidePositionFrame = null
+    updateGuidePosition()
+  })
 }
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value))
@@ -584,6 +636,7 @@ function handleMapTouchMove(year, event) {
     const nextScale = clamp(state.baseScale * ratio, mapScaleRange.min, mapScaleRange.max)
     mapTransform[year].scale = nextScale
     moveTravelerToNode(year, store[year].currentNode)
+    scheduleGuidePositionUpdate()
     return
   }
   if (state.mode === 'pan' && event.touches.length === 1) {
@@ -592,10 +645,12 @@ function handleMapTouchMove(year, event) {
     mapTransform[year].x = state.baseX + (touch.clientX - state.startX)
     mapTransform[year].y = state.baseY + (touch.clientY - state.startY)
     moveTravelerToNode(year, store[year].currentNode) 
+    scheduleGuidePositionUpdate()
   }
 }
 function handleMapTouchEnd(year) {
   mapTouchState[year].mode = ''
+  scheduleGuidePositionUpdate()
 }
 function switchYear(year) { if (store.year === year) { syncTraveler(year); return } store.switchYear(year) }
 function switchYearAndClose(year) { switchYear(year); showMobileMenu.value = false; showToolBubble.value = false }
@@ -704,9 +759,7 @@ const handleResize = () => {
     mapTransform.y2.scale = clamp(mapTransform.y2.scale, mapScaleRange.min, mapScaleRange.max)
     mapTransform.y3.scale = clamp(mapTransform.y3.scale, mapScaleRange.min, mapScaleRange.max)
   }
-  if (showGuide.value) {
-    updateGuidePosition();
-  }
+  scheduleGuidePositionUpdate()
 };
 
 function showCoinTooltip(event) {
@@ -743,52 +796,6 @@ function hideTooltip() {
     tooltip.visible = false
   }, 100)
 }
-function updateGuidePosition() {
-  const year = store.year;
-  const firstNodeId = 1;
-  const nodeElement = nodeRefs[year]?.[firstNodeId];
-  // 获取当前活跃年份的旅行者元素
-  const travelerElement = document.querySelector(`.board.${year} .traveler`);
-
-  if (!nodeElement) return;
-
-  // 1. 手指指向第一个节点（保持不变）
-  const nodeRect = nodeElement.getBoundingClientRect();
-  handStyle.left = `${nodeRect.left + nodeRect.width / 2 - 20}px`;
-  handStyle.top = `${nodeRect.top - 40}px`;
-
-  // 2. 气泡定位到旅行者上方（优先使用旅行者位置）
-  let bubbleLeft, bubbleTop;
-  if (travelerElement) {
-    const travelerRect = travelerElement.getBoundingClientRect();
-    // 气泡默认宽度约 280px，高度自适应
-    const bubbleWidth = 280;
-    const bubbleHeight = 160; // 估算高度，实际会由内容撑开，但用于边界计算
-    // 水平居中于旅行者
-    let left = travelerRect.left + travelerRect.width / 2 - bubbleWidth / 2;
-    // 垂直位置：旅行者顶部向上偏移 100px
-    let top = travelerRect.top - bubbleHeight - 15;
-    // 边界修正，避免超出视口
-    left = Math.max(10, Math.min(left, window.innerWidth - bubbleWidth - 10));
-    top = Math.max(10, top);
-    bubbleLeft = `${left}px`;
-    bubbleTop = `${top}px`;
-  } else {
-    // 回退：使用节点位置（原有逻辑）
-    const nodeRect = nodeElement.getBoundingClientRect();
-    let left = nodeRect.left - 220;
-    let top = nodeRect.top - 100;
-    if (nodeRect.left < 250) {
-      left = nodeRect.left + nodeRect.width + 20;
-    }
-    bubbleLeft = `${left}px`;
-    bubbleTop = `${top}px`;
-  }
-
-  guideBubbleStyle.left = bubbleLeft;
-  guideBubbleStyle.top = bubbleTop;
-}
-
 function getMapGuideSeenStorageKey() {
   const userId = authStore.user?.id
   const createdAt = typeof authStore.user?.createdAt === 'string'
@@ -810,6 +817,7 @@ function getMapGuideSeenStorageKey() {
 
 function closeGuide() {
   showGuide.value = false
+  guideTarget.ready = false
   localStorage.setItem(getMapGuideSeenStorageKey(), 'true')
 }
 
@@ -818,10 +826,7 @@ function initGuide() {
   const hasSeen = localStorage.getItem(storageKey)
   if (!hasSeen) {
     showGuide.value = true
-    setTimeout(() => {
-      updateGuidePosition()
-      setTimeout(() => updateGuidePosition(), 100)
-    }, 200)
+    nextTick(() => scheduleGuidePositionUpdate())
   }
 }
 function showHelpTooltip(event) {
@@ -850,33 +855,38 @@ onMounted(() => {
 watch(() => store.year, (year) => {
   showToolBubble.value = false
   syncTraveler(year, store[year].currentNode)
+  nextTick(() => scheduleGuidePositionUpdate())
 })
 watch(() => store.y2.currentNode, (nodeId) => { if (store.year === 'y2') syncTraveler('y2', nodeId) })
 watch(() => store.y3.currentNode, (nodeId) => { if (store.year === 'y3') syncTraveler('y3', nodeId) })
-watch(() => store.year, () => {
-  if (showGuide.value) nextTick(() => updateGuidePosition())
-})
 watch(() => store.travelerLook.toolKey, () => {
   showToolBubble.value = false
 })
+watch(showGuide, (visible) => {
+  if (visible) nextTick(() => scheduleGuidePositionUpdate())
+})
+const handleWindowWidthResize = () => {
+  windowWidth.value = window.innerWidth
+  scheduleGuidePositionUpdate()
+}
 onMounted(async () => {
   window.addEventListener('keydown', handleEscape)
   window.addEventListener('resize', handleResize)
-  window.addEventListener('resize', () => {
-    windowWidth.value = window.innerWidth
-  })
+  window.addEventListener('resize', handleWindowWidthResize)
 
   try {
     await authStore.hydrate()
     await store.ensureLoaded()
     syncTraveler(store.year, store[store.year].currentNode)
+    await nextTick()
+    scheduleGuidePositionUpdate()
   } catch (error) {
     statusMessage.value = error.message || copy.value.map.syncFailed
   }
 
   initGuide()
 })
-onBeforeUnmount(() => { window.removeEventListener('keydown', handleEscape); window.removeEventListener('resize', handleResize); if (openLevelTimer) clearTimeout(openLevelTimer); Object.values(travelerTimers).forEach((timer) => { if (timer) clearTimeout(timer) }) })
+onBeforeUnmount(() => { window.removeEventListener('keydown', handleEscape); window.removeEventListener('resize', handleResize); window.removeEventListener('resize', handleWindowWidthResize); if (guidePositionFrame) window.cancelAnimationFrame(guidePositionFrame); if (openLevelTimer) clearTimeout(openLevelTimer); Object.values(travelerTimers).forEach((timer) => { if (timer) clearTimeout(timer) }) })
 </script>
 
 <style scoped>
@@ -1057,7 +1067,9 @@ onBeforeUnmount(() => { window.removeEventListener('keydown', handleEscape); win
 }
 .guide-bubble {
   position: fixed;
-  width: 280px;
+  box-sizing: border-box;
+  width: 315px;
+  max-width: calc(100vw - 24px);
   background: #fffcf0;
   border: 3px solid #f3cf9a;
   border-radius: 24px;
@@ -1067,10 +1079,11 @@ onBeforeUnmount(() => { window.removeEventListener('keydown', handleEscape); win
   font-family: Georgia, serif;
   z-index: 201;
   pointer-events: auto;
+  transform: translate(-50%, -100%);
 }
 .guide-arrow {
   position: absolute;
-  left: 50%;
+  left: var(--guide-arrow-left, 50%);
   bottom: -20px;
   transform: translateX(-50%);
   width: 0;
@@ -1109,12 +1122,7 @@ onBeforeUnmount(() => { window.removeEventListener('keydown', handleEscape); win
   filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
   pointer-events: none;
   z-index: 202;
-  animation: handFloat 1.2s ease-in-out infinite;
-}
-@keyframes handFloat {
-  0% { transform: translateY(0) rotate(-10deg); }
-  50% { transform: translateY(-15px) rotate(-5deg); }
-  100% { transform: translateY(0) rotate(-10deg); }
+  transform: translateX(-50%) rotate(-10deg);
 }
 .custom-tooltip {
   position: fixed;
