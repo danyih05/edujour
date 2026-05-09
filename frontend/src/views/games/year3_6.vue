@@ -1,5 +1,11 @@
 <template>
   <div class="dark-citadel-root">
+    <KnowledgeGuidePanel
+      :title="t('pages.y3_6.guide.title')"
+      :body="t('pages.y3_6.guide.body')"
+      :items="guideItems"
+    />
+
     <div class="sky">
       <div
         v-for="star in stars"
@@ -279,11 +285,13 @@ import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch, w
 import { useAppI18n } from '@/composables/useAppI18n'
 import { MUSIC_TRACKS, useWelcomeMusic } from '@/composables/useWelcomeMusic'
 import { useGameStore } from '@/stores/game'
+import KnowledgeGuidePanel from '@/components/KnowledgeGuidePanel.vue'
 
 const emit = defineEmits(['complete'])
 const { currentLanguage, t, tm } = useAppI18n()
 const { activateWelcomeMusicTrack } = useWelcomeMusic()
 const gameStore = useGameStore()
+const guideItems = computed(() => tm('pages.y3_6.guide.items') || [])
 const showNotifyModal = ref(false)
 const notifyMessage = ref('')
 const BASE_STAGES = [

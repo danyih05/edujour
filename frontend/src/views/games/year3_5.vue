@@ -1,5 +1,11 @@
 <template>
   <div class="wildcat-root">
+    <KnowledgeGuidePanel
+      :title="t('pages.y3_5.guide.title')"
+      :body="t('pages.y3_5.guide.body')"
+      :items="guideItems"
+    />
+
     <div class="game-screen">
       <div class="status-bar">
         <div><i class="fas fa-paw" style="color:#f5b342;"></i> {{ pageCopy.statusLabel }}</div>
@@ -52,6 +58,7 @@
 import { computed, onBeforeUnmount, onMounted, ref, watchEffect } from 'vue'
 import { useAppI18n } from '@/composables/useAppI18n'
 import { YEAR3_RECOMMENDATION_ROUTES } from '@/config/year3RecommendationQuestions'
+import KnowledgeGuidePanel from '@/components/KnowledgeGuidePanel.vue'
 
 const emit = defineEmits(['complete'])
 const { currentLanguage, t, tm, localize } = useAppI18n()
@@ -60,6 +67,7 @@ const previousTitle = ref(typeof document !== 'undefined' ? document.title : '')
 const showCompleteModal = ref(false)
 const rewardAmount = ref(50)   // 与原有奖励值一致
 const pageCopy = computed(() => tm('pages.y3_5') || {})
+const guideItems = computed(() => tm('pages.y3_5.guide.items') || [])
 const routes = computed(() => YEAR3_RECOMMENDATION_ROUTES)
 const selectedRouteId = ref('')
 const currentQuestionIndex = ref(0)

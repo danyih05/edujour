@@ -120,8 +120,8 @@
     </div>
 
     <KnowledgeGuidePanel
-      :title="t('pages.y3_1.recipeBook')"
-      :body="t('pages.y3_1.hintMeta')"
+      :title="t('pages.y3_1.guide.title')"
+      :body="t('pages.y3_1.guide.body')"
       :items="guideItems"
     />
 

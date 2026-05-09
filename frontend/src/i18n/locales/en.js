@@ -290,14 +290,14 @@ export default {
       awaitingChoice: 'Awaiting choice',
       guide: {
         title: 'Identity Forge Guide',
-        body: 'Customize your traveler avatar and student identity card. Your choices will be saved to your profile and shown on the map.',
+        body: 'Complete both your traveler identity and your application baseline. GPA band, experience tags, language status, and GRE status will feed later application judgments.',
         item1: {
-          title: '🎭 Identity & Appearance',
-          text: 'Choose a codename, archetype, hair color, outfit, and familiar tool. These define your visual style and in‑game persona.'
+          title: 'Baseline Profile',
+          text: 'Codename, map character, and tool identify your traveler. The GPA band generates your current role card and anchors later profile checks.'
         },
         item2: {
-          title: '📝 Save & Proceed',
-          text: 'Once all four sigils are charged, seal your identity. You will earn 30 coins and unlock the next node on the map.'
+          title: 'Application Background',
+          text: 'Internship, research, competition, project, language score, and GRE status all need explicit choices. If you do not have one yet, mark it as none so later checks are not missing context.'
         }
       },
       roles: {
@@ -355,8 +355,8 @@ export default {
       
       questionCount: 'Question {current} / {total}',
       guide: {
-        button: 'Knowledge Guide',
-        body: 'This mini-game helps you see which destination type fits your current priorities. Answer honestly to uncover the best route.',
+        button: 'Route Selection Guide',
+        body: 'This level compares destinations through study rhythm, cost, language fit, and career direction. There is no universally best route; the useful answer is the one aligned with your priorities.',
         items: [
           'Think about study rhythm, cost, language comfort, and long-term career fit.',
           'There is no “perfect” path—each region has different strengths.',
@@ -514,27 +514,27 @@ export default {
       seal: 'Seal This Tier Plan and Return',
       alertCompleteDeck: 'The Seer warns: place every school card before divination.',
       guide: {
-        button: 'Knowledge Guide',
-        body: 'A balanced school list needs Reach, Match, and Safety tiers. The game now swaps the school deck based on the destination matched in the previous level, so you only need to sort the current set.',
+        button: 'School Tiering Handbook',
+        body: 'A balanced school list needs Reach, Match, and Safety tiers. The deck follows the destination matched in the previous level, so place each school where its admission probability truly belongs.',
         items: {
           reach: {
-            title: '🎯 Reach (Dream) Schools',
+            title: 'Reach Schools',
             text: 'These are schools where your profile sits below the average admit. Keep 2-3 of them as upside bets instead of filling the whole list with risk.'
           },
           match: {
-            title: '⚔️ Match (Core) Schools',
+            title: 'Match Schools',
             text: 'These are the schools where your GPA and evidence are closer to the typical admit range. They should form the stable middle of your list.'
           },
           safety: {
-            title: '🛡️ Safety (Backup) Schools',
+            title: 'Safety Schools',
             text: 'These are schools where your profile is stronger than the average admit. A real safety layer keeps the rest of the list flexible.'
           },
           reference: {
-            title: '📊 {country} tier reference',
+            title: '{country} tier reference',
             text: 'For the current GPA 82 STEM / CS profile with one ordinary internship: {reachSchools} are closer to Reach; {matchSchools} fit Match better; {safetySchools} are better treated as Safety.'
           },
           warning: {
-            title: '⚠️ Common Mistakes',
+            title: 'Common Mistakes',
             text: 'Do not push a high-risk option like {topSchool} too low, and do not inflate a calmer option like {safeSchool} too high, or the whole list loses balance.'
           }
         }
@@ -591,27 +591,27 @@ export default {
         weakness: 'Weakness'
       },
       guide: {
-        button: 'Case Lessons',
-        body: 'Learn from senior cases: GPA is not the only factor. Evidence like internships, projects, and research can change the outcome. Also, discover your own judgment biases.',
+        button: 'Case Evidence Guide',
+        body: 'Use senior cases to calibrate judgment: GPA matters, but internships, projects, research, and portfolio evidence can change outcomes. Watch for your own optimism or pessimism bias.',
         items: [
           {
-            title: '🔍 Low GPA + Strong Evidence = Miracle',
+            title: 'Low GPA + Strong Evidence',
             content: 'A GPA 80/100 with a serious R&D internship and high-quality project can still reach Top 50 programs, especially for applied CS/software tracks.'
           },
           {
-            title: '⚠️ High GPA + Empty Resume = Risk',
+            title: 'High GPA + Empty Resume',
             content: 'Top grades alone are not enough. Programs look for relevant experience, projects, research, and motivation. The "hollow scholar" often faces rejection.'
           },
           {
-            title: '📌 Evidence Matters',
+            title: 'Evidence Matters',
             content: 'Internships, projects, research, competitions – these tangible outputs create a moat. They prove your skills and fit better than just grades.'
           },
           {
-            title: '🎯 Match Your Story to the Program',
+            title: 'Match Your Story to the Program',
             content: 'Your CV, PS, and RL should align with what the program values. Show how your evidence meets their requirements.'
           },
           {
-            title: '🧠 Know Your Bias',
+            title: 'Know Your Bias',
             content: 'This game detects if you are overly optimistic or pessimistic. Use the feedback to calibrate your own expectations.'
           }
         ]
@@ -643,8 +643,8 @@ export default {
       complete: 'Commit This Allocation and Return',
       alertUnspent: 'Your astrolabe still holds {count} unallocated Stardust.',
       guide: {
-        title: 'Astrolabe Guide',
-        body: 'Allocate your limited Stardust wisely. Focus on actions that create tangible evidence for your application.',
+        title: 'Action Priority Handbook',
+        body: 'Allocate limited Stardust toward actions that create application evidence, clear hard thresholds, or directly improve programme fit.',
         items: [
           'Prioritize GPA, projects, and internships over vague networking.',
           'Language scores are hard requirements—don\'t neglect them.',
@@ -687,9 +687,9 @@ export default {
       modalMasteredLabel: 'Mastered:',
       modalButton: 'Return to Map',
       guide: {
-        "button": "Guardian Guide",
-        "title": "Guardian Guide",
-        "body": "Master these key points before signing with an agent to avoid pitfalls.",
+        "button": "Contract Protection Checklist",
+        "title": "Contract Protection Checklist",
+        "body": "Before signing with an agency, check promises, account access, essays, advisor responsibility, payment, and refund terms so control stays with you.",
         "items": [
           "Beware of exaggerated promises: any 'guaranteed Top 10 admission' or 'cooperation with admissions officers' is unreliable.",
           "Transparency: refuse agents who cannot provide the email and password for your application accounts. You must have final review and submission rights.",
@@ -843,8 +843,8 @@ export default {
       ticketCopy: 'Pack your inventory and bear this honor and wisdom.<br>Prepare to enter the Crucible of the Year 3 Application Season!',
       claim: 'Claim the Golden Ticket & Advance',
       guide: {
-        title: 'Trial Guide',
-        body: 'Answer the question to prove your wisdom and unlock the path to Year 3.',
+        title: 'Year 3 Readiness Guide',
+        body: 'This level checks the core Year 2 principle: do not panic blindly and do not delay. Real competitiveness comes from a clear target and genuine evidence.',
         items: [
           'Grades are important but not the only factor.',
           'Focus on building genuine evidence and a clear plan.',
@@ -870,6 +870,10 @@ export default {
       inventoryProgress: '{current} / {total} unlocked',
       hintTitle: 'Stuck? Start Here',
       hintMeta: 'Hints stay hidden until you click a note.',
+      guide: {
+        title: 'Application Alchemy Handbook',
+        body: 'Fuse experience evidence, programme requirements, language preparation, PS, recommendation letters, and the final package in the real order of application work.',
+      },
       hintSpotlight: 'Current Working Combos',
       hintPromptTitle: 'Open a direct hint',
       hintPromptBody: 'If you get stuck, open the notes below. They point you toward the right branch without placing the exact answer on the screen.',
@@ -1109,9 +1113,14 @@ export default {
         },
       ],
       guide: {
-        title: 'Archives Guide',
-        body: 'Explore the archives to understand application materials.',
-        items: ['Item 1', 'Item 2'],
+        title: 'Materials Appraisal Guide',
+        body: 'The same experience needs different writing in CV, PS, and RL. Start by identifying the voice: CV is objective evidence, PS is personal motivation, and RL is third-party evaluation.',
+        items: [
+          'CV: actions, numbers, skills, tools, and results that can be scanned quickly.',
+          'PS: interest origin, reflection, application motivation, programme fit, and future goals.',
+          'RL: recommender voice, observed relationship, ability assessment, and concrete examples.',
+          'When unsure, ask who is speaking: the applicant, a CV bullet, or a recommender.',
+        ],
       },
     },
 
@@ -1208,9 +1217,9 @@ export default {
         toast: 'Diagnosis complete. The six core traps are purged.',
       },
       guide: {
-        button: 'Knowledge Guide',
-        title: 'CV Trap Index',
-        intro: 'Use this quick reference to prevent mistakes before reviewers see them.',
+        button: 'CV Protection Checklist',
+        title: 'CV Protection Checklist',
+        body: 'Use this quick reference to prevent mistakes before reviewers see them.',
         items: [
           'Education: if GPA is included, specify the scale and keep only high-scoring, application-relevant modules.',
           'Research experience: remove ellipses and replace vague comparisons with concrete improvement figures.',
@@ -1265,9 +1274,9 @@ export default {
         },
       },
       guide: {
-        button: 'Knowledge Guide',
-        title: 'PS Story Toolkit',
-        intro: 'Keep the reader oriented. Show evidence before vision.',
+        button: 'PS Strategy Guide',
+        title: 'PS Strategy Guide',
+        body: 'Keep the reader oriented. Show evidence before vision.',
         items: [
           'Start with a personal trigger, not empty praise.',
           'Show preparation and evidence before school fit.',
@@ -1302,6 +1311,16 @@ export default {
       nextQuestion: 'Next question',
       finishRoute: 'Finish route and claim reward',
       emptyQuestion: 'No question available yet.',
+      guide: {
+        title: 'Recommendation Request Handbook',
+        body: 'A recommendation request is not a last-minute favor. It is a polite, clear workflow supported by materials. Practice both in-person and email scenarios.',
+        items: [
+          'Ask 2-4 weeks ahead and choose the teacher who knows your coursework, project, or research performance best.',
+          'Prepare your CV, transcript, project list, and deadline table before asking.',
+          'After the teacher agrees, send a clean materials email quickly with clear subject and attachment names.',
+          'Send a polite reminder about one week before the deadline, then thank the recommender and update them on results.',
+        ],
+      },
     },
     y3_6: {
       documentTitle: 'Y3-6 The Dark Citadel: Battle of the Ordeals',
@@ -1442,9 +1461,14 @@ export default {
         ],
       ],
       guide: {
-        title: 'Citadel Guide',
-        body: 'Battle through the application season months.',
-        items: ['Item 1', 'Item 2'],
+        title: 'Application Season Battle Guide',
+        body: 'The three gates map to key application-season months: clear language thresholds first, polish essays and recommendations next, then protect portals, deadlines, and material status.',
+        items: [
+          'September focuses on language score, validity, official overall/sub-score requirements, accepted tests, and waiver rules.',
+          'October focuses on essay logic: PS, CV, recommendation letters, and AI support should all serve real evidence, not templates.',
+          'November focuses on execution: materials checklist, deadlines, application email, and portal status must be checked by you.',
+          'Agencies can assist, but they should not control accounts, email access, final submission, or school communication.',
+        ],
       },
     },
     y3_7: {
@@ -1639,9 +1663,14 @@ export default {
         },
       ],
       guide: {
-        title: 'Bog Guide',
-        body: 'Sweep away application traps.',
-        items: ['Item 1', 'Item 2'],
+        title: 'DIY Protection Checklist',
+        body: 'DIY applications most often fail through deadlines, language thresholds, official requirements, account control, and post-submission follow-up rather than one single document.',
+        items: [
+          'Lethal blunders can directly eliminate an application, such as missed deadlines, sub-score failure, name mismatch, or copied templates.',
+          'Serious-impact issues delay or weaken the application, such as missing letter format, vague contracts, or unchecked material status.',
+          'Impression penalties may not reject you alone, but they make the application look unprofessional: messy filenames, format errors, or vague activities.',
+          'Use official programme pages and portals as the source of truth. Agency screenshots, forum posts, and templates are only references.',
+        ],
       },
     },
     y3_8: {
@@ -1663,9 +1692,14 @@ export default {
         'Ticket to the Artifact Forging Workshop',
       ],
       guide: {
-        title: 'Coronation Guide',
-        body: 'Complete your application journey.',
-        items: ['Item 1', 'Item 2'],
+        title: 'Coronation Notes',
+        body: 'The finale is not the end. Keep ownership of the whole application method: targets, evidence, materials, timeline, and accounts should remain in your hands.',
+        items: [
+          'Keep a complete application archive: school tiers, material versions, submission records, recommendation status, and email threads.',
+          'Review Year 2 positioning, school tiering, action priorities, and agency risk control so you do not return to blind anxiety.',
+          'Review Year 3 CV, PS, recommendation, portal, and DIY checklists to form your own application SOP.',
+          'While waiting for results, keep checking email, supplying materials, preparing interviews, and tracking every offer or rejection follow-up.',
+        ],
       },
     },
   },

@@ -5,10 +5,11 @@
       {{ t('pages.y3_4.back') }}
     </button>
 
-    <button class="guide-btn" type="button" @click="showGuide = true">
-      <i class="fas fa-book-open"></i>
-      {{ t('pages.y3_4.guide.button') }}
-    </button>
+    <KnowledgeGuidePanel
+      :title="t('pages.y3_4.guide.title')"
+      :body="t('pages.y3_4.guide.body')"
+      :items="guideItems"
+    />
 
     <div class="star-room">
       <div class="header">
@@ -77,24 +78,13 @@
       </div>
     </div>
 
-    <div class="guide-modal" :class="{ show: showGuide }">
-      <div class="guide-card">
-        <div class="guide-title">{{ t('pages.y3_4.guide.title') }}</div>
-        <p class="guide-intro">{{ t('pages.y3_4.guide.intro') }}</p>
-        <ul class="guide-list">
-          <li v-for="(item, index) in guideItems" :key="index">{{ item }}</li>
-        </ul>
-        <button class="guide-close" type="button" @click="showGuide = false">
-          {{ t('pages.y3_4.guide.close') }}
-        </button>
-      </div>
-    </div>
   </div>
 </template>
 
 <script setup>
 import { computed, reactive, ref } from 'vue'
 import { useAppI18n } from '@/composables/useAppI18n'
+import KnowledgeGuidePanel from '@/components/KnowledgeGuidePanel.vue'
 
 const emit = defineEmits(['complete', 'close'])
 const { t, tm } = useAppI18n()
@@ -118,7 +108,6 @@ const stars = computed(() => {
 
 const selectedOrder = ref([])
 const canvasState = ref('')
-const showGuide = ref(false)
 const guideItems = computed(() => tm('pages.y3_4.guide.items') || [])
 
 const result = reactive({

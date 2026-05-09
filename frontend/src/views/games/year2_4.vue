@@ -23,14 +23,15 @@
       </div>
     </div>
 
+    <KnowledgeGuidePanel
+      :title="t('pages.y2_4.guide.button')"
+      :body="t('pages.y2_4.guide.body')"
+      :items="guideItems"
+    />
+
     <section class="case-arena">
       <!-- 路线选择画面 -->
       <div v-if="gamePhase === 'trackSelect'" class="track-selection screen-center">
-        <KnowledgeGuidePanel
-          :title="t('pages.y2_4.guide.button')"
-          :body="t('pages.y2_4.guide.body')"
-          :items="guideItems"
-        />
         <div class="track-buttons">
           <button class="btn-track ee" @click="selectTrack('ee')">
             <i class="fas fa-bolt"></i> {{ t('pages.y2_4.selectTrack.ee') }}
@@ -713,8 +714,13 @@ function shuffleIndexes(length) {
 const guideItems = computed(() => {
   const items = tm('pages.y2_4.guide.items') || []
   return items.map(item => {
-    if (typeof item === 'object' && item.title) return item
-    return { title: '', content: item }
+    if (typeof item === 'object' && item.title) {
+      return {
+        ...item,
+        text: item.text || item.content || '',
+      }
+    }
+    return { title: '', text: item }
   })
 })
 

@@ -5,10 +5,11 @@
       {{ t('pages.y3_3.back') }}
     </button>
 
-    <button class="guide-btn" type="button" @click="showGuide = true">
-      <i class="fas fa-book-open"></i>
-      {{ t('pages.y3_3.guide.button') }}
-    </button>
+    <KnowledgeGuidePanel
+      :title="t('pages.y3_3.guide.title')"
+      :body="t('pages.y3_3.guide.body')"
+      :items="guideItems"
+    />
 
     <div class="clinic-room">
       <div class="header">
@@ -162,24 +163,13 @@
       </div>
     </div>
 
-    <div class="guide-modal" :class="{ show: showGuide }">
-      <div class="guide-card">
-        <div class="guide-title">{{ t('pages.y3_3.guide.title') }}</div>
-        <p class="guide-intro">{{ t('pages.y3_3.guide.intro') }}</p>
-        <ul class="guide-list">
-          <li v-for="(item, index) in guideItems" :key="index">{{ item }}</li>
-        </ul>
-        <button class="guide-close" type="button" @click="showGuide = false">
-          {{ t('pages.y3_3.guide.close') }}
-        </button>
-      </div>
-    </div>
   </div>
 </template>
 
 <script setup>
 import { computed, reactive, ref } from 'vue'
 import { useAppI18n } from '@/composables/useAppI18n'
+import KnowledgeGuidePanel from '@/components/KnowledgeGuidePanel.vue'
 
 const emit = defineEmits(['complete', 'close'])
 const { t, tm } = useAppI18n()
@@ -190,7 +180,6 @@ const bugDatabase = computed(() => tm('pages.y3_3.bugs') || {})
 const foundIds = reactive(new Set())
 const activeFeedbackId = ref('')
 const showSuccessFeedback = ref(false)
-const showGuide = ref(false)
 
 const foundCoreCount = computed(() => coreBugIds.filter((id) => foundIds.has(id)).length)
 const allCoreFound = computed(() => foundCoreCount.value === coreBugIds.length)
@@ -223,7 +212,6 @@ function findBug(id) {
 
 function completeAndClose() {
   if (!allCoreFound.value) return
-  showGuide.value = false
   activeFeedbackId.value = ''
   showSuccessFeedback.value = true
   emit('complete', { game: 'cv-surgery', fixed: foundCoreCount.value })

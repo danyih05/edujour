@@ -4,6 +4,12 @@
       x
     </button>
 
+    <KnowledgeGuidePanel
+      :title="t('pages.y3_2.guide.title')"
+      :body="t('pages.y3_2.guide.body')"
+      :items="guideItems"
+    />
+
     <section class="bureau-room">
       <p class="eyebrow">{{ t('pages.y3_2.eyebrow') }}</p>
       <h1>{{ t('pages.y3_2.title') }}</h1>
@@ -107,6 +113,7 @@
 <script setup>
 import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue'
 import { useAppI18n } from '@/composables/useAppI18n'
+import KnowledgeGuidePanel from '@/components/KnowledgeGuidePanel.vue'
 
 const emit = defineEmits(['complete', 'close'])
 const { currentLanguage, t, tm } = useAppI18n()
@@ -193,6 +200,7 @@ const stampOptions = computed(() => ['cv', 'ps', 'rl'].map((id) => {
     chips,
   }
 }))
+const guideItems = computed(() => tm('pages.y3_2.guide.items') || [])
 
 const currentIndex = ref(0)
 const isResolving = ref(false)

@@ -1,5 +1,11 @@
 <template>
   <div class="bog-sweeper-root">
+    <KnowledgeGuidePanel
+      :title="t('pages.y3_7.guide.title')"
+      :body="t('pages.y3_7.guide.body')"
+      :items="guideItems"
+    />
+
     <div class="bubbles" aria-hidden="true">
       <div
         v-for="bubble in bubbles"
@@ -67,9 +73,11 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 import { useAppI18n } from '@/composables/useAppI18n'
+import KnowledgeGuidePanel from '@/components/KnowledgeGuidePanel.vue'
 
 const emit = defineEmits(['complete', 'close'])
 const { t, tm } = useAppI18n()
+const guideItems = computed(() => tm('pages.y3_7.guide.items') || [])
 
 const maxHp = 6
 const mineTypes = [

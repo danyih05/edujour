@@ -4,6 +4,12 @@
       {{ t('pages.y3_8.back') }}
     </button>
 
+    <KnowledgeGuidePanel
+      :title="t('pages.y3_8.guide.title')"
+      :body="t('pages.y3_8.guide.body')"
+      :items="guideItems"
+    />
+
     <section class="room">
       <h2>{{ crownIcon }} {{ t('pages.y3_8.title') }}</h2>
 
@@ -44,11 +50,13 @@ import confetti from 'canvas-confetti'
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useAppI18n } from '@/composables/useAppI18n'
 import { useGameStore } from '@/stores/game'
+import KnowledgeGuidePanel from '@/components/KnowledgeGuidePanel.vue'
 
 defineEmits(['complete', 'close'])
 
 const store = useGameStore()
 const { t, tm } = useAppI18n()
+const guideItems = computed(() => tm('pages.y3_8.guide.items') || [])
 
 const fallbackName = ref('')
 const crownIcon = '\u{1F451}'
