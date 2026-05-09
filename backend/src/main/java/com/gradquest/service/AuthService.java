@@ -53,16 +53,16 @@ public class AuthService {
     public LinkedHashMap<String, Object> register(RegisterRequest request) {
         String email = request.email().trim().toLowerCase();
         String displayName = request.displayName().trim();
-        if (userRepository.findByEmail(email).isPresent()) {
-            throw new ApiException(HttpStatus.CONFLICT, "Email is already registered.");
+        UserRole role = UserRole.from(request.role());
+        if (userRepository.findByEmailAndRole(email, role).isPresent()) {
+            throw new ApiException(HttpStatus.CONFLICT, "Account is already registered for this role.");
         }
 
-        UserRole role = UserRole.from(request.role());
         int initialCoins = role == UserRole.STUDENT ? appProperties.getGameplay().getInitialCoins() : 0;
 
         UserAccount userAccount = userRepository.create(
             email,
-            email,
+            email + ":" + role.value(),
             displayName,
             passwordEncoder.encode(request.password()),
             role,
@@ -86,7 +86,8 @@ public class AuthService {
 
     public LinkedHashMap<String, Object> login(LoginRequest request) {
         String email = request.email().trim().toLowerCase();
-        UserAccount userAccount = userRepository.findByEmail(email)
+        UserRole role = UserRole.from(request.role());
+        UserAccount userAccount = userRepository.findByEmailAndRole(email, role)
             .orElseThrow(() -> new ApiException(HttpStatus.UNAUTHORIZED, "Invalid email or password."));
 
         if (!passwordEncoder.matches(request.password(), userAccount.passwordHash())) {

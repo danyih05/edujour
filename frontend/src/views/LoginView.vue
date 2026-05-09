@@ -81,7 +81,7 @@
 
         <label class="field">
           <span>{{ copy.login.email }}</span>
-          <input v-model.trim="form.email" type="email" :placeholder="copy.login.email">
+          <input v-model.trim="form.email" type="text" :placeholder="copy.login.email">
           <small v-if="mode === 'register'" class="field-hint">
             {{ currentLanguage === 'en' ? 'Please use your real university email' : '请填写真实学校邮箱' }}
           </small>
@@ -320,17 +320,11 @@ async function submitForm() {
 
   try {
     if (mode.value === 'login') {
-      const user = await authStore.login({
+      await authStore.login({
         email: form.email,
         password: form.password,
+        role: form.role,
       })
-
-      if (user.role !== form.role) {
-        authStore.clearSession()
-        gameStore.clearState()
-        errorMessage.value = roleMismatchCopy.value[user.role] || 'Role mismatch.'
-        return
-      }
     } else {
       await authStore.register({
         displayName: form.displayName,
