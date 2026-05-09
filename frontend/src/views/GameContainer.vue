@@ -338,8 +338,11 @@ async function skipLevel() {
 
 .game-stage {
   flex: 1;
+  min-height: 0;
   position: relative;
   overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
   border-radius: 16px;
   background: rgba(15, 23, 42, 0.04);
 }
@@ -409,10 +412,13 @@ async function skipLevel() {
   .game-shell {
     padding: 0;
     min-height: 100dvh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
   .game-modal-content {
     width: 100%;
     min-height: 100dvh;
+    overflow-y: visible;
     border-radius: 0;
     padding: 10px;
     border-width: 0;
@@ -425,7 +431,8 @@ async function skipLevel() {
   .game-stage {
     min-height: 45dvh;
     max-height: 62dvh;
-    overflow: auto;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
   .game-actions {
     margin-top: 10px;

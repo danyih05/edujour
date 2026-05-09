@@ -1287,7 +1287,7 @@ onBeforeUnmount(() => { window.removeEventListener('keydown', handleEscape); win
 .modal-header { font-size: 1.5rem; color: #2d5a6e; border-bottom: 2px dashed #e7bc7a; padding-bottom: 12px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; gap: 12px; font-weight: 900; font-family: Georgia, serif; }
 .guide-reopen-btn { min-height: 36px; padding: 0 12px; border: 2px solid rgba(227, 178, 73, 0.35); border-radius: 999px; display: inline-flex; align-items: center; gap: 7px; background: rgba(44, 90, 110, 0.1); color: #2d5a6e; font-size: 0.86rem; font-weight: 900; cursor: pointer; transition: 0.18s; }
 .guide-reopen-btn:hover { transform: translateY(-2px); }
-.game-stage { flex: 1; position: relative; overflow: auto; border-radius: 16px; background: rgba(15, 23, 42, 0.04); }
+.game-stage { flex: 1; min-height: 0; position: relative; overflow: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; border-radius: 16px; background: rgba(15, 23, 42, 0.04); }
 .native-stage { padding: 0; }
 .chrome-free-stage { overflow: visible; border-radius: 0; background: transparent; min-height: 100%; }
 .missing-native-game { min-height: 320px; display: grid; place-items: center; padding: 32px; text-align: center; color: #475569; font-weight: 700; }
@@ -1411,7 +1411,10 @@ onBeforeUnmount(() => { window.removeEventListener('keydown', handleEscape); win
 @media (max-width: 768px) {
   .map-page {
     padding: 10px 8px 14px;
-    overflow: hidden;
+    min-height: 100dvh;
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
   .star-svg {
     transform: translateY(0) scale(1.5);
@@ -1496,9 +1499,16 @@ onBeforeUnmount(() => { window.removeEventListener('keydown', handleEscape); win
   }
   .game-modal-content {
     width: 100%;
-    height: 100vh;
+    height: 100dvh;
+    max-height: 100dvh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     border-radius: 0;
     padding: 50px 12px 12px; /* 顶部留出 50px 安全区，防止被关闭按钮遮挡 */
+  }
+  .game-stage {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
   .modal-header {
     padding-right: 48px;

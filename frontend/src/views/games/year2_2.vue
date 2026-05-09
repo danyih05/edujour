@@ -819,6 +819,36 @@ function completeWithReward() {
   transform: scale(1.015);
 }
 
+@media (max-width: 860px) {
+  .crossroads-game {
+    overflow: visible;
+    padding: 34px 12px 36px;
+  }
+
+  .crossroads-layout {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin: 14px 0 20px;
+  }
+
+  .region-column {
+    min-height: auto;
+    padding: 16px;
+  }
+
+  .region-list {
+    grid-template-columns: 1fr;
+    overflow: visible;
+    padding-right: 0;
+  }
+
+  .question-panel {
+    max-height: none;
+    overflow: visible;
+    padding: 20px;
+  }
+}
+
 .result-overlay {
   position: fixed;
   inset: 0;
@@ -826,6 +856,8 @@ function completeWithReward() {
   display: grid;
   place-items: center;
   padding: 18px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   backdrop-filter: none;
   background: rgba(0, 0, 0, 0.85);
   will-change: opacity;
@@ -841,6 +873,17 @@ function completeWithReward() {
   flex-direction: column;
   align-items: center;
   animation: card-reveal 0.45s ease;
+}
+
+@media (max-width: 860px) {
+  .result-overlay {
+    place-items: start center;
+  }
+
+  .tarot-card {
+    min-height: auto;
+    margin: auto 0;
+  }
 }
 
 .tarot-uk { background: linear-gradient(135deg, #1a3673, #0b131a); border: 4px solid #82b1ff; color: #e0ebff; }
