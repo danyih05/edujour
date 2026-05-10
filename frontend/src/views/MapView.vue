@@ -160,7 +160,7 @@
       <section class="board y3" :class="{ active: store.year === 'y3' }">
         <div class="header">
           <h1><i class="fas fa-star"></i> {{ t('map.year3Title') }}</h1>
-          <div class="header-right">
+          <div class="header-right" v-if="windowWidth >= 1024">
             <button class="btn-action" @click="showPrizeShop = true"><i class="fas fa-gift"></i> {{ t('map.shop') }}</button>
             <button class="btn-action" @click="showHealingSandbox = true"><i class="fas fa-leaf"></i> {{ t('map.sanctuary') }}</button>
             <div class="coin-panel" @mouseenter="showCoinTooltip" @mouseleave="hideTooltip"><i class="fas fa-coins"></i><span>{{ store.currentCoins }}</span><small>{{ t('common.labels.gems') }}</small></div>
@@ -405,7 +405,7 @@ const y3Nodes = computed(() => {
     ...node,
     x: coords[node.id].x,
     y: coords[node.id].y,
-    radius: isSmall ? 56 : 32,        // 移动端稍大一些，但不会过分大
+    radius: isSmall ? 48 : 32,        // 移动端稍大一些，但不会过分大
     iconText: faUnicode[node.iconClass] || node.iconClass,
     label: `${node.id}. ${t(`${meta.y3[node.id].i18nKey}.mapLabel`)}`,
     title: t(`${meta.y3[node.id].i18nKey}.title`),
@@ -1425,13 +1425,13 @@ onBeforeUnmount(() => { window.removeEventListener('keydown', handleEscape); win
     -webkit-overflow-scrolling: touch;
   }
   .star-svg {
-    transform: translateY(0) scale(1.5);
+    transform: translateY(0) scale(1.7);
   }
   .node-svg-icon {
-    font-size: 3.2rem;
+    font-size: 3.5rem;
   }
   .node-svg-label {
-    font-size: 24px;
+    font-size: 25px;
   }
   .help-btn-wrapper {
     display: none;
