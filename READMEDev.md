@@ -51,6 +51,8 @@ http://localhost:18080
 
 The frontend proxy sends `/api` requests to the backend.
 
+Optional XJTLU Bird / DeepSeek assistant setup is documented in `frontend/XJTLU_BIRD_SETUP.md`. It is not required for baseline local development.
+
 ## Run with MySQL
 
 If you want to run the backend against MySQL instead of H2:
@@ -71,9 +73,9 @@ This script sets `SPRING_PROFILES_ACTIVE=mysql` and uses the environment variabl
 This repository contains a full-stack learning game application:
 
 - `frontend`: Vue 3 application for student and teacher UI
-- `backend`: Spring Boot API server for authentication, progress, shop, and teacher reports
+- `backend`: Spring Boot API server for authentication, progress, shop, sandbox messages, and teacher reports
 
-The system supports student/teacher accounts, JWT authentication, lesson progress tracking, shop purchases, and teacher monitoring.
+The system supports student/teacher accounts, JWT authentication, 15-node progress tracking, shop purchases, sandbox messaging, and teacher monitoring.
 
 ---
 

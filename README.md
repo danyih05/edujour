@@ -107,6 +107,8 @@ http://localhost:5173
 
 The frontend automatically proxies `/api` requests to the backend during local development.
 
+Optional XJTLU Bird / DeepSeek assistant setup is documented separately in `frontend/XJTLU_BIRD_SETUP.md`. It is not required for the core game flow or coursework evaluation.
+
 ---
 
 # 3. Register an Account
@@ -118,6 +120,7 @@ For coursework demonstration purposes:
 * Registration fields accept arbitrary values; no real personal data is required.
 * No email verification is needed.
 * Users can freely create new student or teacher accounts for testing.
+* Account uniqueness is scoped by `(email, role)`, so the same identifier can be used once as a student and once as a teacher.
 
 Example test account:
 
@@ -126,7 +129,14 @@ Email: cpt208
 Password: cpt208
 ```
 
-*Note: The original system enforced email format validation and duplicate-account checks between student and teacher roles. These restrictions have been temporarily disabled to allow the account `CPT208` to be used for evaluation.*
+*Note: The current demo build does not enforce strict email-format validation. The same identifier can also exist across different roles because registration and login are keyed by `(email, role)` rather than email alone.*
+
+---
+
+# AI Prompt Logs
+
+The AI-assisted development logs for this submission are stored in `ai-logs/`. This repo uses `ai-logs/` as the tracked prompt-log folder referenced by the coursework requirement that was phrased as `/ailogs`.
+Some raw `v1_*` prompt files preserve exploratory HTML-stage ideas that were later narrowed during Vue implementation; the final scope reconciliation is documented in `ai-logs/04-game-node-html-to-vue.md`.
 
 ---
 
@@ -138,24 +148,15 @@ Password: cpt208
 * JWT-based authentication
 * Personalised game path recommendation based on user profile
 * Progress tracking through **15 game nodes** that unlock step-by-step
-* **9 game mechanics**:
-
-  * Quest completion
-  * Timed challenges
-  * Hidden achievements
-  * Leaderboard
-  * Daily sign-in
-  * Knowledge quiz (RAG)
-  * In-app shop
-  * Anonymous tree-hole
-  * Lucky draw
+* Shared map flow with onboarding, replayable completed nodes, and backend progress persistence
+* Application-planning gameplay covering profile positioning, country and school strategy, materials preparation, personal statement logic, recommendation planning, timeline management, and interview readiness
 * Task completion and skipping
 * Reward and coin system linked to real-prize exchange
 * Inventory management for virtual items
 * In-app shop and item purchasing
-* AI chat (Retrieval-Augmented Generation) for study-abroad knowledge
-* Anonymous tree-hole message board for peer support
-* Persistent profile and progress storage
+* Healing sandbox / lightweight reflection board for peer-support-style messages
+* Optional XJTLU Bird assistant backed by configurable DeepSeek browser chat
+* Persistent profile, progress, inventory, and local replay-result storage
 
 ---
 

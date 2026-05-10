@@ -51,6 +51,7 @@ Acceptance criteria:
 
 - A grader can run the app using README instructions.
 - The prompts log covers all core components.
+- The AI log path used in the repository is explained clearly even if the original requirement phrased it as `/ailogs`.
 - No credentials or private user data are exposed.
 
 ## 2. Project Architecture And Initial Scaffold
@@ -108,6 +109,7 @@ Core files:
 - `backend/src/test/java/com/gradquest/model/UserRoleTest.java`
 - `backend/src/test/java/com/gradquest/security/JwtServiceTest.java`
 - `backend/src/test/java/com/gradquest/service/PayloadBuilderTest.java`
+- `frontend/src/test/setup.js`
 - `frontend/src/components/LanguageToggle.test.js`
 - `frontend/src/config/levels.test.js`
 - `frontend/src/i18n/index.test.js`
@@ -115,7 +117,9 @@ Core files:
 - `frontend/src/stores/game.test.js`
 - `frontend/src/stores/language.test.js`
 - `frontend/e2e/auth.spec.js`
+- `frontend/package.json`
 - `frontend/playwright.config.js`
+- `frontend/vite.config.js`
 
 Primary prompt:
 
@@ -134,21 +138,30 @@ Frontend tests:
 - Verify backend service unwrapping and error helper behavior.
 - Verify game store local result normalization, progression merge, year switching, and state reset behavior.
 - Verify language toggle rendering.
+- Stabilize the frontend test harness with jsdom/browser mocks for `ResizeObserver`, `matchMedia`, and media play/pause.
 
 E2E:
 - Add Playwright coverage for auth-oriented flows where practical.
+- Configure Playwright to boot the Vite dev server automatically and produce an HTML report.
+- Keep E2E scope realistic: smoke-test login/registration and initial map loading rather than full automation for all 15 mini-games.
 
 Document verification commands:
 - Backend compile: `mvn -q -DskipTests compile`
+- Backend unit tests: `mvn test`
 - Frontend build: `npm run build`
 - Frontend unit tests: `npm run test:run`
+- Frontend coverage report: `npm run test:coverage`
 - E2E tests: `npm run e2e`
+- E2E HTML report: `npm run e2e:report`
+- Combined frontend verification: `npm run check`
 ```
 
 Implementation intent:
 
 - Test contracts rather than every visual detail.
 - Give graders repeatable verification steps.
+- Capture not only test files, but also the supporting harness and report workflow.
+- Record the fact that verification is focused coverage, not exhaustive end-to-end playthrough automation.
 
 ---
 
@@ -158,6 +171,8 @@ Core files:
 
 - `README.md`
 - `READMEDev.md`
+- `screenshots/system-architecture.png`
+- `screenshots/progress-complete-network.png`
 - `screenshots/login.jpg`
 - `screenshots/student-dashboard.jpg`
 - `screenshots/teacher-dashboard.jpg`
@@ -176,7 +191,7 @@ Prepare the repository for coursework submission.
 Requirements:
 - Write a public README that explains project overview, features, stack, run instructions, API endpoints, build verification, demo notes, and screenshots.
 - Write a developer README with clone/install/run steps, architecture overview, project structure, entry points, environment variables, profiles, useful scripts, debugging notes, and verification commands.
-- Include screenshot references for login, student dashboard, and teacher dashboard.
+- Include screenshot references for system architecture, progress/network evidence, login, student dashboard, and teacher dashboard.
 - Add environment examples for backend and frontend.
 - Add backend Dockerfile and frontend Vercel config for deployment readiness.
 - Mention that default local backend uses embedded H2 and MySQL is optional.
@@ -293,6 +308,96 @@ Update README verification notes after successful checks.
 - Teacher dashboard frontend: covered.
 - Assets/audio/theming: covered.
 - Tests, docs, deployment notes: covered.
+- Frontend test harness and report artifacts: covered.
+- Submission screenshots, AI log packaging, and optional assistant setup notes: covered.
+
+---
+
+## 7. Frontend Test Harness And Report Artifacts
+
+Core files:
+
+- `frontend/src/test/setup.js`
+- `frontend/vite.config.js`
+- `frontend/playwright.config.js`
+- `frontend/package.json`
+- `frontend/coverage/index.html`
+- `frontend/playwright-report/index.html`
+- `frontend/test-results/.last-run.json`
+
+Primary prompt:
+
+```text
+Stabilize and document the frontend verification harness.
+
+Requirements:
+- Use a shared Vitest setup file to mock browser-only APIs needed by Vue component tests:
+  - `ResizeObserver`,
+  - `matchMedia`,
+  - HTML media `play()` / `pause()`.
+- Clear `localStorage`, `sessionStorage`, and DOM leftovers between tests.
+- Configure coverage output through Vitest and keep the generated HTML report reviewable.
+- Configure Playwright to launch the Vite dev server automatically for auth smoke tests.
+- Produce Playwright HTML reports and keep the latest run metadata in `test-results`.
+- Expose npm scripts for:
+  - unit tests,
+  - coverage,
+  - e2e tests,
+  - e2e report viewing,
+  - a combined `check` command.
+```
+
+Implementation intent:
+
+- Treat the test harness itself as part of the deliverable, not just the individual test files.
+- Make it easy to reproduce unit/e2e evidence locally during review.
+
+---
+
+## 8. Submission Assets, AI Log Packaging, And Optional Assistant Setup
+
+Core files:
+
+- `ai-logs/00-prompts-log.md`
+- `ai-logs/01-overview-and-scope.md`
+- `ai-logs/02-backend-data-security.md`
+- `ai-logs/03-frontend-state-integration.md`
+- `ai-logs/04-game-node-html-to-vue.md`
+- `ai-logs/05-testing-docs-refinements.md`
+- `README.md`
+- `READMEDev.md`
+- `frontend/XJTLU_BIRD_SETUP.md`
+- `screenshots/system-architecture.png`
+- `screenshots/progress-complete-network.png`
+- `screenshots/login.jpg`
+- `screenshots/student-dashboard.jpg`
+- `screenshots/teacher-dashboard.jpg`
+
+Primary prompt:
+
+```text
+Package the submission evidence so graders can audit both the product and the AI-assisted workflow.
+
+Requirements:
+- Keep the AI prompt logs in a tracked repository folder named `ai-logs/`, and explain that it fulfills the prompt-log submission requirement even if the original wording says `/ailogs`.
+- Split long AI logs by topic and add an index file rather than forcing everything into one markdown file.
+- Ensure README assets cover:
+  - system architecture,
+  - progress/network evidence,
+  - login UI,
+  - student dashboard,
+  - teacher dashboard.
+- Include an optional setup note for the XJTLU bird / DeepSeek assistant widget, including:
+  - local env key setup,
+  - browser-stored fallback key behavior,
+  - the note that direct browser API-key usage is optional and not required for core grading.
+- Keep optional assistant setup separate from the main run instructions so it does not confuse baseline evaluation.
+```
+
+Implementation intent:
+
+- Make the repository auditable as both a coursework submission and an AI-assisted build artifact.
+- Keep optional assistant integrations documented without implying they are required to run the core app.
 
 ## 7. Final Repository Cross-Check Notes
 
