@@ -14,7 +14,7 @@ Context passed to AI:
 
 - The repo must be understandable without verbal explanation.
 - Build commands should be documented.
-- Vibe Coding Logs requirement asks for an AI prompt-log folder; this repo tracks it as `ai-logs/`.
+- Vibe Coding Logs requirement asks for auditable AI logs. This repository keeps them in `ai-logs/`.
 
 Primary prompt:
 
@@ -34,8 +34,8 @@ Verification:
 - ensure H2 local mode works without MySQL.
 
 AI logs:
-- create an AI log folder for submission review, tracked in this repo as `ai-logs/`,
-- add a prompt-log index plus topic files that record the primary AI prompts used to generate core components,
+- create `ai-logs/`,
+- add a prompts log that records the primary AI prompts used to generate core components,
 - cover architecture, backend, frontend, all mini-games, tests, and docs,
 - avoid secrets and private data.
 ```
@@ -44,7 +44,7 @@ Expected output:
 
 - README files.
 - Environment examples.
-- `ai-logs/00-prompts-log.md` plus split topic files.
+- `ai-logs/00-prompts-log.md` as the submission-facing prompt index, with detailed numbered logs in the same folder.
 - Clear verification instructions.
 
 Acceptance criteria:
@@ -398,4 +398,41 @@ Implementation intent:
 
 - Make the repository auditable as both a coursework submission and an AI-assisted build artifact.
 - Keep optional assistant integrations documented without implying they are required to run the core app.
+
+## 7. Final Repository Cross-Check Notes
+
+This section records the final consistency pass against the checked-in project structure.
+
+### AI Log Structure
+
+- Submission-facing prompt index and detailed prompt overview: `ai-logs/00-prompts-log.md`.
+- Architecture and scope: `ai-logs/01-overview-and-scope.md`.
+- Backend, data, and security: `ai-logs/02-backend-data-security.md`.
+- Frontend state and integration: `ai-logs/03-frontend-state-integration.md`.
+- Game node conversion and implementation: `ai-logs/04-game-node-html-to-vue.md`.
+- Testing, documentation, and refinements: `ai-logs/05-testing-docs-refinements.md`.
+- Per-game development logs: `ai-logs/v1_year2-1.md`, `ai-logs/v1_year2-2.md`, `ai-logs/v1_year2_3.md`, `ai-logs/v1_year2_4_2.md`, `ai-logs/v1_year2_4.md` as related background, `ai-logs/v1_year2_5.md`, `ai-logs/v1_year2_6.md`, `ai-logs/v1_year2_7.md`, and `ai-logs/v1_year3_1.md` through `ai-logs/v1_year3_8.md`.
+
+### Verification Commands
+
+- Backend compile: `cd backend && mvn -q -DskipTests compile`.
+- Backend tests: `cd backend && mvn test`.
+- Frontend production build: `cd frontend && npm run build`.
+- Frontend unit tests: `cd frontend && npm run test:run`.
+- Frontend E2E tests: `cd frontend && npm run e2e`.
+
+### Environment And Runtime Notes
+
+- Local backend defaults to the embedded H2 profile through `spring.profiles.default=h2`.
+- MySQL remains optional through `SPRING_PROFILES_ACTIVE=mysql`.
+- Backend environment examples are stored in `backend/.env.example`.
+- Frontend environment examples are stored in `frontend/.env.example`, with development and production variants in `frontend/.env.development` and `frontend/.env.production`.
+- The frontend proxy reads `VITE_API_TARGET`, defaulting to `http://localhost:18080`.
+
+### Mini-Game Coverage Map
+
+| Journey | Component files | AI log files |
+| --- | --- | --- |
+| Year 2 levels 1-7 | `frontend/src/views/games/year2_1.vue` through `year2_7.vue` | `ai-logs/v1_year2-1.md`, `v1_year2-2.md`, `v1_year2_3.md`, `v1_year2_4_2.md` as final Y2-4 source, `v1_year2_4.md` as earlier related background, `v1_year2_5.md`, `v1_year2_6.md`, `v1_year2_7.md` |
+| Year 3 levels 1-8 | `frontend/src/views/games/year3_1.vue` through `year3_8.vue` | `ai-logs/v1_year3_1.md` through `v1_year3_8.md` |
 
