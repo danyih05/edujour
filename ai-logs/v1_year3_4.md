@@ -13,17 +13,17 @@ Node Name:
 Personal Statement Node / Cathedral of Story Forging
 
 Core User Questions:
-- "How do I tell my story well?"
-- "How do I avoid writing a template PS?"
-- "What makes a PS memorable?"
-- "How do I connect my experiences logically?"
-- "What does admissions actually want to feel?"
-- "Why do some essays feel alive while others feel generic?"
+- “How do I tell my story well?”
+- “How do I avoid writing a template PS?”
+- “What makes a PS memorable?”
+- “How do I connect my experiences logically?”
+- “What does admissions actually want to feel?”
+- “Why do some essays feel alive while others feel generic?”
 
 Core Emotional Goal:
 Transform:
 - fear of writing
-- "I have no story"
+- “I have no story”
 - template anxiety
 - narrative confusion
 - imposter syndrome
@@ -43,7 +43,7 @@ This node is NOT:
 - an essay-writing tutorial
 - grammar correction software
 - a template generator
-- a "successful PS formula"
+- a “successful PS formula”
 
 This node IS:
 - a magical narrative-forging ritual
@@ -53,10 +53,10 @@ This node IS:
 - a strategic self-interpretation engine
 
 The player should feel:
-"My story has structure, meaning, and emotional direction."
+“My story has structure, meaning, and emotional direction.”
 
 NOT:
-"I copied a successful essay framework."
+“I copied a successful essay framework.”
 
 ====================================================
 WORLD DESIGN CONCEPT
@@ -64,7 +64,7 @@ WORLD DESIGN CONCEPT
 
 The player enters:
 
-"The Cathedral of Story Forging"
+“The Cathedral of Story Forging”
 
 A massive dreamlike cathedral where:
 - memories float as glowing fragments
@@ -74,7 +74,7 @@ A massive dreamlike cathedral where:
 - identity itself is unstable and fragmented
 
 Inside:
-- stories can collapse into cliches
+- stories can collapse into clichés
 - false narratives become corrupted
 - prestige obsession distorts memory
 - authentic stories generate powerful resonance
@@ -90,9 +90,9 @@ CORE GAMEPLAY CONCEPT
 Main mechanic:
 
 The player receives:
-"Memory Fragments"
+“Memory Fragments”
 and
-"Narrative Motive Crystals"
+“Narrative Motive Crystals”
 
 Examples:
 - childhood curiosity
@@ -141,7 +141,7 @@ Describe:
 - shattered narrative mirrors
 - glowing emotional threads
 - unfinished futures in the sky
-- collapsed cliche stories
+- collapsed cliché stories
 - identity constellations forming
 
 ====================================================
@@ -149,7 +149,7 @@ Describe:
 ====================================================
 
 Design:
-"The Cathedral of Story Forging"
+“The Cathedral of Story Forging”
 
 Include:
 - Memory Reflection Hall
@@ -157,10 +157,10 @@ Include:
 - Future Path Observatory
 - Narrative Weaving Sanctuary
 - Emotional Truth Mirror
-- Cliche Corruption Abyss
+- Cliché Corruption Abyss
 
 The environment should communicate:
-"A strong PS is a meaningful narrative journey."
+“A strong PS is a meaningful narrative journey.”
 
 ====================================================
 3. CORE STORY-PATH ASSEMBLY SYSTEM
@@ -224,12 +224,12 @@ Examples:
 ----------------------------------------------------
 Weak Narrative
 ----------------------------------------------------
-"I did many impressive things."
+“I did many impressive things.”
 
 ----------------------------------------------------
 Strong Narrative
 ----------------------------------------------------
-"This is how my experiences shaped my intellectual direction."
+“This is how my experiences shaped my intellectual direction.”
 
 The player should gradually realize:
 story flow matters more than prestige stacking.
@@ -239,7 +239,7 @@ story flow matters more than prestige stacking.
 ====================================================
 
 Every narrative connection creates:
-"Resonance Energy"
+“Resonance Energy”
 
 Strong connections:
 - glow brightly
@@ -248,11 +248,11 @@ Strong connections:
 
 Weak/generic connections:
 - destabilize pathways
-- trigger cliche corruption
+6. CLICHE CORRUPTION SYSTEM
+- trigger cliché corruption
 - create fragmented storytelling
 
-====================================================
-6. CLICHE CORRUPTION SYSTEM
+6. CLICHÉ CORRUPTION SYSTEM
 ====================================================
 
 This is CRITICAL.
@@ -264,12 +264,12 @@ Examples:
 ----------------------------------------------------
 Template Opening Trap
 ----------------------------------------------------
-"Since I was young..."
+“Since I was young…”
 
 ----------------------------------------------------
 Prestige Worship Trap
 ----------------------------------------------------
-"I want this school because it is ranked highly."
+“I want this school because it is ranked highly.”
 
 ----------------------------------------------------
 Resume Repetition Trap
@@ -314,7 +314,7 @@ judgmental.
 This is VERY IMPORTANT.
 
 The system must teach:
-there is NO single "perfect PS style."
+there is NO single “perfect PS style.”
 
 Possible narrative archetypes:
 ----------------------------------------------------
@@ -361,17 +361,17 @@ Examples:
 ----------------------------------------------------
 Research Path
 ----------------------------------------------------
-curiosity -> project -> methodology -> academic ambition
+curiosity → project → methodology → academic ambition
 
 ----------------------------------------------------
 Industry Path
 ----------------------------------------------------
-internship -> market insight -> technical challenge -> practical vision
+internship → market insight → technical challenge → practical vision
 
 ----------------------------------------------------
 Personal Growth Path
 ----------------------------------------------------
-failure -> reflection -> growth -> future mission
+failure → reflection → growth → future mission
 
 ====================================================
 10. EMOTIONAL TRUTH MIRROR
@@ -393,13 +393,13 @@ If authentic:
 the mirror glows warmly.
 
 ====================================================
-11. "YOU DO HAVE A STORY" SYSTEM
+11. “YOU DO HAVE A STORY” SYSTEM
 ====================================================
 
 This section is CRITICAL emotionally.
 
 Many students believe:
-"I'm not special enough."
+“I’m not special enough.”
 
 The system should teach:
 stories emerge from:
@@ -416,7 +416,7 @@ Examples:
 - intellectual patterns emerging over time
 
 The player should repeatedly feel:
-"My experiences can become meaningful."
+“My experiences can become meaningful.”
 
 ====================================================
 12. PS FAILURE SIMULATION SYSTEM
@@ -457,7 +457,7 @@ Examples:
 - fragment linking
 - emotional pathway stabilization
 - motivation sequencing
-- cliche cleansing
+- cliché cleansing
 - future-goal alignment
 - narrative pacing balancing
 
@@ -502,7 +502,7 @@ Generate:
 - narrative structure map
 - emotional resonance profile
 - storytelling archetype label
-- cliche-risk analysis
+- cliché-risk analysis
 - future-direction suggestions
 - customized PS outline blueprint
 
@@ -533,7 +533,7 @@ The system should:
 - build narrative confidence
 
 The player should feel:
-"I can tell my story in my own voice."
+“I can tell my story in my own voice.”
 
 ====================================================
 18. VISUAL & AUDIO DESIGN
@@ -543,7 +543,7 @@ Design:
 - glowing memory particles
 - emotional resonance waves
 - narrative thread animations
-- cliche corruption effects
+- cliché corruption effects
 - future constellation activations
 - manuscript manifestation cinematics
 
@@ -562,7 +562,7 @@ Design reusable systems for:
 - draggable memory fragments
 - story-path builder
 - resonance visualization
-- cliche warning overlays
+- cliché warning overlays
 - emotional coherence meter
 - narrative constellation map
 - archetype detection interface
@@ -585,7 +585,7 @@ Provide:
 - narrative graph engine
 - resonance scoring system
 - archetype-detection logic
-- cliche-analysis architecture
+- cliché-analysis architecture
 
 Explain:
 - story-path calculations
@@ -601,7 +601,7 @@ Design entities/tables for:
 - memory fragments
 - narrative archetypes
 - story pathways
-- cliche patterns
+- cliché patterns
 - resonance scores
 - emotional profiles
 - generated PS structures
