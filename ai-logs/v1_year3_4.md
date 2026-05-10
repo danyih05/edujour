@@ -248,10 +248,10 @@ Strong connections:
 
 Weak/generic connections:
 - destabilize pathways
+6. CLICHE CORRUPTION SYSTEM
 - trigger cliché corruption
 - create fragmented storytelling
 
-====================================================
 6. CLICHÉ CORRUPTION SYSTEM
 ====================================================
 
