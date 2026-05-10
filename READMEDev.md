@@ -51,6 +51,8 @@ http://localhost:18080
 
 The frontend proxy sends `/api` requests to the backend.
 
+Optional XJTLU Bird / DeepSeek assistant setup is documented in `frontend/XJTLU_BIRD_SETUP.md`. It is not required for baseline local development.
+
 ## Run with MySQL
 
 If you want to run the backend against MySQL instead of H2:
@@ -71,9 +73,9 @@ This script sets `SPRING_PROFILES_ACTIVE=mysql` and uses the environment variabl
 This repository contains a full-stack learning game application:
 
 - `frontend`: Vue 3 application for student and teacher UI
-- `backend`: Spring Boot API server for authentication, progress, shop, and teacher reports
+- `backend`: Spring Boot API server for authentication, progress, shop, sandbox messages, and teacher reports
 
-The system supports student/teacher accounts, JWT authentication, lesson progress tracking, shop purchases, and teacher monitoring.
+The system supports student/teacher accounts, JWT authentication, 15-node progress tracking, shop purchases, sandbox messaging, and teacher monitoring.
 
 ---
 
@@ -134,6 +136,8 @@ The frontend runs on `5173`, the backend runs on `18080`, and API calls are prox
 
 - package.json — npm scripts and dependencies
 - vite.config.js — dev server and proxy config
+- playwright.config.js — Playwright smoke-test configuration
+- `XJTLU_BIRD_SETUP.md` — optional DeepSeek assistant setup
 - `src/main.js` — frontend app bootstrap
 - `src/App.vue` — root component
 - `src/router/` — route definitions
@@ -143,6 +147,7 @@ The frontend runs on `5173`, the backend runs on `18080`, and API calls are prox
 - `src/components/` — reusable UI components
 - `src/i18n/` — localization support
 - `src/config/levels.js` — level definitions
+- `src/test/setup.js` — shared Vitest test setup
 
 ---
 
@@ -207,7 +212,7 @@ The backend reads these values from environment variables and .env.example:
 
 ```bash
 PORT=18080
-CLIENT_ORIGIN=http://localhost:5173
+CLIENT_ORIGINS=http://localhost:5173
 JWT_SECRET=change-this-in-real-use
 JWT_EXPIRES_IN_DAYS=7
 DB_HOST=localhost
@@ -217,6 +222,8 @@ DB_USERNAME=gradquest
 DB_PASSWORD=GradQuest123!
 INITIAL_COINS=140
 ```
+
+`CLIENT_ORIGINS` maps to the backend `app.client-origins` setting and can contain a comma-separated allowlist when needed.
 
 ### Profiles
 
@@ -240,7 +247,7 @@ If unset, it defaults to `http://localhost:18080`.
 - Create feature branches from `main`
 - Keep changes scoped and commit atomic
 - Open pull requests for review
-- Use `mvn -q -DskipTests compile` in backend and `npm run build` in frontend to verify local changes
+- Use `mvn -q -DskipTests compile` and `npm run build` for quick smoke checks, then run the fuller verification commands below for broader changes
 
 If the repository has an established branch naming convention, follow that convention.
 
@@ -281,6 +288,17 @@ If the repository has an established branch naming convention, follow that conve
 This repository has been verified with:
 
 ```bash
-cd backend && mvn -q -DskipTests compile
-cd frontend && npm run build
+cd backend
+mvn test
+mvn -q -DskipTests compile
+
+cd ../frontend
+npm run test:run
+npm run test:coverage
+npm run build
+npm run e2e
+npm run e2e:report
+npm run check
 ```
+
+Playwright coverage is focused on authentication and initial map-loading smoke flows. It is not a full automated playthrough of all 15 game nodes.
