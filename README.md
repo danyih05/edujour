@@ -172,9 +172,9 @@ Password: cpt208
 
 ![System Architecture](screenshots/system-architecture.png)
 
-## 5. Data Handling Evidence
+## Data Handling Evidence
 
-### 5.1 Purpose of Data Handling
+### Purpose of Data Handling
 
 The EduJourney system was designed not only to display educational game content, but also to manage user input, interaction states, and learning progress throughout the study-abroad planning journey.
 
@@ -182,7 +182,7 @@ Because students interact with multiple game nodes, decision-making tasks, rewar
 
 The data handling design ensures that student actions are not only temporary visual changes on the frontend. Instead, important interactions are converted into persistent progress data, stored through the backend, and later reused by both the student map interface and the teacher dashboard.
 
-### 5.2 User Input Handling
+### User Input Handling
 
 On the student side, each learning activity is implemented as a Vue game page, such as `year2_2.vue`, `year2_3.vue`, `year2_4.vue`, and the Year 3 game pages.
 
@@ -198,7 +198,7 @@ The system handles different forms of user interaction, including:
 
 When a student finishes a task, the game page emits a `complete` event with related data such as `rewardCoins`, `resultData`, `language`, or `profile` information. This event is handled by `GameContainer.vue` or `MapView.vue`, which then saves the local game result and calls the Pinia game store.
 
-### 5.3 Interaction State Management
+### Interaction State Management
 
 The main interaction state is managed in:
 
@@ -224,7 +224,7 @@ This allows the map interface to update visible progress states such as complete
 
 The frontend also uses local storage for some interaction continuity, such as local game result evidence and UI state. This helps users re-enter completed activities without losing their previous result state.
 
-### 5.4 Frontend-Backend Data Flow
+### Frontend-Backend Data Flow
 
 The system follows a frontend-backend separation model. The frontend captures user actions through Vue components and synchronises important progress changes with the Spring Boot backend through RESTful APIs.
 
@@ -271,7 +271,7 @@ Vue game page interaction
 -> TeacherService summarizes progress for the teacher dashboard
 ```
 
-### 5.5 Backend Processing and Persistence
+### Backend Processing and Persistence
 
 On the backend, progress-related requests are handled by:
 
@@ -312,7 +312,7 @@ The H2 configuration uses MySQL compatibility mode, which helps keep local devel
 
 For deployment or MySQL testing, the backend can run with the `mysql` profile and connect to a MySQL database instead. This matches the architecture diagram where the same Spring Boot backend can persist data to H2 locally or MySQL in production.
 
-### 5.6 Teacher Dashboard Evidence
+### Teacher Dashboard Evidence
 
 The teacher dashboard reuses the same persisted progress data. It does not rely on temporary frontend state.
 
@@ -337,7 +337,7 @@ The teacher dashboard then displays this information so advisors can monitor stu
 
 This shows that user interactions are transformed into measurable progress evidence for both students and teachers.
 
-### 5.7 Evidence of Data Handling
+### Evidence of Data Handling
 
 The following evidence demonstrates that EduJourney correctly manages user input and interaction states:
 
