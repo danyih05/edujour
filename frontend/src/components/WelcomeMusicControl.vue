@@ -12,6 +12,9 @@
     @pointercancel="handleControlPointerEnd"
     @dragstart.prevent
   >
+    <div v-if="showDragHint" class="drag-hint-bubble">
+      {{ dragHintText }}
+    </div>
     <div class="music-status">
       <span class="music-light" aria-hidden="true"></span>
       <div class="music-copy">
@@ -217,6 +220,26 @@ function clampNumber(value, min, max) {
   return Math.min(Math.max(value, min), safeMax)
 }
 
+const showDragHint = ref(false)
+const dragHintTimeoutId = ref(null)
+let dragHintIntervalId = null
+
+const dragHintText = computed(() =>
+  currentLanguage.value === 'en'
+    ? 'You can drag me to move!'
+    : '你可以拖动我挪个位置哦！'
+)
+
+function showDragHintBubble() {
+  showDragHint.value = true
+  // 3.5 秒后自动隐藏
+  if (dragHintTimeoutId.value) clearTimeout(dragHintTimeoutId.value)
+  dragHintTimeoutId.value = window.setTimeout(() => {
+    showDragHint.value = false
+    dragHintTimeoutId.value = null
+  }, 3500)
+}
+
 function getControlMetrics() {
   const isMobile = viewportSize.value.width <= 768
   const fallbackWidth = isMobile ? 102 : 340
@@ -399,10 +422,19 @@ onMounted(() => {
   })
 
   window.addEventListener('resize', refreshViewportSize)
+  dragHintIntervalId = window.setInterval(() => {
+    showDragHintBubble()
+  }, 60_000)
+  // 首次延迟 10 秒展示
+  setTimeout(() => {
+    showDragHintBubble()
+  }, 10_000)
 })
 
 onBeforeUnmount(() => {
   window.removeEventListener('resize', refreshViewportSize)
+  if (dragHintIntervalId) clearInterval(dragHintIntervalId)
+  if (dragHintTimeoutId.value) clearTimeout(dragHintTimeoutId.value)
 })
 </script>
 
@@ -637,6 +669,36 @@ onBeforeUnmount(() => {
 .welcome-music-control.muted .mute-action {
   color: #2c5a6e;
   background: #f8d48d;
+}
+
+/* 可拖动提示气泡 */
+.drag-hint-bubble {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px 14px;
+  border-radius: 12px;
+  background: rgba(255, 252, 244, 0.96);
+  border: 1px solid rgba(226, 188, 124, 0.7);
+  color: #2c5a6e;
+  font-size: 0.76rem;
+  font-weight: 700;
+  white-space: nowrap;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.15);
+  z-index: 10;
+  animation: hint-fade-in 0.25s ease-out;
+}
+
+@keyframes hint-fade-in {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
 }
 
 @media (max-width: 768px) {
