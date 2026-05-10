@@ -62,7 +62,7 @@ If you want to run the backend against MySQL instead of H2:
 powershell -ExecutionPolicy Bypass -File scripts/run-backend-with-mysql.ps1
 ```
 
-This script sets `SPRING_PROFILES_ACTIVE=mysql` and uses the environment variables defined in .env.example.
+This script sets `SPRING_PROFILES_ACTIVE=mysql` and uses the environment variables defined in `backend/.env.example`.
 
 ---
 
@@ -95,6 +95,7 @@ The frontend runs on `5173`, the backend runs on `18080`, and API calls are prox
 - Spring Boot 3.5
 - Spring Security
 - Spring JDBC
+- Spring Data JPA
 - H2 (default development database)
 - MySQL (optional runtime database)
 - JWT via `jjwt`
@@ -103,6 +104,8 @@ The frontend runs on `5173`, the backend runs on `18080`, and API calls are prox
 - Vue Router
 - Pinia
 - Axios
+- Vitest
+- Playwright
 
 ---
 
@@ -110,39 +113,55 @@ The frontend runs on `5173`, the backend runs on `18080`, and API calls are prox
 
 ### Root
 
-- README.md — developer onboarding
-- `frontend/` — Vue app
-- `backend/` — Spring Boot service
+- `README.md` - public project overview and evaluator guide
+- `READMEDev.md` - developer onboarding
+- `ai-logs/` - AI-assisted development logs
+- `screenshots/` - README screenshots and verification evidence
+- `frontend/` - Vue app
+- `backend/` - Spring Boot service
 
 ### `backend/`
 
-- pom.xml — Maven build file
-- `src/main/java/com/gradquest/` — backend source code
-  - `config/` — application configuration classes
-  - `dto/` — request/response payload objects
-  - `exception/` — API error handling
-  - `model/` — domain models
-  - `repository/` — data access implementations
-  - `security/` — JWT and security filters
-  - `service/` — business logic
-  - `web/` — REST controllers
-- `src/main/resources/application.yml` — environment profile configuration
-- `scripts/` — local backend helpers (run-backend-with-mysql.ps1, stop-backend.ps1, `export-db-dump.ps1`)
-- `sql/` — schema and SQL helper scripts
+- `pom.xml` - Maven build file
+- `Dockerfile` - backend container build definition
+- `.env.example` - backend runtime environment example
+- `src/main/java/com/gradquest/` - backend source code
+  - `config/` - application configuration classes
+  - `data/` - level catalog and database initialization
+  - `dto/` - request/response payload objects
+  - `exception/` - API error handling
+  - `model/` - domain models
+  - `repository/` - data access implementations
+  - `security/` - JWT and security filters
+  - `service/` - business logic
+  - `web/` - REST controllers
+- `src/main/resources/application.yml` - default profile and datasource configuration
+- `src/main/resources/application-dev.yml` - development override example
+- `src/main/resources/application-prod.yml` - production override example
+- `src/test/java/com/gradquest/` - backend unit tests
+- `scripts/` - local backend helpers (`run-backend-with-mysql.ps1`, `stop-backend.ps1`, `export-db-dump.ps1`)
+- `sql/` - schema and SQL helper scripts
 
 ### `frontend/`
 
-- package.json — npm scripts and dependencies
-- vite.config.js — dev server and proxy config
-- `src/main.js` — frontend app bootstrap
-- `src/App.vue` — root component
-- `src/router/` — route definitions
-- `src/stores/` — application state with Pinia
-- `src/services/backend.js` — API client
-- `src/views/` — page views
-- `src/components/` — reusable UI components
-- `src/i18n/` — localization support
-- `src/config/levels.js` — level definitions
+- `package.json` - npm scripts and dependencies
+- `vite.config.js` - dev server, proxy, aliases, and Vitest config
+- `playwright.config.js` - E2E test config
+- `vercel.json` - frontend deployment routing config
+- `.env.example` - frontend environment example
+- `.env.development` - local development API target
+- `.env.production` - production API target placeholder
+- `src/main.js` - frontend app bootstrap
+- `src/App.vue` - root component
+- `src/router/` - route definitions
+- `src/stores/` - application state with Pinia
+- `src/services/backend.js` - API service wrapper
+- `src/utils/api.js` - Axios client setup
+- `src/views/` - page views and game nodes
+- `src/components/` - reusable UI components
+- `src/i18n/` - localization support
+- `src/config/levels.js` - level definitions
+- `e2e/` - Playwright tests
 
 ---
 
@@ -197,17 +216,40 @@ cd frontend
 npm run build
 ```
 
+### Tests
+
+Backend tests:
+
+```bash
+cd backend
+mvn test
+```
+
+Frontend unit tests:
+
+```bash
+cd frontend
+npm run test:run
+```
+
+Frontend E2E tests:
+
+```bash
+cd frontend
+npm run e2e
+```
+
 ---
 
 ## Environment Configuration
 
 ### Backend environment variables
 
-The backend reads these values from environment variables and .env.example:
+The backend reads these values from environment variables and `backend/.env.example`:
 
 ```bash
 PORT=18080
-CLIENT_ORIGIN=http://localhost:5173
+CLIENT_ORIGINS=http://localhost:5173
 JWT_SECRET=change-this-in-real-use
 JWT_EXPIRES_IN_DAYS=7
 DB_HOST=localhost
@@ -218,10 +260,13 @@ DB_PASSWORD=GradQuest123!
 INITIAL_COINS=140
 ```
 
+`application.yml` reads `CLIENT_ORIGINS`, which can contain one origin such as `http://localhost:5173` or a comma-separated list.
+
 ### Profiles
 
 - Default: `h2`
 - MySQL runtime: set `SPRING_PROFILES_ACTIVE=mysql`
+- Optional override examples: `dev` and `prod` YAML files are included for deployment-specific configuration.
 
 ### Frontend API target
 
@@ -233,6 +278,32 @@ VITE_API_TARGET=http://localhost:18080
 
 If unset, it defaults to `http://localhost:18080`.
 
+The optional browser chat key is documented in `frontend/.env.example`:
+
+```bash
+VITE_DEEPSEEK_API_KEY=sk-your-api-key-here
+```
+
+Do not commit real API keys or production secrets.
+
+---
+
+## AI Logs
+
+The AI-assisted development logs are stored in:
+
+```text
+ai-logs/
+```
+
+Use this file as the main index:
+
+```text
+ai-logs/00-prompts-log.md
+```
+
+The numbered logs cover architecture, backend/data/security, frontend integration, game-node implementation, testing, documentation, and final refinements.
+
 ---
 
 ## Development Workflow
@@ -240,7 +311,8 @@ If unset, it defaults to `http://localhost:18080`.
 - Create feature branches from `main`
 - Keep changes scoped and commit atomic
 - Open pull requests for review
-- Use `mvn -q -DskipTests compile` in backend and `npm run build` in frontend to verify local changes
+- Use `mvn -q -DskipTests compile` in backend and `npm run build` in frontend to verify compile/build changes
+- Use `mvn test`, `npm run test:run`, and `npm run e2e` when changes touch backend contracts, frontend state, or auth-oriented browser flows
 
 If the repository has an established branch naming convention, follow that convention.
 
@@ -251,20 +323,22 @@ If the repository has an established branch naming convention, follow that conve
 ### Backend debugging
 
 - Run `GradQuestApplication.main()` from your IDE
-- Check `backend/src/main/resources/application.yml` for current profile and datasource settings
+- Check `backend/src/main/resources/application.yml` for the default profile and datasource settings
 - Default H2 data file is stored under `backend/data/gradquest.*`
+- Use `backend/scripts/stop-backend.ps1` if port `18080` is already occupied on Windows
 
 ### Frontend debugging
 
 - Use browser dev tools for network/API requests
-- `frontend/vite.config.js` configures local API proxy to backend
+- `frontend/vite.config.js` configures the local API proxy to backend
 - `frontend/src/services/backend.js` contains client-side API interaction
 
 ### Common pitfalls
 
 - `frontend` expects backend on `http://localhost:18080`
 - `backend` defaults to H2 unless `SPRING_PROFILES_ACTIVE=mysql` is set
-- If port `18080` is occupied, use `backend/scripts/stop-backend.ps1` first
+- E2E tests require Playwright browsers to be installed in the local environment
+- Real API keys should stay out of committed `.env` files
 
 ---
 
@@ -278,9 +352,17 @@ If the repository has an established branch naming convention, follow that conve
 
 ## Verification
 
-This repository has been verified with:
+Core compile/build verification:
 
 ```bash
 cd backend && mvn -q -DskipTests compile
 cd frontend && npm run build
+```
+
+Additional test verification:
+
+```bash
+cd backend && mvn test
+cd frontend && npm run test:run
+cd frontend && npm run e2e
 ```

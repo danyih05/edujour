@@ -403,16 +403,22 @@ edujour/
 | GET    | `/api/auth/me`           | Get current user     |
 | GET    | `/api/progress`          | Get student progress |
 | POST   | `/api/progress/complete` | Complete task        |
+| POST   | `/api/progress/skip`     | Skip task            |
+| POST   | `/api/progress/reset`    | Reset progress       |
+| GET    | `/api/shop/items`        | Get shop items       |
 | POST   | `/api/shop/purchase`     | Purchase item        |
 | GET    | `/api/inventory`         | Get inventory        |
+| GET    | `/api/sandbox/messages`  | Get sandbox messages |
+| POST   | `/api/sandbox/messages`  | Create sandbox message |
 | GET    | `/api/teacher/students`  | Teacher dashboard    |
+| GET    | `/api/teacher/students/{studentId}` | Student detail |
 | GET    | `/api/health`            | Backend health check |
 
 ---
 
 # Build Verification
 
-The current repository state has been verified successfully using:
+Use the following commands to verify the current repository state.
 
 ## Backend compilation
 
@@ -428,7 +434,46 @@ cd frontend
 npm run build
 ```
 
-Both frontend and backend compile successfully in the current submission state.
+## Backend tests
+
+```bash
+cd backend
+mvn test
+```
+
+## Frontend unit tests
+
+```bash
+cd frontend
+npm run test:run
+```
+
+## Frontend E2E tests
+
+```bash
+cd frontend
+npm run e2e
+```
+
+The core compile checks for frontend and backend have been used for the final submission state. Unit and E2E commands are included so graders can repeat the wider verification set where the local browser/test environment supports it.
+
+---
+
+# AI-Assisted Development Logs
+
+The AI-assisted development records are stored in:
+
+```text
+ai-logs/
+```
+
+The main prompt index is:
+
+```text
+ai-logs/00-prompts-log.md
+```
+
+Detailed component logs cover architecture, backend/data/security, frontend integration, mini-games, tests, documentation, and final refinements.
 
 ---
 
