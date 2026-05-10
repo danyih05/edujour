@@ -304,10 +304,11 @@ function answerQuestion(choiceId) {
     return
   }
 
-  // 自动前进到下一题
-  currentQ.value = qIndex + 1
-  const next = answersHistory.value.find((h) => h.questionIndex === currentQ.value)
-  selectedChoice.value = next ? next.choiceId : null
+  if (qIndex + 1 < questions.value.length) {
+    currentQ.value = qIndex + 1
+    const next = answersHistory.value.find((h) => h.questionIndex === currentQ.value)
+    selectedChoice.value = next ? next.choiceId : null
+  }
 }
 
 function goToPrevQuestion() {
