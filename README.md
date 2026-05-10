@@ -73,16 +73,14 @@ The frontend automatically proxies `/api` requests to the backend during local d
 
 ## 3. Register an Account
 
-The login page supports both:
-
-- Student registration
-- Teacher registration
-
+The login page supports both student and teacher registration.  
 For coursework demonstration purposes:
 
-- Registration fields may contain arbitrary values
-- No email verification is required
-- Users can freely create new accounts for testing
+- Registration fields accept arbitrary values; no real personal data is required.
+- No email verification is needed.
+- Users can freely create new accounts for testing.
+
+*Note: The original system enforced email format validation and duplicate‑account checks between student and teacher roles. These restrictions have been temporarily disabled to allow the account `CPT208` to be used for evaluation.*
 
 ---
 
@@ -90,13 +88,17 @@ For coursework demonstration purposes:
 
 ## Student Features
 
-- User registration and login
+- User registration and login with role selection
 - JWT-based authentication
-- Progress tracking system
+- Personalised game path recommendation based on user profile
+- Progress tracking through **15 game nodes** that unlock step‑by‑step
+- **9 game mechanics**: quest completion, timed challenges, hidden achievements, leaderboard, daily sign‑in, knowledge quiz (RAG), in‑app shop, anonymous tree‑hole, and lucky draw
 - Task completion and skipping
-- Reward / coin system
-- Inventory management
-- In-app shop and item purchasing
+- Reward and coin system linked to real‑prize exchange
+- Inventory management for virtual items
+- In‑app shop and item purchasing
+- AI chat (Retrieval‑Augmented Generation) for study‑abroad knowledge
+- Anonymous tree‑hole message board for peer support
 - Persistent profile and progress storage
 
 ---
@@ -119,59 +121,6 @@ For coursework demonstration purposes:
 | Database | MySQL / H2 |
 | Authentication | JWT |
 | Build Tools | Maven + npm |
-
----
-
-# Database
-
-The production-style backend supports MySQL persistence.
-
-Schema reference:
-
-```text
-backend/sql/mysql_schema.sql
-```
-
-Readable SQL dump:
-
-```text
-backend/sql/gradquest_mysql_dump.sql
-```
-
-To export the latest database state:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File backend/scripts/export-db-dump.ps1
-```
-
----
-
-# Optional MySQL Runtime
-
-The default local setup uses H2 for convenience.
-
-To run the backend using MySQL 8 instead:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File backend/scripts/run-backend-with-mysql.ps1
-```
-
-Optional backend environment variables:
-
-```env
-PORT=18080
-CLIENT_ORIGIN=http://localhost:5173
-JWT_SECRET=change-this-in-real-use
-JWT_EXPIRES_IN_DAYS=7
-
-DB_HOST=localhost
-DB_PORT=3306
-DB_NAME=gradquest
-DB_USERNAME=gradquest
-DB_PASSWORD=GradQuest123!
-
-INITIAL_COINS=140
-```
 
 ---
 
