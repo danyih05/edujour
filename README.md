@@ -1,4 +1,5 @@
 ﻿# EduMapJourney
+ Project repository: https://github.com/danyih05/edujour
 
 ## Project Overview
 
