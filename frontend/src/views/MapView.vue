@@ -524,7 +524,7 @@ const setMapAreaRef = (year) => (element) => { mapAreas[year] = element || null 
 const setNodeRef = (year, nodeId) => (element) => {
   if (element) nodeRefs[year][nodeId] = element;
   else delete nodeRefs[year][nodeId];
-  if (year === 'y2' && nodeId === 1) scheduleGuidePositionUpdate()
+  if (nodeId === 1 && year === store.year) scheduleGuidePositionUpdate()
 }
 const tooltip = reactive({ visible: false, text: '', x: 0, y: 0 })
 let tooltipTimer = null
@@ -548,7 +548,8 @@ function getNodeCenter(year, nodeId) {
 }
 function updateGuidePosition() {
   if (!showGuide.value || typeof window === 'undefined') return
-  const node = nodeRefs.y2[1]
+  const targetYear = store.year === 'y3' ? 'y3' : 'y2'
+  const node = nodeRefs[targetYear][1]
   if (!node) {
     guideTarget.ready = false
     return
@@ -742,8 +743,9 @@ async function handleLogout() { await authStore.logout(); store.clearState(); aw
 function handleYear3Unlock() {
   showYear3Unlock.value = false
   hasSeenYear2Unlock.value = true
-  if (typeof window !== 'undefined') localStorage.setItem('year2UnlockSeen', 'true')
+  if (typeof window !== 'undefined') localStorage.setItem(getYear3UnlockSeenStorageKey(), 'true')
   switchYear('y3')
+  nextTick(() => initGuide('y3'))
 }
 function handleEscape(event) { if (event.key !== 'Escape') return; if (showResetConfirm.value) { showResetConfirm.value = false; return } if (activeLevel.value) { closeGame(); return } if (showYear3Unlock.value) { showYear3Unlock.value = false; return } if (showPrizeShop.value) { showPrizeShop.value = false; return } if (showHealingSandbox.value) showHealingSandbox.value = false }
 const handleResize = () => {
@@ -796,23 +798,31 @@ function hideTooltip() {
     tooltip.visible = false
   }, 100)
 }
-function getMapGuideSeenStorageKey() {
+function getUserStorageKeySuffix() {
   const userId = authStore.user?.id
   const createdAt = typeof authStore.user?.createdAt === 'string'
     ? authStore.user.createdAt.trim().replace(/[:.]/g, '-')
     : ''
   if (userId !== undefined && userId !== null && String(userId).trim() !== '') {
     return createdAt
-      ? `hasSeenMapGuide:user:${userId}:${createdAt}`
-      : `hasSeenMapGuide:user:${userId}`
+      ? `user:${userId}:${createdAt}`
+      : `user:${userId}`
   }
 
   const email = typeof authStore.user?.email === 'string' ? authStore.user.email.trim().toLowerCase() : ''
   if (email) {
-    return `hasSeenMapGuide:email:${email}`
+    return `email:${email}`
   }
 
-  return 'hasSeenMapGuide:guest'
+  return 'guest'
+}
+
+function getMapGuideSeenStorageKey(year = store.year) {
+  return `hasSeenMapGuide:${getUserStorageKeySuffix()}:${year}`
+}
+
+function getYear3UnlockSeenStorageKey() {
+  return `year2UnlockSeen:${getUserStorageKeySuffix()}`
 }
 
 function closeGuide() {
@@ -821,12 +831,15 @@ function closeGuide() {
   localStorage.setItem(getMapGuideSeenStorageKey(), 'true')
 }
 
-function initGuide() {
-  const storageKey = getMapGuideSeenStorageKey()
+function initGuide(year = store.year) {
+  const storageKey = getMapGuideSeenStorageKey(year)
   const hasSeen = localStorage.getItem(storageKey)
   if (!hasSeen) {
     showGuide.value = true
     nextTick(() => scheduleGuidePositionUpdate())
+  } else {
+    showGuide.value = false
+    guideTarget.ready = false
   }
 }
 function showHelpTooltip(event) {
@@ -843,19 +856,25 @@ watch(year2Complete, (current, previous) => {
   }
 })
 
-onMounted(() => {
+function refreshYear3UnlockSeenState() {
   if (typeof window !== 'undefined') {
-    hasSeenYear2Unlock.value = localStorage.getItem('year2UnlockSeen') === 'true'
+    hasSeenYear2Unlock.value = localStorage.getItem(getYear3UnlockSeenStorageKey()) === 'true'
   }
+}
+
+function maybeShowYear3UnlockPrompt() {
   if (year2Complete.value && !hasSeenYear2Unlock.value) {
     showYear3Unlock.value = true
   }
-})
+}
 
 watch(() => store.year, (year) => {
   showToolBubble.value = false
   syncTraveler(year, store[year].currentNode)
-  nextTick(() => scheduleGuidePositionUpdate())
+  nextTick(() => {
+    initGuide(year)
+    scheduleGuidePositionUpdate()
+  })
 })
 watch(() => store.y2.currentNode, (nodeId) => { if (store.year === 'y2') syncTraveler('y2', nodeId) })
 watch(() => store.y3.currentNode, (nodeId) => { if (store.year === 'y3') syncTraveler('y3', nodeId) })
@@ -877,6 +896,8 @@ onMounted(async () => {
   try {
     await authStore.hydrate()
     await store.ensureLoaded()
+    refreshYear3UnlockSeenState()
+    maybeShowYear3UnlockPrompt()
     syncTraveler(store.year, store[store.year].currentNode)
     await nextTick()
     scheduleGuidePositionUpdate()
