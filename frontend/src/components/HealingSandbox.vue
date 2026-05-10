@@ -15,7 +15,14 @@
         <span>{{ t('components.healing.noteBody') }}</span>
       </div>
 
-      <div ref="trayRef" class="sand-tray" @dragover.prevent @drop="dropToSandbox" @click="handleTrayClick">
+      <div
+        ref="trayRef"
+        class="sand-tray"
+        :class="{ 'touch-drop-active': pointerDrag.active }"
+        @dragover.prevent
+        @drop="dropToSandbox"
+        @click="handleTrayClick"
+      >
         <div v-if="bubble.visible" class="healing-bubble">{{ bubble.text }}</div>
 
         <button
@@ -58,6 +65,7 @@
           class="item"
           draggable="true"
           @dragstart="dragSandboxItem($event, item.id)"
+          @pointerdown="startShelfPointerDrag($event, item)"
         >
           <span class="item-emoji">{{ item.emoji }}</span>
           <span class="item-label">{{ item.label }}</span>
@@ -65,6 +73,15 @@
       </div>
 
       <button class="btn-exit" @click="closeSandbox">{{ t('components.healing.exit') }}</button>
+    </div>
+
+    <div
+      v-if="pointerDrag.active"
+      class="touch-drag-preview"
+      :style="{ left: `${pointerDrag.clientX}px`, top: `${pointerDrag.clientY}px` }"
+      aria-hidden="true"
+    >
+      {{ pointerDrag.emoji }}
     </div>
   </div>
 </template>
@@ -92,9 +109,19 @@ const bubble = reactive({
   visible: false,
   text: '',
 })
+const pointerDrag = reactive({
+  active: false,
+  pointerId: null,
+  itemId: '',
+  emoji: '',
+  clientX: 0,
+  clientY: 0,
+})
 
 let bubbleTimer = null
 let placedItemKey = 0
+let pointerDragTarget = null
+let suppressNextTrayClick = false
 
 const shelfItemDefs = [
   { id: 'tree', emoji: '\u{1F333}' },
@@ -125,17 +152,22 @@ function dragSandboxItem(event, itemId) {
   event.dataTransfer?.setData('text/plain', itemId)
 }
 
-function dropToSandbox(event) {
+function placeShelfItem(source, clientX, clientY) {
   const tray = trayRef.value
-  if (!tray) return
-
-  const itemId = event.dataTransfer?.getData('text/plain')
-  const source = shelfItems.value.find((item) => item.id === itemId)
-  if (!source) return
+  if (!tray || !source) return false
 
   const rect = tray.getBoundingClientRect()
-  const x = Math.max(0, Math.min(event.clientX - rect.left - 24, rect.width - 48))
-  const y = Math.max(0, Math.min(event.clientY - rect.top - 24, rect.height - 48))
+  if (
+    clientX < rect.left ||
+    clientX > rect.right ||
+    clientY < rect.top ||
+    clientY > rect.bottom
+  ) {
+    return false
+  }
+
+  const x = Math.max(0, Math.min(clientX - rect.left - 24, rect.width - 48))
+  const y = Math.max(0, Math.min(clientY - rect.top - 24, rect.height - 48))
 
   placedItems.value.push({
     key: placedItemKey += 1,
@@ -144,6 +176,85 @@ function dropToSandbox(event) {
     x,
     y,
   })
+
+  return true
+}
+
+function dropToSandbox(event) {
+  const itemId = event.dataTransfer?.getData('text/plain')
+  const source = shelfItems.value.find((item) => item.id === itemId)
+  placeShelfItem(source, event.clientX, event.clientY)
+}
+
+function startShelfPointerDrag(event, item) {
+  if (event.pointerType === 'mouse') return
+
+  event.preventDefault()
+  cancelShelfPointerDrag()
+
+  pointerDrag.active = true
+  pointerDrag.pointerId = event.pointerId
+  pointerDrag.itemId = item.id
+  pointerDrag.emoji = item.emoji
+  pointerDrag.clientX = event.clientX
+  pointerDrag.clientY = event.clientY
+  pointerDragTarget = event.currentTarget
+  try {
+    pointerDragTarget?.setPointerCapture?.(event.pointerId)
+  } catch (error) {
+    // Synthetic events and some browsers can reject pointer capture.
+  }
+
+  window.addEventListener('pointermove', handleShelfPointerMove, { passive: false })
+  window.addEventListener('pointerup', finishShelfPointerDrag)
+  window.addEventListener('pointercancel', cancelShelfPointerDrag)
+}
+
+function handleShelfPointerMove(event) {
+  if (!pointerDrag.active || event.pointerId !== pointerDrag.pointerId) return
+
+  event.preventDefault()
+  pointerDrag.clientX = event.clientX
+  pointerDrag.clientY = event.clientY
+}
+
+function finishShelfPointerDrag(event) {
+  if (!pointerDrag.active || event.pointerId !== pointerDrag.pointerId) return
+
+  event.preventDefault()
+
+  const source = shelfItems.value.find((item) => item.id === pointerDrag.itemId)
+  const dropped = placeShelfItem(source, event.clientX, event.clientY)
+  if (dropped) {
+    suppressNextTrayClick = true
+    window.setTimeout(() => {
+      suppressNextTrayClick = false
+    }, 100)
+  }
+
+  cancelShelfPointerDrag()
+}
+
+function cancelShelfPointerDrag() {
+  const pointerId = pointerDrag.pointerId
+
+  if (pointerDragTarget && pointerId !== null) {
+    try {
+      pointerDragTarget.releasePointerCapture?.(pointerId)
+    } catch (error) {
+      // Some browsers auto-release capture on pointerup/cancel.
+    }
+  }
+
+  pointerDrag.active = false
+  pointerDrag.pointerId = null
+  pointerDrag.itemId = ''
+  pointerDrag.emoji = ''
+  pointerDragTarget = null
+
+  window.removeEventListener('pointermove', handleShelfPointerMove)
+  window.removeEventListener('pointerup', finishShelfPointerDrag)
+  window.removeEventListener('pointercancel', cancelShelfPointerDrag)
 }
 
 function showBubble(text) {
@@ -168,6 +279,11 @@ function hideBubble() {
 }
 
 function handleTrayClick(event) {
+  if (suppressNextTrayClick) {
+    suppressNextTrayClick = false
+    return
+  }
+
   hideBubble()
   const tray = trayRef.value
   if (!tray) return
@@ -215,6 +331,7 @@ async function submitMessage() {
 function closeSandbox() {
   hideBubble()
   cancelInput()
+  cancelShelfPointerDrag()
   emit('close')
 }
 
@@ -226,12 +343,13 @@ onBeforeUnmount(() => {
   if (bubbleTimer) {
     clearTimeout(bubbleTimer)
   }
+  cancelShelfPointerDrag()
 })
 </script>
 
 <style scoped>
-.modal-overlay { position: fixed; inset: 0; background: rgba(10, 20, 30, 0.85); backdrop-filter: blur(8px); display: flex; justify-content: center; align-items: center; z-index: 1000; }
-.healing-modal-content { background: #fffcf4; width: 88%; max-width: 750px; border-radius: 28px; padding: 35px; border: 3px solid #e2bc7c; box-shadow: 0 20px 32px rgba(0, 0, 0, 0.28); position: relative; }
+.modal-overlay { position: fixed; inset: 0; background: rgba(10, 20, 30, 0.85); backdrop-filter: blur(8px); display: flex; justify-content: center; align-items: center; z-index: 1000; overflow-y: auto; padding: 20px; box-sizing: border-box; }
+.healing-modal-content { background: #fffcf4; width: 88%; max-width: 750px; max-height: calc(100dvh - 40px); overflow-y: auto; -webkit-overflow-scrolling: touch; border-radius: 28px; padding: 35px; border: 3px solid #e2bc7c; box-shadow: 0 20px 32px rgba(0, 0, 0, 0.28); position: relative; box-sizing: border-box; }
 .modal-header { font-size: 1.5rem; color: #5d4037; font-weight: 900; font-family: Georgia, serif; margin-bottom: 8px; }
 .healing-title-area { text-align: center; margin-bottom: 20px; }
 .healing-title-area h2 { color: #5d4037; margin: 5px; font-size: 1.6rem; font-family: Georgia, serif; }
@@ -239,12 +357,14 @@ onBeforeUnmount(() => {
 .reflection-note { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 20px; padding: 14px 16px; border-radius: 18px; background: rgba(93, 64, 55, 0.08); border: 1px solid rgba(141, 110, 99, 0.2); color: #6c564e; line-height: 1.55; }
 .reflection-note strong { color: #5d4037; white-space: nowrap; }
 .sand-tray { width: 100%; height: 350px; background-color: #fdf5e6; border: 12px solid #8d6e63; border-radius: 12px; position: relative; box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.1), 0 10px 25px rgba(0, 0, 0, 0.08); overflow: hidden; margin-bottom: 20px; background-image: radial-gradient(#efe0c9 1px, transparent 1px); background-size: 20px 20px; }
+.sand-tray.touch-drop-active { box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.1), 0 0 0 4px rgba(255, 138, 128, 0.3), 0 10px 25px rgba(0, 0, 0, 0.08); }
 .healing-bubble { position: absolute; top: 22px; left: 50%; transform: translateX(-50%); background: rgba(255, 255, 255, 0.98); padding: 16px 22px; border-radius: 24px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15); border: 2px solid #ff8a80; color: #444; font-weight: bold; z-index: 100; text-align: center; max-width: 320px; line-height: 1.6; font-size: 1rem; }
 .shelf { width: 100%; background: white; padding: 15px; border-radius: 20px; display: flex; justify-content: space-around; flex-wrap: wrap; gap: 10px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); }
 .item { border: 0; background: transparent; font-size: 2.5rem; cursor: grab; transition: transform 0.2s; user-select: none; display: flex; flex-direction: column; align-items: center; }
 .item:hover { transform: scale(1.1) rotate(5deg); }
 .item-emoji { line-height: 1; }
 .item-label { font-size: 0.8rem; color: #999; margin-top: 5px; font-weight: bold; }
+.touch-drag-preview { position: fixed; z-index: 1200; pointer-events: none; transform: translate(-50%, -50%) scale(1.12); font-size: 3rem; line-height: 1; filter: drop-shadow(0 10px 16px rgba(0, 0, 0, 0.28)); }
 .placed-item { position: absolute; font-size: 3rem; cursor: pointer; z-index: 10; user-select: none; animation: pop-in 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); border: 0; background: transparent; padding: 0; }
 .shared-message-dot { position: absolute; border: 0; background: rgba(255, 255, 255, 0.92); border-radius: 999px; padding: 6px 8px; cursor: pointer; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); transform: translate(-50%, -50%); z-index: 20; }
 .dot-emoji { line-height: 1; }
@@ -258,4 +378,20 @@ onBeforeUnmount(() => {
 @keyframes pop-in { from { transform: scale(0); } to { transform: scale(1); } }
 .btn-exit { display: block; width: 100%; margin-top: 20px; background: #e74c3c; color: white; border: 2px solid #c0392b; padding: 12px; border-radius: 999px; font-weight: 900; font-size: 1.05rem; cursor: pointer; box-shadow: 0 4px 0 #922b21; transition: 0.2s; }
 .btn-exit:hover { background: #c0392b; transform: translateY(-2px); }
+
+@media (max-width: 720px) {
+  .modal-overlay { align-items: flex-start; padding: max(12px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom)); }
+  .healing-modal-content { width: 100%; max-height: calc(100dvh - max(24px, env(safe-area-inset-top)) - max(24px, env(safe-area-inset-bottom))); border-radius: 22px; padding: 20px; }
+  .healing-title-area { margin-bottom: 14px; }
+  .healing-title-area h2 { font-size: 1.25rem; }
+  .reflection-note { flex-direction: column; gap: 4px; margin-bottom: 14px; padding: 12px; }
+  .sand-tray { height: 260px; border-width: 9px; margin-bottom: 14px; }
+  .shelf { padding: 12px; gap: 8px; }
+  .item { font-size: 2rem; }
+  .btn-exit { margin-top: 14px; }
+}
+
+@media (pointer: coarse) {
+  .item { touch-action: none; }
+}
 </style>
